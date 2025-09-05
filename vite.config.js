@@ -61,7 +61,7 @@ export default defineConfig({
 
     // Docs: https://github.com/antfu/unplugin-auto-import#unplugin-auto-import
     AutoImport({
-      imports: ['vue', VueRouterAutoImports, '@vueuse/core', '@vueuse/math', 'vue-i18n', 'pinia'],
+      imports: ['vue', VueRouterAutoImports, '@vueuse/core', '@vueuse/math', 'pinia'],
       dirs: [
         './src/@core/utils',
         './src/@core/composable/',

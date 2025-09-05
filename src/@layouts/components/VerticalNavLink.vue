@@ -4,7 +4,6 @@ import { can } from '@layouts/plugins/casl'
 import { useLayoutConfigStore } from '@layouts/stores/config'
 import {
   getComputedNavLinkToProp,
-  getDynamicI18nProps,
   isNavLinkActive,
 } from '@layouts/utils'
 
@@ -37,28 +36,24 @@ const hideTitleAndBadge = configStore.isVerticalNavMini()
       />
       <TransitionGroup name="transition-slide-x">
         <!-- 👉 Title -->
-        <Component
-          :is="layoutConfig.app.i18n.enable ? 'i18n-t' : 'span'"
+        <span
           v-show="!hideTitleAndBadge"
           key="title"
           class="nav-item-title"
-          v-bind="getDynamicI18nProps(item.title, 'span')"
         >
           {{ item.title }}
-        </Component>
+        </span>
 
         <!-- 👉 Badge -->
-        <Component
-          :is="layoutConfig.app.i18n.enable ? 'i18n-t' : 'span'"
+        <span
           v-if="item.badgeContent"
           v-show="!hideTitleAndBadge"
           key="badge"
           class="nav-item-badge"
           :class="item.badgeClass"
-          v-bind="getDynamicI18nProps(item.badgeContent, 'span')"
         >
           {{ item.badgeContent }}
-        </Component>
+        </span>
       </TransitionGroup>
     </Component>
   </li>

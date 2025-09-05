@@ -7,7 +7,6 @@ import {
 import { canViewNavMenuGroup } from '@layouts/plugins/casl'
 import { useLayoutConfigStore } from '@layouts/stores/config'
 import {
-  getDynamicI18nProps,
   isNavGroupActive,
 } from '@layouts/utils'
 
@@ -69,13 +68,9 @@ watch(() => route.path, () => {
         class="nav-item-icon"
         v-bind="item.icon || layoutConfig.verticalNav.defaultNavItemIconProps"
       />
-      <Component
-        :is="layoutConfig.app.i18n.enable ? 'i18n-t' : 'span'"
-        v-bind="getDynamicI18nProps(item.title, 'span')"
-        class="nav-item-title"
-      >
+      <span class="nav-item-title">
         {{ item.title }}
-      </Component>
+      </span>
       <Component
         v-bind="layoutConfig.icons.chevronDown"
         :is="layoutConfig.app.iconRenderer || 'div'"

@@ -9,7 +9,6 @@ import { canViewNavMenuGroup } from '@layouts/plugins/casl'
 import { useLayoutConfigStore } from '@layouts/stores/config'
 import { injectionKeyIsVerticalNavHovered } from '@layouts/symbols'
 import {
-  getDynamicI18nProps,
   isNavGroupActive,
   openGroups,
 } from '@layouts/utils'
@@ -145,20 +144,16 @@ watch(configStore.isVerticalNavMini(isVerticalNavHovered), val => {
         name="transition-slide-x"
       >
         <!-- 👉 Title -->
-        <Component
-          :is=" layoutConfig.app.i18n.enable ? 'i18n-t' : 'span'"
-          v-bind="getDynamicI18nProps(item.title, 'span')"
+        <span
           v-show="!hideTitleAndBadge"
           key="title"
           class="nav-item-title"
         >
           {{ item.title }}
-        </Component>
+        </span>
 
         <!-- 👉 Badge -->
-        <Component
-          :is="layoutConfig.app.i18n.enable ? 'i18n-t' : 'span'"
-          v-bind="getDynamicI18nProps(item.badgeContent, 'span')"
+        <span
           v-show="!hideTitleAndBadge"
           v-if="item.badgeContent"
           key="badge"
@@ -166,7 +161,7 @@ watch(configStore.isVerticalNavMini(isVerticalNavHovered), val => {
           :class="item.badgeClass"
         >
           {{ item.badgeContent }}
-        </Component>
+        </span>
         <Component
           :is="layoutConfig.app.iconRenderer || 'div'"
           v-show="!hideTitleAndBadge"

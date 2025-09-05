@@ -1,46 +1,93 @@
 <script setup>
-import { PerfectScrollbar } from 'vue3-perfect-scrollbar'
-import avatar1 from '@images/avatars/avatar-1.png'
+import Auth from "@/api/auth/auth_api";
+import avatar1 from "@images/avatars/avatar-1.png";
+import { useRouter } from "vue-router";
+import { PerfectScrollbar } from "vue3-perfect-scrollbar";
+
+const router = useRouter();
+
+// بيانات المستخدم
+const user = ref(null);
+const isAuthenticated = ref(false);
+
+// فحص حالة المستخدم عند تحميل المكون
+onMounted(() => {
+  const userData = localStorage.getItem("user");
+  const token = localStorage.getItem("accessToken");
+
+  if (userData && token) {
+    user.value = JSON.parse(userData);
+    isAuthenticated.value = true;
+  }
+});
+
+// متغيرات تسجيل الخروج
+const isLoggingOut = ref(false);
+
+// وظيفة تسجيل الخروج
+const logout = async () => {
+  try {
+    isLoggingOut.value = true;
+
+    // استدعاء API لتسجيل الخروج
+    await Auth.logout();
+
+    // مسح البيانات من localStorage
+    localStorage.removeItem("user");
+    localStorage.removeItem("accessToken");
+
+    // إعادة تعيين حالة المستخدم
+    user.value = null;
+    isAuthenticated.value = false;
+
+    // التوجه إلى الصفحة الرئيسية
+    router.push("/");
+
+    // إظهار رسالة نجاح
+    console.log("تم تسجيل الخروج بنجاح");
+  } catch (error) {
+    console.error("خطأ في تسجيل الخروج:", error);
+
+    // حتى لو فشل API، نمسح البيانات المحلية
+    localStorage.removeItem("user");
+    localStorage.removeItem("accessToken");
+    user.value = null;
+    isAuthenticated.value = false;
+    router.push("/");
+  } finally {
+    isLoggingOut.value = false;
+  }
+};
 
 const userProfileList = [
-  { type: 'divider' },
+  { type: "divider" },
   {
-    type: 'navItem',
-    icon: 'ri-user-line',
-    title: 'Profile',
-    value: 'profile',
+    type: "navItem",
+    icon: "ri-user-line",
+    title: "الملف الشخصي",
+    value: "profile",
   },
   {
-    type: 'navItem',
-    icon: 'ri-settings-4-line',
-    title: 'Settings',
-    value: 'settings',
+    type: "navItem",
+    icon: "ri-settings-4-line",
+    title: "الإعدادات",
+    value: "settings",
   },
   {
-    type: 'navItem',
-    icon: 'ri-file-text-line',
-    title: 'Billing Plan',
-    value: 'billing',
-    badgeProps: {
-      color: 'error',
-      content: '4',
-    },
+    type: "navItem",
+    icon: "ri-file-text-line",
+    title: "الخطة",
+    value: "billing",
   },
-  { type: 'divider' },
+  { type: "divider" },
   {
-    type: 'navItem',
-    icon: 'ri-money-dollar-circle-line',
-    title: 'Pricing',
-    value: 'pricing',
+    type: "navItem",
+    icon: "ri-question-line",
+    title: "المساعدة",
+    value: "help",
   },
-  {
-    type: 'navItem',
-    icon: 'ri-question-line',
-    title: 'FAQ',
-    value: 'faq',
-  },
-  { type: 'divider' },
-]
+  { type: "divider" },
+];
 </script>
 
 <template>
@@ -52,19 +99,11 @@ const userProfileList = [
     offset-y="3"
     color="success"
   >
-    <VAvatar
-      class="cursor-pointer"
-      size="38"
-    >
-      <VImg :src="avatar1" />
+    <VAvatar class="cursor-pointer" size="38">
+      <VImg :src="user?.avatar || user?.profileImage || avatar1" />
 
       <!-- SECTION Menu -->
-      <VMenu
-        activator="parent"
-        width="230"
-        location="bottom end"
-        offset="15px"
-      >
+      <VMenu activator="parent" width="230" location="bottom end" offset="15px">
         <VList>
           <!-- 👉 User Avatar & Name -->
           <VListItem>
@@ -77,57 +116,48 @@ const userProfileList = [
                   offset-y="3"
                   color="success"
                 >
-                  <VAvatar
-                    color="primary"
-                    variant="tonal"
-                  >
-                    <VImg :src="avatar1" />
+                  <VAvatar color="primary" variant="tonal">
+                    <VImg
+                      :src="user?.avatar || user?.profileImage || avatar1"
+                    />
                   </VAvatar>
                 </VBadge>
               </VListItemAction>
             </template>
 
             <h6 class="text-sm font-weight-medium">
-              John Doe
+              {{ user?.name || user?.firstName || "المستخدم" }}
             </h6>
             <VListItemSubtitle class="text-capitalize text-disabled">
-              Admin
+              {{
+                user?.userType === "student"
+                  ? "طالب"
+                  : user?.userType === "teacher"
+                  ? "معلم"
+                  : user?.userType === "admin"
+                  ? "إداري"
+                  : user?.userType === "super_admin"
+                  ? "مدير عام"
+                  : "مستخدم"
+              }}
             </VListItemSubtitle>
           </VListItem>
 
           <PerfectScrollbar :options="{ wheelPropagation: false }">
-            <template
-              v-for="item in userProfileList"
-              :key="item.title"
-            >
-              <VListItem
-                v-if="item.type === 'navItem'"
-                :value="item.value"
-              >
+            <template v-for="item in userProfileList" :key="item.title">
+              <VListItem v-if="item.type === 'navItem'" :value="item.value">
                 <template #prepend>
-                  <VIcon
-                    :icon="item.icon"
-                    size="22"
-                  />
+                  <VIcon :icon="item.icon" size="22" />
                 </template>
 
                 <VListItemTitle>{{ item.title }}</VListItemTitle>
 
-                <template
-                  v-if="item.badgeProps"
-                  #append
-                >
-                  <VBadge
-                    inline
-                    v-bind="item.badgeProps"
-                  />
+                <template v-if="item.badgeProps" #append>
+                  <VBadge inline v-bind="item.badgeProps" />
                 </template>
               </VListItem>
 
-              <VDivider
-                v-else
-                class="my-1"
-              />
+              <VDivider v-else class="my-1" />
             </template>
 
             <VListItem>
@@ -135,9 +165,11 @@ const userProfileList = [
                 block
                 color="error"
                 append-icon="ri-logout-box-r-line"
-                to="/login"
+                :loading="isLoggingOut"
+                :disabled="isLoggingOut"
+                @click="logout"
               >
-                Logout
+                {{ isLoggingOut ? "جاري تسجيل الخروج..." : "تسجيل الخروج" }}
               </VBtn>
             </VListItem>
           </PerfectScrollbar>

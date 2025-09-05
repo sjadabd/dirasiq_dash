@@ -1,7 +1,7 @@
 <script setup>
-import Shepherd from 'shepherd.js'
-import { withQuery } from 'ufo'
-import { useConfigStore } from '@core/stores/config'
+import { useConfigStore } from "@core/stores/config"
+import Shepherd from "shepherd.js"
+import { withQuery } from "ufo"
 
 defineOptions({
   // 👉 Is App Search Bar Visible
@@ -14,105 +14,105 @@ const isAppSearchBarVisible = ref(false)
 // 👉 Default suggestions
 const suggestionGroups = [
   {
-    title: 'Popular Searches',
+    title: "Popular Searches",
     content: [
       {
-        icon: 'ri-bar-chart-line',
-        title: 'Analytics',
-        url: { name: 'dashboards-analytics' },
+        icon: "ri-bar-chart-line",
+        title: "Analytics",
+        url: { name: "dashboards-analytics" },
       },
       {
-        icon: 'ri-pie-chart-2-line',
-        title: 'CRM',
-        url: { name: 'dashboards-crm' },
+        icon: "ri-pie-chart-2-line",
+        title: "CRM",
+        url: { name: "dashboards-crm" },
       },
       {
-        icon: 'ri-shopping-bag-3-line',
-        title: 'eCommerce',
-        url: { name: 'dashboards-ecommerce' },
+        icon: "ri-shopping-bag-3-line",
+        title: "eCommerce",
+        url: { name: "dashboards-ecommerce" },
       },
       {
-        icon: 'ri-car-line',
-        title: 'Logistics',
-        url: { name: 'apps-logistics-dashboard' },
+        icon: "ri-car-line",
+        title: "Logistics",
+        url: { name: "apps-logistics-dashboard" },
       },
     ],
   },
   {
-    title: 'Apps & Pages',
+    title: "Apps & Pages",
     content: [
       {
-        icon: 'ri-calendar-line',
-        title: 'Calendar',
-        url: { name: 'apps-calendar' },
+        icon: "ri-calendar-line",
+        title: "Calendar",
+        url: { name: "apps-calendar" },
       },
       {
-        icon: 'ri-lock-unlock-line',
-        title: 'Roles & Permissions',
-        url: { name: 'apps-roles' },
+        icon: "ri-lock-unlock-line",
+        title: "Roles & Permissions",
+        url: { name: "apps-roles" },
       },
       {
-        icon: 'ri-settings-4-line',
-        title: 'Account Settings',
+        icon: "ri-settings-4-line",
+        title: "Account Settings",
         url: {
-          name: 'pages-account-settings-tab',
-          params: { tab: 'account' },
+          name: "pages-account-settings-tab",
+          params: { tab: "account" },
         },
       },
       {
-        icon: 'ri-file-copy-line',
-        title: 'Dialog Examples',
-        url: { name: 'pages-dialog-examples' },
+        icon: "ri-file-copy-line",
+        title: "Dialog Examples",
+        url: { name: "pages-dialog-examples" },
       },
     ],
   },
   {
-    title: 'User Interface',
+    title: "User Interface",
     content: [
       {
-        icon: 'ri-text',
-        title: 'Typography',
-        url: { name: 'pages-typography' },
+        icon: "ri-text",
+        title: "Typography",
+        url: { name: "pages-typography" },
       },
       {
-        icon: 'ri-menu-line',
-        title: 'Accordion',
-        url: { name: 'components-expansion-panel' },
+        icon: "ri-menu-line",
+        title: "Accordion",
+        url: { name: "components-expansion-panel" },
       },
       {
-        icon: 'ri-alert-line',
-        title: 'Alerts',
-        url: { name: 'components-alert' },
+        icon: "ri-alert-line",
+        title: "Alerts",
+        url: { name: "components-alert" },
       },
       {
-        icon: 'ri-checkbox-blank-line',
-        title: 'Cards',
-        url: { name: 'pages-cards-card-basic' },
+        icon: "ri-checkbox-blank-line",
+        title: "Cards",
+        url: { name: "pages-cards-card-basic" },
       },
     ],
   },
   {
-    title: 'Radio & Tables',
+    title: "Radio & Tables",
     content: [
       {
-        icon: 'ri-radio-button-line',
-        title: 'Radio',
-        url: { name: 'forms-radio' },
+        icon: "ri-radio-button-line",
+        title: "Radio",
+        url: { name: "forms-radio" },
       },
       {
-        icon: 'ri-file-text-line',
-        title: 'Form Layouts',
-        url: { name: 'forms-form-layouts' },
+        icon: "ri-file-text-line",
+        title: "Form Layouts",
+        url: { name: "forms-form-layouts" },
       },
       {
-        icon: 'ri-table-line',
-        title: 'Table',
-        url: { name: 'tables-simple-table' },
+        icon: "ri-table-line",
+        title: "Table",
+        url: { name: "tables-simple-table" },
       },
       {
-        icon: 'ri-edit-box-line',
-        title: 'Editor',
-        url: { name: 'forms-editors' },
+        icon: "ri-edit-box-line",
+        title: "Editor",
+        url: { name: "forms-editors" },
       },
     ],
   },
@@ -121,31 +121,33 @@ const suggestionGroups = [
 // 👉 No Data suggestion
 const noDataSuggestions = [
   {
-    title: 'Analytics Dashboard',
-    icon: 'ri-shopping-cart-line',
-    url: { name: 'dashboards-analytics' },
+    title: "Analytics Dashboard",
+    icon: "ri-shopping-cart-line",
+    url: { name: "dashboards-analytics" },
   },
   {
-    title: 'Account Settings',
-    icon: 'ri-user-line',
+    title: "Account Settings",
+    icon: "ri-user-line",
     url: {
-      name: 'pages-account-settings-tab',
-      params: { tab: 'account' },
+      name: "pages-account-settings-tab",
+      params: { tab: "account" },
     },
   },
   {
-    title: 'Pricing Page',
-    icon: 'ri-cash-line',
-    url: { name: 'pages-pricing' },
+    title: "Pricing Page",
+    icon: "ri-cash-line",
+    url: { name: "pages-pricing" },
   },
 ]
 
-const searchQuery = ref('')
+const searchQuery = ref("")
 const router = useRouter()
 const searchResult = ref([])
 
 const fetchResults = async () => {
-  const { data } = await useApi(withQuery('/app-bar/search', { q: searchQuery.value }))
+  const { data } = await useApi(
+    withQuery("/app-bar/search", { q: searchQuery.value }),
+  )
 
   searchResult.value = data.value
 }
@@ -155,17 +157,19 @@ watch(searchQuery, fetchResults)
 const redirectToSuggestedOrSearchedPage = selected => {
   router.push(selected.url)
   isAppSearchBarVisible.value = false
-  searchQuery.value = ''
+  searchQuery.value = ""
 }
 
-const LazyAppBarSearch = defineAsyncComponent(() => import('@core/components/AppBarSearch.vue'))
+const LazyAppBarSearch = defineAsyncComponent(() =>
+  import("@core/components/AppBarSearch.vue"),
+)
 </script>
 
 <template>
   <div
     class="d-flex align-center cursor-pointer"
     v-bind="$attrs"
-    style="user-select: none;"
+    style="user-select: none"
     @click="isAppSearchBarVisible = !isAppSearchBarVisible"
   >
     <!-- 👉 Search Trigger button -->
@@ -279,7 +283,7 @@ const LazyAppBarSearch = defineAsyncComponent(() => import('@core/components/App
 </template>
 
 <style lang="scss">
-@use "@styles/variables/vuetify.scss";
+@use "@styles/variables/vuetify";
 
 .meta-key {
   border: thin solid rgba(var(--v-border-color), var(--v-border-opacity));

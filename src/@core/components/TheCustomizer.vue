@@ -184,18 +184,15 @@ watch(currentDir, () => {
 })
 
 const isCookieHasAnyValue = ref(false)
-const { locale } = useI18n({ useScope: 'global' })
 
 const isActiveLangRTL = computed(() => {
-  const lang = themeConfig.app.i18n.langConfig.find(l => l.i18nLang === locale.value)
-  
-  return lang?.isRTL ?? false
+  // Always return true for Arabic RTL
+  return true
 })
 
 watch([
   () => vuetifyTheme.current.value.colors.primary,
   configStore.$state,
-  locale,
 ], () => {
   const initialConfigValue = [
     staticPrimaryColor,
