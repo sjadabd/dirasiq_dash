@@ -68,40 +68,6 @@ const openSettings = () => {
 
 <template>
   <div class="admin-dashboard">
-    <!-- شريط التنقل العلوي -->
-    <VAppBar color="primary" dark>
-      <VAppBarTitle>
-        <VIcon class="me-2">mdi-shield-account</VIcon>
-        لوحة تحكم الإدارة
-        <VChip
-          v-if="user?.userType === 'super_admin'"
-          color="warning"
-          size="small"
-          class="ms-2"
-        >
-          سوبر أدمن
-        </VChip>
-        <VChip
-          v-else-if="user?.userType === 'admin'"
-          color="info"
-          size="small"
-          class="ms-2"
-        >
-          أدمن
-        </VChip>
-      </VAppBarTitle>
-
-      <VSpacer />
-
-      <VBtn icon @click="updateProfile">
-        <VIcon>mdi-account-edit</VIcon>
-      </VBtn>
-
-      <VBtn icon @click="logout">
-        <VIcon>mdi-logout</VIcon>
-      </VBtn>
-    </VAppBar>
-
     <VContainer fluid class="pa-6">
       <!-- ترحيب -->
       <VRow class="mb-6">
@@ -115,7 +81,7 @@ const openSettings = () => {
                 </p>
                 <p class="text-caption mt-2">
                   عضو منذ
-                  {{ new Date(user?.createdAt).toLocaleDateString("ar-SA") }}
+                  {{ new Date(user?.createdAt).toLocaleDateString("en-IQ") }}
                 </p>
               </VCol>
               <VCol cols="12" md="4" class="text-center">

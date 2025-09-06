@@ -1,4 +1,10 @@
 export default {
+  // Global font settings
+  VApplication: {
+    style: {
+      fontFamily: "'Cairo', sans-serif !important",
+    },
+  },
   IconBtn: {
     icon: true,
     color: 'default',

@@ -1,1 +1,400 @@
-// Write your overrides
+// Cairo Font Overrides
+* {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+body {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+html {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Vuetify specific overrides
+.v-application {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-btn {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-card {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-list {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-menu {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-toolbar {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-navigation-drawer {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-main {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Text classes
+.text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6 {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.text-body-1, .text-body-2 {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.text-caption {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.text-overline {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Form elements
+.v-text-field {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-select {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-textarea {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-checkbox {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-radio {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Navigation
+.v-navigation-drawer {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-list-item {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-list-item-title {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-list-item-subtitle {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Tables
+.v-data-table {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-table {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Dialogs and overlays
+.v-dialog {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-overlay {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-snackbar {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Chips and badges
+.v-chip {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-badge {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Progress indicators
+.v-progress-linear {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-progress-circular {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Tabs
+.v-tabs {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-tab {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Steppers
+.v-stepper {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-stepper-item {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Expansion panels
+.v-expansion-panel {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-expansion-panel-title {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Tooltips
+.v-tooltip {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Alerts
+.v-alert {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Breadcrumbs
+.v-breadcrumbs {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Pagination
+.v-pagination {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Rating
+.v-rating {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Slider
+.v-slider {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Switch
+.v-switch {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// File input
+.v-file-input {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Combobox
+.v-combobox {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Autocomplete
+.v-autocomplete {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Date picker
+.v-date-picker {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Time picker
+.v-time-picker {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Color picker
+.v-color-picker {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Treeview
+.v-treeview {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Timeline
+.v-timeline {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Calendar
+.v-calendar {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Carousel
+.v-carousel {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Image
+.v-img {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Avatar
+.v-avatar {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Divider
+.v-divider {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Spacer
+.v-spacer {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Container
+.v-container {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Row and Col
+.v-row {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-col {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Sheet
+.v-sheet {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Responsive
+.v-responsive {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Aspect ratio
+.v-aspect-ratio {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Lazy
+.v-lazy {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Intersect
+.v-intersect {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Mutate
+.v-mutate {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Ripple
+.v-ripple {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Touch
+.v-touch {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Scroll
+.v-scroll {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Virtual scroll
+.v-virtual-scroll {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Window
+.v-window {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Window item
+.v-window-item {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Bottom sheet
+.v-bottom-sheet {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Bottom navigation
+.v-bottom-navigation {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// App bar
+.v-app-bar {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// System bar
+.v-system-bar {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Footer
+.v-footer {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Main
+.v-main {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Navigation drawer
+.v-navigation-drawer {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Toolbar
+.v-toolbar {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Application
+.v-application {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+// Theme
+.v-theme--light {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.v-theme--dark {
+  font-family: 'Cairo', sans-serif !important;
+}

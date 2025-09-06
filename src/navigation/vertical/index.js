@@ -1,12 +1,40 @@
 export default [
+  // super_admin
   {
-    title: 'Home',
-    to: { name: 'root' },
+    heading: 'لوحة التحكم',
+  },
+  {
+    title: 'الصفحة الرئيسية',
+    to: { name: 'admin-dashboard' },
+    type: 'super_admin',
     icon: { icon: 'ri-home-smile-line' },
   },
   {
-    title: 'Second page',
-    to: { name: 'second-page' },
+    title: 'السنه الدراسية',
+    to: { name: 'admin-study-years-show-study-years' },
+    type: 'super_admin',
     icon: { icon: 'ri-file-text-line' },
   },
+  {
+    title: 'المراحل الدراسية',
+    to: { name: 'admin-grades-show-grades' },
+    type: 'super_admin',
+    icon: { icon: 'ri-file-text-line' },
+  },
+  {
+    title: 'باقات الاشتراك',
+    to: { name: 'admin-subscription-packages-show-subscription-packages' },
+    type: 'super_admin',
+    icon: { icon: 'ri-file-text-line' },
+  },
+  // super_admin
+
+  // super_admin
+  {
+    title: 'Home',
+    to: { name: 'teacher-dashboard' },
+    type: 'teacher',
+    icon: { icon: 'ri-home-smile-line' },
+  },
+  // super_admin
 ]

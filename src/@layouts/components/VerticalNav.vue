@@ -1,20 +1,21 @@
 <script setup>
-import { PerfectScrollbar } from 'vue3-perfect-scrollbar'
-import { VNodeRenderer } from './VNodeRenderer'
-import { layoutConfig } from '@layouts'
+import { layoutConfig } from "@layouts";
 import {
   VerticalNavGroup,
   VerticalNavLink,
   VerticalNavSectionTitle,
-} from '@layouts/components'
-import { useLayoutConfigStore } from '@layouts/stores/config'
-import { injectionKeyIsVerticalNavHovered } from '@layouts/symbols'
+} from "@layouts/components";
+import { useLayoutConfigStore } from "@layouts/stores/config";
+import { injectionKeyIsVerticalNavHovered } from "@layouts/symbols";
+import { computed, onMounted, ref } from "vue";
+import { PerfectScrollbar } from "vue3-perfect-scrollbar";
+import { VNodeRenderer } from "./VNodeRenderer";
 
 const props = defineProps({
   tag: {
     type: null,
     required: false,
-    default: 'aside',
+    default: "aside",
   },
   navItems: {
     type: null,
@@ -28,41 +29,136 @@ const props = defineProps({
     type: Function,
     required: true,
   },
-})
+});
 
-const refNav = ref()
-const isHovered = useElementHover(refNav)
+const refNav = ref();
+const isHovered = useElementHover(refNav);
 
-provide(injectionKeyIsVerticalNavHovered, isHovered)
+provide(injectionKeyIsVerticalNavHovered, isHovered);
 
-const configStore = useLayoutConfigStore()
+const configStore = useLayoutConfigStore();
 
-const resolveNavItemComponent = item => {
-  if ('heading' in item)
-    return VerticalNavSectionTitle
-  if ('children' in item)
-    return VerticalNavGroup
-  
-  return VerticalNavLink
-}
+// متغيرات المستخدم
+const user = ref(null);
+const userType = ref(null);
+
+// فلترة العناصر حسب نوع المستخدم
+const filteredNavItems = computed(() => {
+  if (!userType.value) {
+    return [];
+  }
+
+  const isAllowed = (itemType) => {
+    // إذا لم يكن للعنصر نوع، نعرضه للجميع
+    if (!itemType) return true;
+
+    // إذا كان نوع المستخدم يطابق نوع العنصر
+    if (itemType === userType.value) return true;
+
+    return false;
+  };
+
+  // فلترة العناصر مع الأخذ بالحسبان المجموعات والعناوين
+  return props.navItems
+    .map((item) => {
+      // إذا كان عنوان قسم (heading)، أظهره دائمًا
+      if ("heading" in item) {
+        return item;
+      }
+
+      // إذا كان مجموعة تحتوي على عناصر فرعية
+      if ("children" in item) {
+        const filteredChildren = item.children.filter((child) =>
+          isAllowed(child.type)
+        );
+        if (filteredChildren.length > 0) {
+          return { ...item, children: filteredChildren };
+        }
+        return null; // إخفاء المجموعة إن لم يكن فيها عناصر مسموح بها
+      }
+
+      // عنصر رابط مفرد
+      return isAllowed(item.type) ? item : null;
+    })
+    .filter(Boolean); // إزالة العناصر null
+});
+
+// جلب بيانات المستخدم
+const loadUserData = () => {
+  const userData = localStorage.getItem("user");
+
+  if (userData) {
+    try {
+      user.value = JSON.parse(userData);
+      userType.value = user.value?.userType;
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      user.value = null;
+      userType.value = null;
+    }
+  } else {
+    user.value = null;
+    userType.value = null;
+  }
+};
+
+onMounted(() => {
+  loadUserData();
+
+  // الاستماع لتغييرات localStorage
+  window.addEventListener("storage", (e) => {
+    if (e.key === "user") {
+      loadUserData();
+    }
+  });
+
+  // مراقبة تغييرات localStorage من نفس التبويب
+  const originalSetItem = localStorage.setItem;
+  const originalRemoveItem = localStorage.removeItem;
+
+  localStorage.setItem = function (key, value) {
+    originalSetItem.apply(this, arguments);
+    if (key === "user") {
+      loadUserData();
+    }
+  };
+
+  localStorage.removeItem = function (key) {
+    originalRemoveItem.apply(this, arguments);
+    if (key === "user") {
+      loadUserData();
+    }
+  };
+});
+
+const resolveNavItemComponent = (item) => {
+  if ("heading" in item) return VerticalNavSectionTitle;
+  if ("children" in item) return VerticalNavGroup;
+
+  return VerticalNavLink;
+};
 
 /*ℹ️ Close overlay side when route is changed
 Close overlay vertical nav when link is clicked
 */
-const route = useRoute()
+const route = useRoute();
 
-watch(() => route.name, () => {
-  props.toggleIsOverlayNavActive(false)
-})
+watch(
+  () => route.name,
+  () => {
+    props.toggleIsOverlayNavActive(false);
+  }
+);
 
-const isVerticalNavScrolled = ref(false)
-const updateIsVerticalNavScrolled = val => isVerticalNavScrolled.value = val
+const isVerticalNavScrolled = ref(false);
+const updateIsVerticalNavScrolled = (val) =>
+  (isVerticalNavScrolled.value = val);
 
-const handleNavScroll = evt => {
-  isVerticalNavScrolled.value = evt.target.scrollTop > 0
-}
+const handleNavScroll = (evt) => {
+  isVerticalNavScrolled.value = evt.target.scrollTop > 0;
+};
 
-const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
+const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered);
 </script>
 
 <template>
@@ -74,19 +170,16 @@ const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
     :class="[
       {
         'overlay-nav': configStore.isLessThanOverlayNavBreakpoint,
-        'hovered': isHovered,
-        'visible': isOverlayNavActive,
-        'scrolled': isVerticalNavScrolled,
+        hovered: isHovered,
+        visible: isOverlayNavActive,
+        scrolled: isVerticalNavScrolled,
       },
     ]"
   >
     <!-- 👉 Header -->
     <div class="nav-header">
       <slot name="nav-header">
-        <RouterLink
-          to="/"
-          class="app-logo app-title-wrapper"
-        >
+        <RouterLink to="/" class="app-logo app-title-wrapper">
           <VNodeRenderer :nodes="layoutConfig.app.logo" />
 
           <Transition name="vertical-nav-app-title">
@@ -107,7 +200,10 @@ const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
             class="d-none nav-unpin"
             :class="configStore.isVerticalNavCollapsed && 'd-lg-block'"
             v-bind="layoutConfig.icons.verticalNavUnPinned"
-            @click="configStore.isVerticalNavCollapsed = !configStore.isVerticalNavCollapsed"
+            @click="
+              configStore.isVerticalNavCollapsed =
+                !configStore.isVerticalNavCollapsed
+            "
           />
           <Component
             :is="layoutConfig.app.iconRenderer || 'div'"
@@ -115,7 +211,10 @@ const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
             class="d-none nav-pin"
             :class="!configStore.isVerticalNavCollapsed && 'd-lg-block'"
             v-bind="layoutConfig.icons.verticalNavPinned"
-            @click="configStore.isVerticalNavCollapsed = !configStore.isVerticalNavCollapsed"
+            @click="
+              configStore.isVerticalNavCollapsed =
+                !configStore.isVerticalNavCollapsed
+            "
           />
           <Component
             :is="layoutConfig.app.iconRenderer || 'div'"
@@ -142,7 +241,7 @@ const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
       >
         <Component
           :is="resolveNavItemComponent(item)"
-          v-for="(item, index) in navItems"
+          v-for="(item, index) in filteredNavItems"
           :key="index"
           :item="item"
         />

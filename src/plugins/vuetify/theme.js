@@ -1,5 +1,9 @@
 export const staticPrimaryColor = '#0F3460'
 export const staticPrimaryDarkenColor = '#3B82F6'
+
+// Cairo Font Configuration
+export const fontFamily = "'Cairo', sans-serif"
+
 export const themes = {
   light: {
     colors: {
@@ -66,6 +70,9 @@ export const themes = {
       "shadow-md-opacity": 0.12,
       "shadow-lg-opacity": 0.1,
       "shadow-xl-opacity": 0.08,
+      
+      // Font variables
+      "font-family": fontFamily,
     },
   },
   dark: {
@@ -132,6 +139,9 @@ export const themes = {
       "shadow-md-opacity": 0.18,
       "shadow-lg-opacity": 0.16,
       "shadow-xl-opacity": 0.14,
+      
+      // Font variables
+      "font-family": fontFamily,
     },
   },
 }
