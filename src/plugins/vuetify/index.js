@@ -1,4 +1,5 @@
 import { deepMerge } from "@antfu/utils";
+import '@mdi/font/css/materialdesignicons.css';
 import { themeConfig } from "@themeConfig";
 import { createVuetify } from "vuetify";
 import { VBtn } from "vuetify/components/VBtn";

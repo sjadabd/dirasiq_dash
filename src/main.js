@@ -6,6 +6,8 @@ import { createApp } from 'vue'
 import '@core/scss/template/index.scss'
 import '@styles/styles.scss'
 
+import "leaflet/dist/leaflet.css"
+
 // Create vue app
 const app = createApp(App)
 
@@ -13,7 +15,7 @@ const app = createApp(App)
 const loadUserFromStorage = () => {
   const userData = localStorage.getItem('user')
   const accessToken = localStorage.getItem('accessToken')
-  
+
   if (userData && accessToken) {
     // إضافة البيانات إلى global properties للوصول إليها في أي مكان
     app.config.globalProperties.$user = JSON.parse(userData)

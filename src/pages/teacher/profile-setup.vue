@@ -1,308 +1,328 @@
-<script setup>
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+<template>
+  <v-container
+    fluid
+    class="min-height-screen pa-8"
+    style="
+      background: linear-gradient(
+        135deg,
+        rgba(16, 185, 129, 5%) 0%,
+        rgba(255, 255, 255, 100%) 50%,
+        rgba(34, 197, 94, 5%) 100%
+      );
+    "
+  >
+    <v-row justify="center">
+      <v-col cols="12" md="10" lg="8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <v-avatar size="64" color="primary" class="mb-4">
+            <v-icon size="32" color="white">mdi-school</v-icon>
+          </v-avatar>
+          <h1 class="text-h3 font-weight-bold mb-2">إعداد ملف الشخصي</h1>
+          <p class="text-h6 text-medium-emphasis">
+            يرجى إكمال البيانات التالية لإنشاء ملف الشخصي
+          </p>
+        </div>
 
-const router = useRouter();
+        <v-form ref="form">
+          <!-- Alerts -->
+          <v-alert
+            v-if="error"
+            type="error"
+            variant="tonal"
+            class="mb-6"
+            closable
+            @click:close="error = ''"
+          >
+            {{ error }}
+          </v-alert>
 
-// متغيرات النموذج
-const form = ref({
-  phone: "",
-  address: "",
-  bio: "",
-  experienceYears: 0,
-  country: "",
-  city: "",
-  state: "",
-  zipcode: "",
-  streetName: "",
-  suburb: "",
-});
+          <v-alert
+            v-if="success"
+            type="success"
+            variant="tonal"
+            class="mb-6"
+            closable
+            @click:close="success = ''"
+          >
+            {{ success }}
+          </v-alert>
 
-const isLoading = ref(false);
-const error = ref("");
-const success = ref("");
+          <!-- Personal Information -->
+          <v-card class="mb-6" elevation="2">
+            <v-card-title class="d-flex align-center">
+              <v-icon color="primary" class="me-2">mdi-account</v-icon>
+              المعلومات الشخصية
+            </v-card-title>
+            <v-card-text>
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.name"
+                    label="اسم الكامل *"
+                    placeholder="أدخل اسم الكامل"
+                    variant="outlined"
+                    :rules="[rules.required]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.phone"
+                    label="رقم الهاتف *"
+                    placeholder="أدخل رقم الهاتف"
+                    variant="outlined"
+                    :rules="[rules.required]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="formData.gender"
+                    label="الجنس *"
+                    :items="genderOptions"
+                    item-title="text"
+                    item-value="value"
+                    variant="outlined"
+                    :rules="[rules.required]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <AppDateTimePicker
+                    id="invoiceStartDate"
+                    v-model="formData.birthDate"
+                    label="تاريخ الميلاد *"
+                    variant="outlined"
+                    :rules="[rules.required]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.experienceYears"
+                    label="سنوات الخبرة *"
+                    variant="outlined"
+                    :rules="[rules.required]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.address"
+                    label="العنوان *"
+                    variant="outlined"
+                    :rules="[rules.required]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="12">
+                  <v-textarea
+                    v-model="formData.bio"
+                    label="نبذة عن نفسك *"
+                    variant="outlined"
+                    :rules="[rules.required]"
+                    required
+                  />
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
 
-// بيانات المستخدم من localStorage
-const user = ref(null);
+          <!-- Academic Information -->
+          <v-card class="mb-6" elevation="2">
+            <v-card-title class="d-flex align-center">
+              <v-icon color="primary" class="me-2">mdi-school-outline</v-icon>
+              المعلومات الأكاديمية
+            </v-card-title>
+            <v-card-text>
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-autocomplete
+                    v-model="formData.gradeIds"
+                    label="الصفوف التي تدرسها *"
+                    :items="grades"
+                    item-title="name"
+                    item-value="id"
+                    variant="outlined"
+                    :rules="[rules.required]"
+                    chips
+                    multiple
+                    required
+                  />
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
 
-onMounted(() => {
-  // جلب بيانات المستخدم من localStorage
-  const userData = localStorage.getItem("user");
-  if (userData) {
-    user.value = JSON.parse(userData);
-    // ملء البيانات الموجودة
-    if (user.value) {
-      form.value.phone = user.value.phone || "";
-      form.value.address = user.value.address || "";
-      form.value.bio = user.value.bio || "";
-      form.value.experienceYears = user.value.experienceYears || 0;
-      form.value.country = user.value.country || "";
-      form.value.city = user.value.city || "";
-      form.value.state = user.value.state || "";
-      form.value.zipcode = user.value.zipcode || "";
-      form.value.streetName = user.value.streetName || "";
-      form.value.suburb = user.value.suburb || "";
+          <!-- Location Selection -->
+          <MapPicker
+            :initial-lat="formData.latitude"
+            :initial-lng="formData.longitude"
+            @location-update="handleLocationUpdate"
+            class="mb-6"
+          />
+        </v-form>
+        <!-- Submit Button -->
+        <div class="text-center pt-6">
+          <v-btn
+            type="submit"
+            color="primary"
+            size="large"
+            :loading="isLoading"
+            :disabled="isLoading"
+            @click="handleSubmit"
+            class="px-12"
+          >
+            <v-icon start>mdi-school</v-icon>
+            حفظ بيانات
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
+  </v-container>
+</template>
+
+<script>
+import TeacherApi from "@/api/teacher/teacher_api";
+
+export default {
+  name: "StudentProfileForm",
+
+  data() {
+    return {
+      user: JSON.parse(localStorage.getItem("user")),
+      form: null,
+      isLoading: false,
+      error: "",
+      success: "",
+      formData: {
+        name: "",
+        phone: "",
+        studyYear: JSON.parse(localStorage.getItem("studyYear")),
+        bio: "",
+        experienceYears: "",
+        gradeIds: [],
+        address: "",
+        gender: null,
+        birthDate: null,
+        latitude: 31.2001, // ← صححت الاسم
+        longitude: 29.9187,
+      },
+      grades: [],
+      genderOptions: [
+        { text: "ذكر", value: "male" },
+        { text: "أنثى", value: "female" },
+      ],
+      rules: {
+        required: (value) => !!value || "هذا الحقل مطلوب",
+        phone: (value) => {
+          const pattern = /^[0-9]{10,15}$/;
+          return pattern.test(value) || "رقم الهاتف غير صحيح";
+        },
+      },
+    };
+  },
+  created() {
+    this.getAllGrades();
+    this.formData.name = this.user.name;
+    this.formData.phone = this.user.phone;
+    this.formData.bio = this.user.bio;
+    this.formData.experienceYears = this.user.experienceYears;
+    this.formData.address = this.user.address;
+    this.formData.gender = this.user.gender;
+    this.formData.latitude = this.user.location?.latitude
+      ? parseFloat(this.user.location.latitude)
+      : 31.2001;
+
+    this.formData.longitude = this.user.location?.longitude
+      ? parseFloat(this.user.location.longitude)
+      : 29.9187;
+    this.formData.birthDate = this.user.birthDate;
+    if (this.user.teacherGrades && this.user.teacherGrades.length) {
+      this.formData.gradeIds = this.user.teacherGrades.map((g) => g.gradeId);
     }
-  } else {
-    // إذا لم توجد بيانات المستخدم، توجيه للصفحة الرئيسية
-    router.push("/login");
-  }
-});
+  },
+  methods: {
+    // تحديث الموقع من كومبوننت الخريطة
+    handleLocationUpdate(coords) {
+      this.formData.latitude = coords.latitude;
+      this.formData.longitude = coords.longitude;
+    },
 
-// دالة حفظ البيانات
-const saveProfile = async () => {
-  if (!form.value.phone || !form.value.address) {
-    error.value = "يرجى ملء جميع الحقول المطلوبة";
-    return;
-  }
+    // تحقق من صحة البيانات قبل الإرسال
+    validateForm() {
+      if (!this.formData.name.trim()) return "اسم الطالب مطلوب";
+      if (!this.formData.phone.trim()) return "رقم هاتف مطلوب";
+      if (!this.formData.bio.trim()) return "النبذة مطلوبة";
+      if (!this.formData.experienceYears && this.formData.experienceYears !== 0)
+        return "سنوات الخبرة مطلوبة";
+      if (!this.formData.gradeIds || !this.formData.gradeIds.length)
+        return "الصف الدراسي مطلوب";
+      if (!this.formData.address.trim()) return "العنوان مطلوب";
+      if (!this.formData.gender) return "الجنس مطلوب";
+      if (!this.formData.birthDate) return "تاريخ الميلاد مطلوب";
+      return null;
+    },
+    async getAllGrades() {
+      try {
+        const response = await TeacherApi.getAllGrades();
+        this.grades = response.data.data;
+      } catch (err) {
+        console.error("Error saving profile:", err);
+        this.error =
+          err.response?.data?.message ||
+          "حدث خطأ أثناء حفظ البيانات. يرجى المحاولة مرة أخرى.";
+      } finally {
+        this.isLoading = false;
+      }
+    },
 
-  isLoading.value = true;
-  error.value = "";
-  success.value = "";
+    // إرسال البيانات للسيرفر
+    async handleSubmit() {
+      const { valid } = await this.$refs.form.validate();
+      if (!valid) return;
 
-  try {
-    // محاكاة طلب للسيرفر
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      const validationError = this.validateForm();
+      if (validationError) {
+        this.error = validationError;
+        return;
+      }
 
-    // في الواقع، ستقوم بإرسال البيانات للسيرفر
-    // const response = await fetch('/api/teacher/profile', {
-    //   method: 'PUT',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'Authorization': localStorage.getItem('accessToken')
-    //   },
-    //   body: JSON.stringify(form.value)
-    // })
+      this.isLoading = true;
+      this.error = "";
+      this.success = "";
 
-    // const result = await response.json()
+      try {
+        const response = await TeacherApi.completeProfile(this.formData);
 
-    success.value = "تم حفظ البيانات بنجاح";
+        if (response.status === 200 || response.status === 201) {
+          const updatedUser = response.data.data.user || this.formData;
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+          localStorage.setItem(
+            "isProfileComplete",
+            response.data.data.isProfileComplete
+          );
 
-    // تحديث بيانات المستخدم في localStorage
-    if (user.value) {
-      user.value = { ...user.value, ...form.value };
-      localStorage.setItem("user", JSON.stringify(user.value));
-    }
+          this.success = "تم حفظ بيانات المعلم بنجاح!";
 
-    // توجيه للصفحة الرئيسية بعد 2 ثانية
-    setTimeout(() => {
-      router.push("/teacher/dashboard");
-    }, 2000);
-  } catch (err) {
-    console.error("Error saving profile:", err);
-    error.value = "خطأ في حفظ البيانات. يرجى المحاولة مرة أخرى.";
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-// دالة تخطي (للمستخدمين الذين يريدون إكمال البيانات لاحقاً)
-const skipSetup = () => {
-  router.push("/teacher/dashboard");
+          this.$router.push("/teacher/dashboard");
+        }
+      } catch (err) {
+        console.error("Error saving profile:", err);
+        this.error =
+          err.response?.data?.message ||
+          "حدث خطأ أثناء حفظ البيانات. يرجى المحاولة مرة أخرى.";
+      } finally {
+        this.isLoading = false;
+      }
+    },
+  },
 };
 </script>
 
-<template>
-  <div class="profile-setup-container">
-    <VContainer max-width="800">
-      <VRow justify="center">
-        <VCol cols="12" md="8">
-          <VCard elevation="2" class="pa-6">
-            <VCardTitle class="text-center mb-6">
-              <VIcon size="48" color="primary" class="mb-4"
-                >mdi-account-edit</VIcon
-              >
-              <h2 class="text-h4">إكمال الملف الشخصي</h2>
-              <p class="text-body-1 text-medium-emphasis mt-2">
-                مرحباً {{ user?.name }}! يرجى إكمال بياناتك الشخصية للاستفادة من
-                جميع الميزات
-              </p>
-            </VCardTitle>
-
-            <VCardText>
-              <!-- رسالة خطأ -->
-              <VAlert
-                v-if="error"
-                type="error"
-                variant="tonal"
-                class="mb-4"
-                closable
-                @click:close="error = ''"
-              >
-                {{ error }}
-              </VAlert>
-
-              <!-- رسالة نجاح -->
-              <VAlert
-                v-if="success"
-                type="success"
-                variant="tonal"
-                class="mb-4"
-              >
-                <VIcon start>mdi-check-circle</VIcon>
-                {{ success }}
-              </VAlert>
-
-              <VForm @submit.prevent="saveProfile">
-                <VRow>
-                  <!-- معلومات أساسية -->
-                  <VCol cols="12">
-                    <h3 class="text-h6 mb-4">المعلومات الأساسية</h3>
-                  </VCol>
-
-                  <!-- رقم الهاتف -->
-                  <VCol cols="12" md="6">
-                    <VTextField
-                      v-model="form.phone"
-                      label="رقم الهاتف"
-                      placeholder="+966 50 123 4567"
-                      :rules="[(v) => !!v || 'رقم الهاتف مطلوب']"
-                      required
-                    />
-                  </VCol>
-
-                  <!-- سنوات الخبرة -->
-                  <VCol cols="12" md="6">
-                    <VTextField
-                      v-model.number="form.experienceYears"
-                      label="سنوات الخبرة"
-                      type="number"
-                      min="0"
-                      max="50"
-                      :rules="[
-                        (v) =>
-                          v >= 0 || 'يجب أن تكون القيمة أكبر من أو تساوي 0',
-                      ]"
-                    />
-                  </VCol>
-
-                  <!-- العنوان -->
-                  <VCol cols="12">
-                    <VTextarea
-                      v-model="form.address"
-                      label="العنوان"
-                      placeholder="اكتب عنوانك الكامل"
-                      rows="3"
-                      :rules="[(v) => !!v || 'العنوان مطلوب']"
-                      required
-                    />
-                  </VCol>
-
-                  <!-- نبذة شخصية -->
-                  <VCol cols="12">
-                    <VTextarea
-                      v-model="form.bio"
-                      label="نبذة شخصية"
-                      placeholder="اكتب نبذة عن نفسك وخبراتك"
-                      rows="4"
-                    />
-                  </VCol>
-
-                  <!-- معلومات الموقع -->
-                  <VCol cols="12">
-                    <h3 class="text-h6 mb-4">معلومات الموقع (اختيارية)</h3>
-                  </VCol>
-
-                  <VCol cols="12" md="6">
-                    <VTextField
-                      v-model="form.country"
-                      label="البلد"
-                      placeholder="السعودية"
-                    />
-                  </VCol>
-
-                  <VCol cols="12" md="6">
-                    <VTextField
-                      v-model="form.city"
-                      label="المدينة"
-                      placeholder="الرياض"
-                    />
-                  </VCol>
-
-                  <VCol cols="12" md="6">
-                    <VTextField
-                      v-model="form.state"
-                      label="المنطقة"
-                      placeholder="منطقة الرياض"
-                    />
-                  </VCol>
-
-                  <VCol cols="12" md="6">
-                    <VTextField
-                      v-model="form.zipcode"
-                      label="الرمز البريدي"
-                      placeholder="12345"
-                    />
-                  </VCol>
-
-                  <VCol cols="12" md="6">
-                    <VTextField
-                      v-model="form.streetName"
-                      label="اسم الشارع"
-                      placeholder="شارع الملك فهد"
-                    />
-                  </VCol>
-
-                  <VCol cols="12" md="6">
-                    <VTextField
-                      v-model="form.suburb"
-                      label="الحي"
-                      placeholder="حي النخيل"
-                    />
-                  </VCol>
-
-                  <!-- أزرار العمل -->
-                  <VCol cols="12" class="text-center mt-6">
-                    <VBtn
-                      type="submit"
-                      color="primary"
-                      size="large"
-                      :loading="isLoading"
-                      :disabled="isLoading"
-                      class="me-4"
-                    >
-                      <VIcon start>mdi-content-save</VIcon>
-                      حفظ البيانات
-                    </VBtn>
-
-                    <VBtn
-                      variant="outlined"
-                      size="large"
-                      @click="skipSetup"
-                      :disabled="isLoading"
-                    >
-                      <VIcon start>mdi-skip-next</VIcon>
-                      تخطي الآن
-                    </VBtn>
-                  </VCol>
-                </VRow>
-              </VForm>
-            </VCardText>
-          </VCard>
-        </VCol>
-      </VRow>
-    </VContainer>
-  </div>
-</template>
-
 <style scoped>
-.profile-setup-container {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.min-height-screen {
   min-block-size: 100vh;
-  padding-block: 2rem;
-  padding-inline: 0;
-}
-
-.v-card {
-  border-radius: 16px;
-}
-
-.v-text-field,
-.v-textarea {
-  margin-block-end: 1rem;
-}
-
-.v-btn {
-  min-inline-size: 150px;
 }
 </style>

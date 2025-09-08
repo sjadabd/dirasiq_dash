@@ -58,38 +58,35 @@ const remixAliases = {
 export const iconify = {
   component: (props) => {
     if (typeof props.icon === "string") {
+      // أيقونات مخصصة
       const iconComponent = customIcons[props.icon];
       if (iconComponent) return h(iconComponent);
-      
-      // Handle ri- prefix icons (Remix Icons)
-      if (props.icon.startsWith('ri-')) {
-        return h('i', {
-          ...props,
-          class: [props.icon],
-          tag: undefined,
-          icon: undefined,
-        });
+
+      // Remix Icons
+      if (props.icon.startsWith("ri-")) {
+        return h("i", { ...props, class: [props.icon], tag: undefined, icon: undefined });
+      }
+
+      // السماح لجميع أيقونات mdi، بما فيها mdi-outline
+      if (props.icon.startsWith("mdi-")) {
+        return h("i", { ...props, class: ["mdi", props.icon], tag: undefined, icon: undefined });
       }
     }
 
-    return h('i', {
-      ...props,
-      class: [props.icon],
-      tag: undefined,
-      icon: undefined,
-    });
+    // أيقونات عامة
+    return h("i", { ...props, class: [props.icon], tag: undefined, icon: undefined });
   },
 };
 
 // ==================== Export Final Icons ====================
 export const icons = {
-  defaultSet: "mdi", // ✅ استخدام MDI كأساسي
+  defaultSet: "mdi",
   aliases: {
     ...remixAliases,
     ...mdiAliases,
   },
   sets: {
-    mdi, // ✅ MDI يعمل مباشرة مع <v-icon icon="mdi-chevron-right" />
-    iconify, // ⚡️ Iconify للاستخدام مع ri- prefix
+    mdi,      // MDI standard
+    iconify,  // Remix Icons & custom
   },
 };

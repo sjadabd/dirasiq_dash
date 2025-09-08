@@ -21,6 +21,20 @@ onMounted(() => {
   }
 });
 
+const handleNavItemClick = (item) => {
+  if (item.value === "profile") {
+    router.push("/teacher/profile-setup");
+  }
+  // يمكن إضافة توجيه لباقي العناصر حسب item.value
+  else if (item.value === "settings") {
+    router.push("/teacher/settings");
+  } else if (item.value === "billing") {
+    router.push("/teacher/billing");
+  } else if (item.value === "help") {
+    router.push("/help");
+  }
+};
+
 // متغيرات تسجيل الخروج
 const isLoggingOut = ref(false);
 
@@ -145,7 +159,11 @@ const userProfileList = [
 
           <PerfectScrollbar :options="{ wheelPropagation: false }">
             <template v-for="item in userProfileList" :key="item.title">
-              <VListItem v-if="item.type === 'navItem'" :value="item.value">
+              <VListItem
+                v-if="item.type === 'navItem'"
+                :value="item.value"
+                @click="handleNavItemClick(item)"
+              >
                 <template #prepend>
                   <VIcon :icon="item.icon" size="22" />
                 </template>

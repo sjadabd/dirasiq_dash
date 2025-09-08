@@ -195,7 +195,7 @@ export default {
     return {
       // Settings page
       keyName: "show-getSubscriptionPackage",
-      results: JSON.parse(localStorage.getItem("user-data")),
+      results: JSON.parse(localStorage.getItem("user")),
       breadcrumbItems: [
         {
           title: "الرئيسية",

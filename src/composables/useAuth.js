@@ -13,14 +13,14 @@ export function useAuth() {
   const loadUserFromStorage = () => {
     const userData = localStorage.getItem('user')
     const accessToken = localStorage.getItem('accessToken')
-    
+
     if (userData && accessToken) {
       user.value = JSON.parse(userData)
       token.value = accessToken
       isAuthenticated.value = true
       return true
     }
-    
+
     return false
   }
 
@@ -34,10 +34,12 @@ export function useAuth() {
     user.value = userData
     token.value = accessToken
     isAuthenticated.value = true
-    
+
     // حفظ في localStorage
     localStorage.setItem('user', JSON.stringify(userData))
+    localStorage.setItem('studyYear', JSON.stringify(userData.studyYear))
     localStorage.setItem('accessToken', accessToken)
+
   }
 
   // دالة تسجيل الخروج
@@ -45,12 +47,12 @@ export function useAuth() {
     user.value = null
     token.value = null
     isAuthenticated.value = false
-    
+
     // حذف من localStorage
     localStorage.removeItem('user')
     localStorage.removeItem('accessToken')
     localStorage.removeItem('results')
-    
+
     // توجيه لصفحة تسجيل الدخول
     router.push('/login')
   }
@@ -65,11 +67,11 @@ export function useAuth() {
   // دالة التحقق من الحاجة لإكمال الملف الشخصي
   const requiresProfileCompletion = computed(() => {
     if (!user.value) return false
-    
-    return !user.value.phone || 
-           !user.value.address || 
-           !user.value.bio || 
-           user.value.experienceYears === 0
+
+    return !user.value.phone ||
+      !user.value.address ||
+      !user.value.bio ||
+      user.value.experienceYears === 0
   })
 
   // دالة التوجيه بناءً على حالة المستخدم
@@ -80,7 +82,7 @@ export function useAuth() {
     }
 
     const userType = user.value?.userType
-    
+
     switch (userType) {
       case 'teacher':
         if (requiresProfileCompletion.value) {
@@ -89,12 +91,12 @@ export function useAuth() {
           router.push('/teacher/dashboard')
         }
         break
-        
+
       case 'super_admin':
       case 'admin':
         router.push('/admin/dashboard')
         break
-        
+
       case 'student':
         if (requiresProfileCompletion.value) {
           router.push('/student/profile-setup')
@@ -102,7 +104,7 @@ export function useAuth() {
           router.push('/student/dashboard')
         }
         break
-        
+
       default:
         router.push('/dashboard')
     }
@@ -111,7 +113,7 @@ export function useAuth() {
   // دالة التحقق من صلاحية المستخدم
   const hasPermission = (permission) => {
     if (!user.value) return false
-    
+
     // يمكنك إضافة منطق الصلاحيات هنا
     switch (permission) {
       case 'teacher':
@@ -141,7 +143,7 @@ export function useAuth() {
     isAuthenticated: computed(() => isAuthenticated.value),
     requiresProfileCompletion,
     isUserActive,
-    
+
     // الدوال
     login,
     logout,

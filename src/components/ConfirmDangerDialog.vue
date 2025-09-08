@@ -92,7 +92,6 @@ const props = defineProps({
     default: "أفهم التحذير وأؤكد الحذف",
   },
 });
-
 const emit = defineEmits(["update:modelValue", "confirm"]);
 
 const visible = ref(props.modelValue);

@@ -105,6 +105,23 @@
                   </VChip>
                 </div>
               </template>
+              <template v-else-if="header.key === 'is_deleted'">
+                <div class="font-weight-medium">
+                  <VChip
+                    :color="
+                      getNestedValue(item, header.key) ? 'error' : 'success'
+                    "
+                    size="small"
+                    variant="flat"
+                  >
+                    {{
+                      getNestedValue(item, header.key)
+                        ? "تم الحذف"
+                        : "غير محذوف"
+                    }}
+                  </VChip>
+                </div>
+              </template>
               <template v-else-if="header.key === 'isCurrent'">
                 <div class="font-weight-medium">
                   {{ getNestedValue(item, header.key) ? "مفعل" : "معطل" }}
@@ -174,7 +191,10 @@
                   <VTooltip
                     v-if="
                       actions.includes('تعديل') &&
-                      (item.is_active || item.isActive)
+                      ((!('is_active' in item) && !('isActive' in item)) ||
+                        item.is_active ||
+                        item.isActive) &&
+                      (!('is_deleted' in item) || !item.is_deleted)
                     "
                     location="top"
                   >
@@ -196,7 +216,9 @@
                   <VTooltip
                     v-if="
                       actions.includes('ارسال اشعار') &&
-                      (item.is_active || item.isActive)
+                      ((!('is_active' in item) && !('isActive' in item)) ||
+                        item.is_active ||
+                        item.isActive)
                     "
                     location="top"
                   >
@@ -218,7 +240,9 @@
                   <VTooltip
                     v-if="
                       actions.includes('ايقاف') &&
-                      (item.is_active || item.isActive)
+                      ((!('is_active' in item) && !('isActive' in item)) ||
+                        item.is_active ||
+                        item.isActive)
                     "
                     location="top"
                   >
@@ -240,7 +264,10 @@
                   <VTooltip
                     v-if="
                       actions.includes('اعادة تفعيل') &&
-                      !(item.is_active || item.isActive)
+                      ((!('is_active' in item) && !('isActive' in item)) ||
+                        !item.is_active ||
+                        !item.isActive) &&
+                      (!('is_deleted' in item) || item.is_deleted)
                     "
                     location="top"
                   >
@@ -262,7 +289,10 @@
                   <VTooltip
                     v-if="
                       actions.includes('حذف') &&
-                      (item.is_active || item.isActive)
+                      ((!('is_active' in item) && !('isActive' in item)) ||
+                        item.is_active ||
+                        item.isActive) &&
+                      (!('is_deleted' in item) || !item.is_deleted)
                     "
                     location="top"
                   >
@@ -423,9 +453,28 @@ export default {
       return `${day}/${month}/${year}`;
     },
     getRowClass(item) {
+      const hasStatusProp =
+        "is_active" in item || "isActive" in item || "is_deleted" in item;
+
+      if (!hasStatusProp) {
+        return {};
+      }
+
       const is_active = this.getNestedValue(item, "is_active");
       const isActive = this.getNestedValue(item, "isActive");
-      const isItemActive = is_active || isActive;
+      const is_deleted = this.getNestedValue(item, "is_deleted");
+
+      // حساب الحالة الفعلية للصف
+      let isItemActive = false;
+
+      if (typeof is_deleted !== "undefined") {
+        // إذا تم الحذف، الصف غير نشط
+        isItemActive = !is_deleted;
+      } else {
+        // إذا لم يتم الحذف، يعتمد على is_active أو isActive
+        isItemActive = is_active || isActive;
+      }
+
       return {
         "active-row": isItemActive,
         "inactive-row": !isItemActive,

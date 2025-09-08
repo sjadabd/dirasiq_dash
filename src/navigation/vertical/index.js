@@ -29,12 +29,24 @@ export default [
   },
   // super_admin
 
-  // super_admin
+  // teacher
   {
-    title: 'Home',
+    title: 'الصفحة الرئيسية',
     to: { name: 'teacher-dashboard' },
     type: 'teacher',
     icon: { icon: 'ri-home-smile-line' },
   },
-  // super_admin
+  {
+    title: 'المواد الدراسية',
+    to: { name: 'teacher-subjects-show-subjects' },
+    type: 'teacher',
+    icon: { icon: 'ri-home-smile-line' },
+  },
+  {
+    title: 'الكورسات',
+    to: { name: 'teacher-course-show-course' },
+    type: 'teacher',
+    icon: { icon: 'ri-home-smile-line' },
+  },
+  // teacher
 ]

@@ -138,6 +138,8 @@ const handleEmailLogin = async () => {
         isProfileComplete,
       } = response.data.data;
 
+      localStorage.setItem("isProfileComplete", isProfileComplete);
+
       // تسجيل الدخول باستخدام composable
       login(userData, accessToken);
 
@@ -170,8 +172,10 @@ const handleGoogleLogin = async (response) => {
           user: userData,
           token: accessToken,
           requiresProfileCompletion,
+          isProfileComplete,
           isNewUser,
         } = res.data.data;
+        localStorage.setItem("isProfileComplete", isProfileComplete);
 
         // تسجيل الدخول باستخدام composable
         login(userData, accessToken);
