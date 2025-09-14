@@ -68,5 +68,12 @@ class TeacherApi {
         return response;
     }
     // course
+
+    // bookings
+    async getBookings(userData) {
+        const response = await axiosInstance.get(`/teacher/bookings?page=${userData.options.page}&limit=${userData.options.limit}&search=${userData.options.search}&status=${userData.options.status}&studyYear=${userData.options.study_year}`);
+        return response;
+    }
+    // bookings
 }
 export default new TeacherApi();

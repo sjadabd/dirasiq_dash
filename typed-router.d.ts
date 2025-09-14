@@ -28,6 +28,7 @@ declare module 'vue-router/auto-routes' {
     'second-page': RouteRecordInfo<'second-page', '/second-page', Record<never, never>, Record<never, never>>,
     'student-dashboard': RouteRecordInfo<'student-dashboard', '/student/dashboard', Record<never, never>, Record<never, never>>,
     'student-profile-setup': RouteRecordInfo<'student-profile-setup', '/student/profile-setup', Record<never, never>, Record<never, never>>,
+    'teacher-bookings-show-bookings': RouteRecordInfo<'teacher-bookings-show-bookings', '/teacher/bookings/show-bookings', Record<never, never>, Record<never, never>>,
     'teacher-course-show-course': RouteRecordInfo<'teacher-course-show-course', '/teacher/course/show-course', Record<never, never>, Record<never, never>>,
     'teacher-dashboard': RouteRecordInfo<'teacher-dashboard', '/teacher/dashboard', Record<never, never>, Record<never, never>>,
     'teacher-profile-setup': RouteRecordInfo<'teacher-profile-setup', '/teacher/profile-setup', Record<never, never>, Record<never, never>>,

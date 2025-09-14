@@ -48,5 +48,11 @@ export default [
     type: 'teacher',
     icon: { icon: 'ri-home-smile-line' },
   },
+  {
+    title: 'الحجوزات',
+    to: { name: 'teacher-bookings-show-bookings' },
+    type: 'teacher',
+    icon: { icon: 'ri-home-smile-line' },
+  },
   // teacher
 ]
