@@ -83,6 +83,44 @@
                   {{ numberWithComma(getNestedValue(item, header.key)) }}
                 </div>
               </template>
+              <template v-else-if="header.type === 'status'">
+                <VChip
+                  class="font-weight-medium"
+                  size="small"
+                  :color="
+                    getNestedValue(item, header.key) === 'pending'
+                      ? 'warning'
+                      : getNestedValue(item, header.key) === 'pre_approved'
+                      ? 'info'
+                      : getNestedValue(item, header.key) === 'confirmed'
+                      ? 'primary'
+                      : getNestedValue(item, header.key) === 'approved'
+                      ? 'success'
+                      : getNestedValue(item, header.key) === 'rejected'
+                      ? 'error'
+                      : getNestedValue(item, header.key) === 'cancelled'
+                      ? 'secondary'
+                      : 'default'
+                  "
+                  variant="flat"
+                >
+                  {{
+                    getNestedValue(item, header.key) === "pending"
+                      ? "قيد الانتظار"
+                      : getNestedValue(item, header.key) === "pre_approved"
+                      ? "موافقة أولية"
+                      : getNestedValue(item, header.key) === "confirmed"
+                      ? "تأكيد الحجز"
+                      : getNestedValue(item, header.key) === "approved"
+                      ? "مقبول"
+                      : getNestedValue(item, header.key) === "rejected"
+                      ? "مرفوض"
+                      : getNestedValue(item, header.key) === "cancelled"
+                      ? "ملغي"
+                      : getNestedValue(item, header.key)
+                  }}
+                </VChip>
+              </template>
               <template v-else-if="header.type === 'date'">
                 <div class="font-weight-medium">
                   {{ formatDate(getNestedValue(item, header.key)) }}
@@ -310,6 +348,50 @@
                     </template>
                     <span>حذف</span>
                   </VTooltip>
+                  <!-- موافقة اولية -->
+                  <VTooltip
+                    v-if="
+                      actions.includes('موافقة اولية') &&
+                      item.status === 'pending'
+                    "
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        @click="preApproveItem(item)"
+                        color="success"
+                        size="small"
+                      >
+                        <VIcon size="18">mdi mdi-check-decagram</VIcon>
+                      </VBtn>
+                    </template>
+                    <span>موافقة اولية</span>
+                  </VTooltip>
+                  <!-- تاكيد -->
+                  <VTooltip
+                    v-if="
+                      actions.includes('تاكيد') &&
+                      item.status === 'pre_approved'
+                    "
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        @click="consentItem(item)"
+                        color="success"
+                        size="small"
+                      >
+                        <VIcon size="18">mdi mdi-check-decagram</VIcon>
+                      </VBtn>
+                    </template>
+                    <span>تاكيد</span>
+                  </VTooltip>
                   <!-- طباعة -->
                   <VTooltip v-if="actions.includes('طباعة')" location="top">
                     <template #activator="{ props }">
@@ -509,8 +591,14 @@ export default {
       this.performSearch();
     },
     // باقي الوظائف
+    preApproveItem(item) {
+      this.$emit("preApproveItem", item);
+    },
     editItem(item) {
       this.$emit("editItem", item);
+    },
+    consentItem(item) {
+      this.$emit("consentItem", item);
     },
     editPageItem(item) {
       this.$emit("editPageItem", item);

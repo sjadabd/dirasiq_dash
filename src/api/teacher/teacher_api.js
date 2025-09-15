@@ -74,6 +74,14 @@ class TeacherApi {
         const response = await axiosInstance.get(`/teacher/bookings?page=${userData.options.page}&limit=${userData.options.limit}&search=${userData.options.search}&status=${userData.options.status}&studyYear=${userData.options.study_year}`);
         return response;
     }
+    async preApproveBookings(id, teacherResponse) {
+        const response = await axiosInstance.patch(`/teacher/bookings/${id}/pre-approve`, { teacherResponse: teacherResponse });
+        return response;
+    }
+    async consentBookings(id, teacherResponse) {
+        const response = await axiosInstance.patch(`/teacher/bookings/${id}/approve`, { teacherResponse: teacherResponse });
+        return response;
+    }
     // bookings
 }
 export default new TeacherApi();
