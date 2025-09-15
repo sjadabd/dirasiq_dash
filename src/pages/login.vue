@@ -12,6 +12,25 @@ import { VNodeRenderer } from "@layouts/components/VNodeRenderer";
 import { themeConfig } from "@themeConfig";
 import { useRouter } from "vue-router";
 
+const getOneSignalPlayerId = async () => {
+  return new Promise((resolve) => {
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function (OneSignal) {
+      await OneSignal.init({
+        appId: "69b01adf-8a70-41fe-b47c-270f12f9662c",
+      });
+
+      const permission = await OneSignal.Notifications.requestPermission();
+      console.log("🔔 Permission:", permission);
+
+      const playerId = await OneSignal.User.PushSubscription.id;
+      console.log("✅ Player ID:", playerId);
+
+      resolve(playerId || null);
+    });
+  });
+};
+
 const authThemeImg = useGenerateImageVariant(
   authV2LoginIllustrationLight,
   authV2LoginIllustrationDark,
@@ -123,9 +142,12 @@ const handleEmailLogin = async () => {
   error.value = "";
 
   try {
+    const playerId = await getOneSignalPlayerId();
+
     const data = {
       email: form.value.email,
       password: form.value.password,
+      oneSignalPlayerId: playerId, // يروح للسيرفر مباشرة
     };
     const response = await Auth.login(data);
 
@@ -142,7 +164,6 @@ const handleEmailLogin = async () => {
 
       // تسجيل الدخول باستخدام composable
       login(userData, accessToken);
-
       // التوجيه بناءً على نوع المستخدم وحالة الملف الشخصي
       redirectBasedOnUserType(userData, requiresProfileCompletion);
     }
@@ -158,29 +179,29 @@ const handleEmailLogin = async () => {
 const handleGoogleLogin = async (response) => {
   try {
     const token = response.credential;
-
-    // فك تشفير JWT للحصول على بيانات المستخدم
     const decodedToken = decodeJWT(token);
 
     if (decodedToken) {
-      // إرسال البيانات للسيرفر
-      const res = await Auth.loginInGoogele(decodedToken);
+      // ✅ اجلب Player ID قبل إرسال البيانات للسيرفر
+      const playerId = await getOneSignalPlayerId();
 
-      // معالجة النجاح والتوجيه
+      const res = await Auth.loginInGoogele({
+        ...decodedToken,
+        oneSignalPlayerId: playerId,
+      });
+
       if (res.data.success) {
         const {
           user: userData,
           token: accessToken,
           requiresProfileCompletion,
           isProfileComplete,
-          isNewUser,
         } = res.data.data;
+
         localStorage.setItem("isProfileComplete", isProfileComplete);
 
-        // تسجيل الدخول باستخدام composable
         login(userData, accessToken);
 
-        // التوجيه بناءً على نوع المستخدم وحالة الملف الشخصي
         redirectBasedOnUserType(userData, requiresProfileCompletion);
       }
     }
