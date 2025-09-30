@@ -224,7 +224,87 @@
               </template>
 
               <template v-else-if="header.key === 'actions'">
-                <div class="d-flex flex-wrap justify-center ga-1">
+                <div
+                  class="d-flex flex-wrap justify-center ga-1"
+                  v-if="!('status' in item) || item.status !== 'confirmed'"
+                >
+                  <!-- عرض الحضور -->
+                  <VTooltip
+                    v-if="actions.includes('عرض الحضور')"
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <VBtn
+                        icon
+                        style="padding-inline: 0"
+                        variant="plain"
+                        v-bind="props"
+                        @click="showAttendeesItem(item)"
+                        size="small"
+                      >
+                        <VIcon size="18">ri-team-line</VIcon>
+                      </VBtn>
+                    </template>
+                    <span>عرض الحضور</span>
+                  </VTooltip>
+                  <!-- اضافة طلاب -->
+                  <VTooltip
+                    v-if="actions.includes('إضافة طلاب')"
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <VBtn
+                        icon
+                        style="padding-inline: 0"
+                        variant="plain"
+                        v-bind="props"
+                        @click="addAttendeesItem(item)"
+                        size="small"
+                      >
+                        <VIcon size="18">ri-user-add-line</VIcon>
+                      </VBtn>
+                    </template>
+                    <span>إضافة طلاب</span>
+                  </VTooltip>
+                  <!-- حذف طلاب -->
+                  <VTooltip
+                    v-if="actions.includes('حذف طلاب')"
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <VBtn
+                        icon
+                        style="padding-inline: 0"
+                        variant="plain"
+                        v-bind="props"
+                        @click="removeAttendeesItem(item)"
+                        color="error"
+                        size="small"
+                      >
+                        <VIcon size="18">ri-user-unfollow-line</VIcon>
+                      </VBtn>
+                    </template>
+                    <span>حذف طلاب</span>
+                  </VTooltip>
+                  <!-- إنهاء الجلسة -->
+                  <VTooltip
+                    v-if="actions.includes('إنهاء الجلسة')"
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        color="warning"
+                        size="small"
+                        @click="endSessionItem(item)"
+                      >
+                        <VIcon size="18">ri-stop-circle-line</VIcon>
+                      </VBtn>
+                    </template>
+                    <span>إنهاء الجلسة</span>
+                  </VTooltip>
                   <!-- تعديل -->
                   <VTooltip
                     v-if="
@@ -298,10 +378,11 @@
                     </template>
                     <span>ايقاف</span>
                   </VTooltip>
-                  <!-- اعادة تفعيل المجمع -->
+                  <!-- اعادة تفعيل عام (كيانات أخرى) -->
                   <VTooltip
                     v-if="
                       actions.includes('اعادة تفعيل') &&
+                      !('status' in item) &&
                       ((!('is_active' in item) && !('isActive' in item)) ||
                         !item.is_active ||
                         !item.isActive) &&
@@ -323,14 +404,38 @@
                     </template>
                     <span>اعادة تفعيل</span>
                   </VTooltip>
+                  <!-- اعادة تفعيل (حجوزات) -->
+                  <VTooltip
+                    v-if="actions.includes('اعادة تفعيل') && item.status === 'rejected'"
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        color="success"
+                        size="small"
+                        @click="enableItem(item)"
+                      >
+                        <VIcon size="18">ri-refresh-line</VIcon>
+                      </VBtn>
+                    </template>
+                    <span>اعادة تفعيل</span>
+                  </VTooltip>
                   <!-- حذف -->
                   <VTooltip
                     v-if="
                       actions.includes('حذف') &&
-                      ((!('is_active' in item) && !('isActive' in item)) ||
-                        item.is_active ||
-                        item.isActive) &&
-                      (!('is_deleted' in item) || !item.is_deleted)
+                      (
+                        // حجوزات: إذا كان فيها status نظهر الحذف دائمًا
+                        ('status' in item) ? true :
+                        // كيانات أخرى: الشروط القديمة
+                        (((!('is_active' in item) && !('isActive' in item)) ||
+                          item.is_active ||
+                          item.isActive) &&
+                         (!('is_deleted' in item) || !item.is_deleted))
+                      )
                     "
                     location="top"
                   >
@@ -391,6 +496,47 @@
                       </VBtn>
                     </template>
                     <span>تاكيد</span>
+                  </VTooltip>
+                  <!-- رفض -->
+                  <VTooltip
+                    v-if="
+                      actions.includes('رفض') &&
+                      (item.status === 'pending' || item.status === 'pre_approved')
+                    "
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        @click="rejectItem(item)"
+                        color="error"
+                        size="small"
+                      >
+                        <VIcon size="18">ri-close-circle-line</VIcon>
+                      </VBtn>
+                    </template>
+                    <span>رفض</span>
+                  </VTooltip>
+                  <!-- تحديث رد -->
+                  <VTooltip
+                    v-if="actions.includes('تحديث رد')"
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        @click="updateResponseItem(item)"
+                        color="primary"
+                        size="small"
+                      >
+                        <VIcon size="18">ri-edit-2-line</VIcon>
+                      </VBtn>
+                    </template>
+                    <span>تحديث رد</span>
                   </VTooltip>
                   <!-- طباعة -->
                   <VTooltip v-if="actions.includes('طباعة')" location="top">
@@ -599,6 +745,24 @@ export default {
     },
     consentItem(item) {
       this.$emit("consentItem", item);
+    },
+    rejectItem(item) {
+      this.$emit("rejectItem", item);
+    },
+    updateResponseItem(item) {
+      this.$emit("updateResponseItem", item);
+    },
+    showAttendeesItem(item) {
+      this.$emit("showAttendeesItem", item);
+    },
+    addAttendeesItem(item) {
+      this.$emit("addAttendeesItem", item);
+    },
+    removeAttendeesItem(item) {
+      this.$emit("removeAttendeesItem", item);
+    },
+    endSessionItem(item) {
+      this.$emit("endSessionItem", item);
     },
     editPageItem(item) {
       this.$emit("editPageItem", item);

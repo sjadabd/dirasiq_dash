@@ -54,5 +54,11 @@ export default [
     type: 'teacher',
     icon: { icon: 'ri-home-smile-line' },
   },
+  {
+    title: 'الجدول الاسبوعي',
+    to: { name: 'teacher-sessions-manage-sessions' },
+    type: 'teacher',
+    icon: { icon: 'ri-home-smile-line' },
+  },
   // teacher
 ]

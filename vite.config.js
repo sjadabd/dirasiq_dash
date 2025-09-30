@@ -1,6 +1,6 @@
-import { fileURLToPath } from 'node:url'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
+import { fileURLToPath } from 'node:url'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { VueRouterAutoImports, getPascalCaseRouteName } from 'unplugin-vue-router'
@@ -102,5 +102,11 @@ export default defineConfig({
     entries: [
       './src/**/*.vue',
     ],
+  },
+  // ✅ هنا الإضافة المهمة
+  server: {
+    port: 5174,       // يحدد البورت المطلوب
+    strictPort: true, // يجبر Vite يظل على نفس البورت
+    host: '0.0.0.0',  // يخلي السيرفر متاح من الشبكة الداخلية (مثلاً للموبايل)
   },
 })

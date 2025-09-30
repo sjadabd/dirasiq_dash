@@ -1,87 +1,159 @@
 import axiosInstance from "@/utils/axios.js";
 
 class TeacherApi {
-    // profile
-    async completeProfile(userData) {
-        const response = await axiosInstance.post(`/auth/complete-profile`, userData);
-        return response;
-    }
-    // profile
+  // profile
+  async completeProfile(userData) {
+    const response = await axiosInstance.post(`/auth/complete-profile`, userData);
+    return response;
+  }
+  // profile
 
-    // grades
-    async getAllGrades() {
-        const response = await axiosInstance.get(`/grades/all`);
-        return response;
-    }
-    async getAllMyGrades() {
-        const response = await axiosInstance.get(`/grades/my-grades`);
-        return response;
-    }
-    // grades
+  // grades
+  async getAllGrades() {
+    const response = await axiosInstance.get(`/grades/all`);
+    return response;
+  }
+  async getAllMyGrades() {
+    const response = await axiosInstance.get(`/grades/my-grades`);
+    return response;
+  }
+  // grades
 
-    // subjects
-    async getSubjects(userData) {
-        const response = await axiosInstance.get(`/subjects?page=${userData.options.page}&limit=${userData.options.limit}&search=${userData.options.search}&is_deleted=${userData.options.is_deleted}`);
-        return response;
-    }
-    async getAllSubjects() {
-        const response = await axiosInstance.get(`/subjects/all`);
-        return response;
-    }
-    async addSubjects(userData) {
-        const response = await axiosInstance.post(`/subjects`, userData);
-        return response;
-    }
-    async editSubjects(id, userData) {
-        const response = await axiosInstance.put(`/subjects/${id}`, userData);
-        return response;
-    }
-    async deleteSubjects(id) {
-        const response = await axiosInstance.delete(`/subjects/${id}`);
-        return response;
-    }
-    async restoreSubjects(id) {
-        const response = await axiosInstance.patch(`/subjects/${id}/restore`);
-        return response;
-    }
-    // subjects
+  // subjects
+  async getSubjects(userData) {
+    const response = await axiosInstance.get(`/subjects?page=${userData.options.page}&limit=${userData.options.limit}&search=${userData.options.search}&is_deleted=${userData.options.is_deleted}`);
+    return response;
+  }
+  async getAllSubjects() {
+    const response = await axiosInstance.get(`/subjects/all`);
+    return response;
+  }
+  async addSubjects(userData) {
+    const response = await axiosInstance.post(`/subjects`, userData);
+    return response;
+  }
+  async editSubjects(id, userData) {
+    const response = await axiosInstance.put(`/subjects/${id}`, userData);
+    return response;
+  }
+  async deleteSubjects(id) {
+    const response = await axiosInstance.delete(`/subjects/${id}`);
+    return response;
+  }
+  async restoreSubjects(id) {
+    const response = await axiosInstance.patch(`/subjects/${id}/restore`);
+    return response;
+  }
+  // subjects
 
-    // course
-    async getCourse(userData) {
-        const response = await axiosInstance.get(`/courses?page=${userData.options.page}&limit=${userData.options.limit}&search=${userData.options.search}&deleted=${userData.options.is_deleted}&grade_id=${userData.options.grade_id}&subject_id=${userData.options.subject_id}&study_year=${userData.options.study_year}`);
-        return response;
-    }
-    async addCourse(userData) {
-        const response = await axiosInstance.post(`/courses`, userData);
-        return response;
-    }
-    async editCourse(id, userData) {
-        const response = await axiosInstance.put(`/courses/${id}`, userData);
-        return response;
-    }
-    async deleteCourse(id) {
-        const response = await axiosInstance.delete(`/courses/${id}`);
-        return response;
-    }
-    async restoreCourse(id) {
-        const response = await axiosInstance.patch(`/courses/${id}/restore`);
-        return response;
-    }
-    // course
+  // course
+  async getCourse(userData) {
+    const response = await axiosInstance.get(`/courses?page=${userData.options.page}&limit=${userData.options.limit}&search=${userData.options.search}&deleted=${userData.options.is_deleted}&grade_id=${userData.options.grade_id}&subject_id=${userData.options.subject_id}&study_year=${userData.options.study_year}`);
+    return response;
+  }
+  async addCourse(userData) {
+    const response = await axiosInstance.post(`/courses`, userData);
+    return response;
+  }
+  async editCourse(id, userData) {
+    const response = await axiosInstance.put(`/courses/${id}`, userData);
+    return response;
+  }
+  async deleteCourse(id) {
+    const response = await axiosInstance.delete(`/courses/${id}`);
+    return response;
+  }
+  async restoreCourse(id) {
+    const response = await axiosInstance.patch(`/courses/${id}/restore`);
+    return response;
+  }
+  // course
 
-    // bookings
-    async getBookings(userData) {
-        const response = await axiosInstance.get(`/teacher/bookings?page=${userData.options.page}&limit=${userData.options.limit}&search=${userData.options.search}&status=${userData.options.status}&studyYear=${userData.options.study_year}`);
-        return response;
-    }
-    async preApproveBookings(id, teacherResponse) {
-        const response = await axiosInstance.patch(`/teacher/bookings/${id}/pre-approve`, { teacherResponse: teacherResponse });
-        return response;
-    }
-    async consentBookings(id, teacherResponse) {
-        const response = await axiosInstance.patch(`/teacher/bookings/${id}/approve`, { teacherResponse: teacherResponse });
-        return response;
-    }
-    // bookings
+  // bookings
+  async getBookings(userData) {
+    const response = await axiosInstance.get(`/teacher/bookings?page=${userData.options.page}&limit=${userData.options.limit}&search=${userData.options.search}&status=${userData.options.status}&studyYear=${userData.options.study_year}`);
+    return response;
+  }
+  async getBookingById(id) {
+    const response = await axiosInstance.get(`/teacher/bookings/${id}`);
+    return response;
+  }
+  async preApproveBookings(id, teacherResponse) {
+    const response = await axiosInstance.patch(`/teacher/bookings/${id}/pre-approve`, { teacherResponse: teacherResponse });
+    return response;
+  }
+  async consentBookings(id, payload) {
+    const response = await axiosInstance.patch(`/teacher/bookings/${id}/confirm`, payload);
+    return response;
+  }
+  async rejectBooking(id, payload) {
+    // payload: { rejectionReason: string, teacherResponse?: string }
+    const response = await axiosInstance.patch(`/teacher/bookings/${id}/reject`, payload);
+    return response;
+  }
+  async updateBookingResponse(id, teacherResponse) {
+    const response = await axiosInstance.patch(`/teacher/bookings/${id}/response`, { teacherResponse });
+    return response;
+  }
+  async deleteBooking(id) {
+    const response = await axiosInstance.delete(`/teacher/bookings/${id}`);
+    return response;
+  }
+  async reactivateBooking(id, teacherResponse) {
+    const response = await axiosInstance.patch(`/teacher/bookings/${id}/reactivate`, { teacherResponse });
+    return response;
+  }
+  async getBookingStats(studyYear) {
+    const response = await axiosInstance.get(`/teacher/bookings/stats/summary?studyYear=${encodeURIComponent(studyYear)}`);
+    return response;
+  }
+  // bookings
+
+  // sessions
+  async getSessions(userData) {
+    const page = userData?.options?.page ?? 1;
+    const limit = userData?.options?.limit ?? 10;
+    const search = userData?.options?.search ?? '';
+    const weekday = userData?.options?.weekday ?? '';
+    const courseId = userData?.options?.course_id ?? '';
+    const url = `/teacher/sessions?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&weekday=${encodeURIComponent(weekday)}&courseId=${encodeURIComponent(courseId)}`;
+    const response = await axiosInstance.get(url);
+    return response;
+  }
+  async createSession(payload) {
+    const response = await axiosInstance.post(`/teacher/sessions`, payload);
+    return response;
+  }
+  async updateSession(id, payload) {
+    const response = await axiosInstance.put(`/teacher/sessions/${id}`, payload);
+    return response;
+  }
+  async deleteSession(id) {
+    const response = await axiosInstance.delete(`/teacher/sessions/${id}`);
+    return response;
+  }
+  async addSessionAttendees(id, studentIds) {
+    const response = await axiosInstance.post(`/teacher/sessions/${id}/attendees`, { studentIds });
+    return response;
+  }
+  async getSessionAttendees(id) {
+    const response = await axiosInstance.get(`/teacher/sessions/${id}/attendees`);
+    return response;
+  }
+  async removeSessionAttendees(id, studentIds) {
+    const response = await axiosInstance.delete(`/teacher/sessions/${id}/attendees`, { data: { studentIds } });
+    return response;
+  }
+  async endSession(id) {
+    const response = await axiosInstance.post(`/teacher/sessions/${id}/end`);
+    return response;
+  }
+  // sessions
+
+  // course names for teacher
+  async getCourseNames() {
+    const response = await axiosInstance.get(`/teacher/courses/names`);
+    return response;
+  }
 }
 export default new TeacherApi();

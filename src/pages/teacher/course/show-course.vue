@@ -47,7 +47,7 @@
       </VCardTitle>
       <VDivider />
       <VCardItem>
-        <VRow style="padding-block: 10px">
+        <VRow style="padding-block: 10px;">
           <VCol cols="12" md="4">
             <VSelect
               v-model="table.tableSettings.options.is_deleted"
@@ -234,6 +234,18 @@ export default {
             type: "number",
             sortable: true,
             key: "price",
+          },
+          {
+            title: "يوجد عربون",
+            type: "strong",
+            sortable: true,
+            key: "has_reservation",
+          },
+          {
+            title: "مبلغ العربون",
+            type: "number",
+            sortable: true,
+            key: "reservation_amount",
           },
           {
             title: "العدد",

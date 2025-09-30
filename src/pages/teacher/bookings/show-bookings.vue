@@ -10,7 +10,7 @@
     <!-- Settings page -->
 
     <!-- Operations Card -->
-    <VCard class="my-4 operations-card" elevation="3" rounded="lg">
+    <!-- <VCard class="my-4 operations-card" elevation="3" rounded="lg">
       <VCardTitle class="d-flex align-center py-4 px-6">
         <VIcon icon="mdi-cog-outline" color="primary" class="me-2" size="24" />
         <h3 class="text-h5 font-weight-bold">العمليات</h3>
@@ -31,7 +31,7 @@
           </v-btn>
         </VRow>
       </VCardItem>
-    </VCard>
+    </VCard> -->
     <!-- Operations Card -->
 
     <!-- Filter Card -->
@@ -105,7 +105,10 @@
           @updateTableOptions="updateTableOptions"
           @preApproveItem="preApproveItem"
           @consentItem="consentItem"
+          @rejectItem="rejectItem"
+          @updateResponseItem="updateResponseItem"
           @enableItem="enableItem"
+          @deleteItem="deleteItem"
           class="reservation-table"
         />
       </VCardItem>
@@ -127,6 +130,45 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- rejectDialog -->
+    <v-dialog v-model="rejectDialog.open" max-width="500">
+      <v-card title="رفض حجز الطالب">
+        <v-card-text>
+          <v-textarea
+            v-model="rejectDialog.rejectionReason"
+            label="سبب الرفض (مطلوب)"
+          ></v-textarea>
+          <v-textarea
+            class="mt-2"
+            v-model="rejectDialog.teacherResponse"
+            label="ملاحظة (اختياري)"
+          ></v-textarea>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn @click="rejectDialog.open = false">الغاء</v-btn>
+          <v-btn color="error" @click="handleReject">رفض</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- rejectDialog -->
+
+    <!-- updateResponseDialog -->
+    <v-dialog v-model="updateResponseDialog.open" max-width="500">
+      <v-card title="تحديث رد المعلم">
+        <v-card-text>
+          <v-textarea
+            v-model="updateResponseDialog.teacherResponse"
+            label="رد المعلم"
+          ></v-textarea>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn @click="updateResponseDialog.open = false">الغاء</v-btn>
+          <v-btn color="primary" @click="handleUpdateResponse">تحديث</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- updateResponseDialog -->
     <!-- preApproveDialog -->
 
     <v-dialog v-model="consentDialog.open" max-width="500">
@@ -136,6 +178,20 @@
             v-model="consentDialog.teacherResponse"
             label="ملاحظة"
           ></v-textarea>
+          <div v-if="hasReservationSelected" class="mt-4">
+            <VSwitch
+              v-model="consentDialog.reservationPaid"
+              inset
+              color="primary"
+              :true-value="true"
+              :false-value="false"
+              label="تم دفع العربون؟"
+            />
+            <div class="text-caption text-medium-emphasis">
+              إذا لم يتم دفع العربون بعد، اختر إلغاء التفعيل لإرسال رسالة طلب
+              الدفع.
+            </div>
+          </div>
         </v-card-text>
         <v-card-actions>
           <v-btn @click="consentDialog.open = false">الغاء</v-btn>
@@ -143,27 +199,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <!-- Add course Dialog -->
-    <AddCourse
-      v-if="Actions.open"
-      v-model="Actions.open"
-      @close="Actions.open = false"
-      @dataAdded="handleDataAdded"
-      @showAlert="showAlert"
-    />
-    <!-- Add grades Dialog -->
-
-    <!-- Add Course Dialog -->
-    <EditCourse
-      v-if="editGrades.open"
-      v-model="editGrades.open"
-      :courseData="editGrades.data"
-      @close="editGrades.open = false"
-      @dataAdded="handleDataAdded"
-      @showAlert="showAlert"
-    />
-    <!-- Add Subjects Dialog -->
 
     <!-- ConfirmDangerDialog -->
     <ConfirmDangerDialog
@@ -174,6 +209,16 @@
       :confirmButtonText="enableDialog.confirmButtonText"
       :checkboxLabel="enableDialog.checkboxLabel"
       @confirm="handleRestore"
+    />
+
+    <!-- Delete Confirm Dialog -->
+    <ConfirmDangerDialog
+      v-if="deleteDialog.open"
+      v-model="deleteDialog.open"
+      :messages="deleteDialog.messages"
+      :title="deleteDialog.title"
+      :confirmButtonText="deleteDialog.confirmButtonText"
+      @confirm="handleDelete"
     />
 
     <!-- BaseAlert -->
@@ -218,7 +263,14 @@ export default {
       table: {
         totalItems: 0,
         Data: [],
-        actions: ["موافقة اولية", "تاكيد"],
+        actions: [
+          "موافقة اولية",
+          "تاكيد",
+          "رفض",
+          "تحديث رد",
+          "حذف",
+          "اعادة تفعيل",
+        ],
         loading: false,
         headers: [
           {
@@ -303,22 +355,11 @@ export default {
         data: null,
         teacherResponse:
           "مرحباً بكم في الدورة، يرجى إحضار مبلغ الحجز لتأكيد الحجز",
+        reservationPaid: false,
       },
       // consentDialog
 
-      // Actions
-      Actions: {
-        open: false,
-        data: null,
-      },
-
-      // editGrades
-      editGrades: {
-        open: false,
-        data: null,
-      },
-
-      // enableDialog
+      // enableDialog (reactivate)
       enableDialog: {
         open: false,
         data: null,
@@ -328,6 +369,33 @@ export default {
         checkboxLabel: null,
       },
       // enableDialog
+
+      // deleteDialog
+      deleteDialog: {
+        open: false,
+        data: null,
+        messages: [],
+        title: null,
+        confirmButtonText: null,
+      },
+      // deleteDialog
+
+      // rejectDialog
+      rejectDialog: {
+        open: false,
+        data: null,
+        rejectionReason: "",
+        teacherResponse: "",
+      },
+      // rejectDialog
+
+      // updateResponseDialog
+      updateResponseDialog: {
+        open: false,
+        data: null,
+        teacherResponse: "",
+      },
+      // updateResponseDialog
 
       // alert
       alert: { open: false, message: null, type: "success" },
@@ -353,6 +421,11 @@ export default {
       },
       { deep: true }
     );
+  },
+  computed: {
+    hasReservationSelected() {
+      return this.consentDialog?.data?.course?.hasReservation === true;
+    },
   },
   beforeUnmount() {
     this.unwatch?.();
@@ -491,9 +564,19 @@ export default {
       }, 100);
 
       try {
+        const hasReservation =
+          this.consentDialog?.data?.course?.hasReservation === true;
+
+        const payload = {
+          teacherResponse: this.consentDialog.teacherResponse,
+          reservationPaid: hasReservation
+            ? this.consentDialog.reservationPaid === true
+            : true,
+        };
+
         const response = await TeacherApi.consentBookings(
           this.consentDialog.data.id,
-          this.consentDialog.teacherResponse
+          payload
         );
         this.showAlert("success", response.data.message || "تم الحذف بنجاح");
         this.getDataAxios();
@@ -509,22 +592,109 @@ export default {
           this.loading = false;
           this.progress = 0;
           this.consentDialog.teacherResponse = null;
+          this.consentDialog.reservationPaid = false;
           this.consentDialog.open = false;
         }, 500);
       }
     },
     // consentItem
 
+    // rejectItem
+    rejectItem(item) {
+      this.rejectDialog.data = item;
+      this.rejectDialog.rejectionReason = "";
+      this.rejectDialog.teacherResponse = "";
+      this.rejectDialog.open = true;
+    },
+    async handleReject() {
+      if (
+        !this.rejectDialog.rejectionReason ||
+        !this.rejectDialog.rejectionReason.trim()
+      ) {
+        this.showAlert("error", "سبب الرفض مطلوب");
+        return;
+      }
+
+      this.progress = 0;
+      this.loading = true;
+      const fakeProgress = setInterval(() => {
+        if (this.progress < 90) this.progress += 10;
+      }, 100);
+
+      try {
+        const response = await TeacherApi.rejectBooking(
+          this.rejectDialog.data.id,
+          {
+            rejectionReason: this.rejectDialog.rejectionReason,
+            teacherResponse: this.rejectDialog.teacherResponse || undefined,
+          }
+        );
+        this.showAlert("success", response.data.message || "تم رفض الحجز");
+        this.getDataAxios();
+      } catch (error) {
+        this.showAlert(
+          "error",
+          error?.response?.data?.message || "حدث خطأ أثناء عملية الرفض"
+        );
+      } finally {
+        clearInterval(fakeProgress);
+        this.progress = 100;
+        setTimeout(() => {
+          this.loading = false;
+          this.progress = 0;
+          this.rejectDialog.open = false;
+        }, 500);
+      }
+    },
+    // rejectItem
+
+    // updateResponseItem
+    updateResponseItem(item) {
+      this.updateResponseDialog.data = item;
+      this.updateResponseDialog.teacherResponse = item?.teacherResponse || "";
+      this.updateResponseDialog.open = true;
+    },
+    async handleUpdateResponse() {
+      this.progress = 0;
+      this.loading = true;
+      const fakeProgress = setInterval(() => {
+        if (this.progress < 90) this.progress += 10;
+      }, 100);
+
+      try {
+        const response = await TeacherApi.updateBookingResponse(
+          this.updateResponseDialog.data.id,
+          this.updateResponseDialog.teacherResponse
+        );
+        this.showAlert("success", response.data.message || "تم التحديث بنجاح");
+        this.getDataAxios();
+      } catch (error) {
+        this.showAlert(
+          "error",
+          error?.response?.data?.message || "حدث خطأ أثناء عملية التحديث"
+        );
+      } finally {
+        clearInterval(fakeProgress);
+        this.progress = 100;
+        setTimeout(() => {
+          this.loading = false;
+          this.progress = 0;
+          this.updateResponseDialog.open = false;
+        }, 500);
+      }
+    },
+    // updateResponseItem
+
     // enableItem
     enableItem(item) {
-      this.enableDialog.data = item; // بيانات العنصر المراد استرجاعه
+      this.enableDialog.data = item;
       this.enableDialog.messages = [
-        "سيتم استرجاع المادة الكورس.",
-        "ستتمكن من تعديلها واستخدامها كما كانت.",
+        "سيتم إعادة تفعيل الحجز.",
+        "ستتمكن من مواصلة الإجراءات عليه.",
       ];
-      this.enableDialog.title = "تأكيد الاسترجاع";
-      this.enableDialog.confirmButtonText = "استرجاع الكورس";
-      this.enableDialog.checkboxLabel = "أفهم التحذير وأؤكد الاسترجاع";
+      this.enableDialog.title = "تأكيد إعادة التفعيل";
+      this.enableDialog.confirmButtonText = "إعادة تفعيل الحجز";
+      this.enableDialog.checkboxLabel = "أفهم التحذير وأؤكد إعادة التفعيل";
       this.enableDialog.open = true;
     },
     async handleRestore() {
@@ -535,15 +705,19 @@ export default {
       }, 100);
 
       try {
-        const response = await TeacherApi.restoreCourse(
-          this.enableDialog.data.id
+        const response = await TeacherApi.reactivateBooking(
+          this.enableDialog.data.id,
+          null
         );
-        this.showAlert("success", response.data.message || "تم الحذف بنجاح");
+        this.showAlert(
+          "success",
+          response.data.message || "تمت إعادة التفعيل بنجاح"
+        );
         this.getDataAxios();
       } catch (error) {
         this.showAlert(
           "error",
-          error?.response?.data?.message || "حدث خطأ أثناء عملية الحذف"
+          error?.response?.data?.message || "حدث خطأ أثناء عملية إعادة التفعيل"
         );
       } finally {
         clearInterval(fakeProgress);
@@ -556,6 +730,50 @@ export default {
       }
     },
     // enableItem
+
+    // deleteItem
+    deleteItem(item) {
+      this.deleteDialog.data = item;
+      this.deleteDialog.messages = [
+        "سيتم حذف الحجز.",
+        "لا يمكن استرجاعه بعد الحذف.",
+      ];
+      this.deleteDialog.title = "تأكيد الحذف";
+      this.deleteDialog.confirmButtonText = "حذف الحجز";
+      this.deleteDialog.open = true;
+    },
+    async handleDelete() {
+      this.progress = 0;
+      this.loading = true;
+      const fakeProgress = setInterval(() => {
+        if (this.progress < 90) this.progress += 10;
+      }, 100);
+
+      try {
+        const response = await TeacherApi.deleteBooking(
+          this.deleteDialog.data.id
+        );
+        this.showAlert(
+          "success",
+          response.data.message || "تم حذف الحجز بنجاح"
+        );
+        this.getDataAxios();
+      } catch (error) {
+        this.showAlert(
+          "error",
+          error?.response?.data?.message || "حدث خطأ أثناء عملية الحذف"
+        );
+      } finally {
+        clearInterval(fakeProgress);
+        this.progress = 100;
+        setTimeout(() => {
+          this.loading = false;
+          this.progress = 0;
+          this.deleteDialog.open = false;
+        }, 500);
+      }
+    },
+    // deleteItem
 
     // Alert
     showAlert(type, message) {

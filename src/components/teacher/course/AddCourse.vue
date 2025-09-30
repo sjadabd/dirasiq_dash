@@ -92,6 +92,31 @@
                 />
               </VCol>
 
+              <!-- Has Reservation -->
+              <VCol cols="12" md="6">
+                <VSwitch
+                  v-model="formData.has_reservation"
+                  inset
+                  color="primary"
+                  :true-value="true"
+                  :false-value="false"
+                  label="هل يوجد عربون؟"
+                />
+              </VCol>
+
+              <!-- Reservation Amount (shown only if has_reservation) -->
+              <VCol cols="12" md="6" v-if="formData.has_reservation">
+                <VTextField
+                  v-model.number="formData.reservation_amount"
+                  :rules="rules.reservation"
+                  label="مبلغ العربون (دينار عراقي)"
+                  type="number"
+                  outlined
+                  min="0.01"
+                  step="0.01"
+                />
+              </VCol>
+
               <!-- Description -->
               <VCol cols="12">
                 <VTextarea
@@ -146,7 +171,7 @@
                           size="small"
                           color="error"
                           class="position-absolute"
-                          style="inset-block-start: 8px; inset-inline-end: 8px"
+                          style="inset-block-start: 8px; inset-inline-end: 8px;"
                           @click="removeImage(index)"
                         >
                           <VIcon size="16">ri-close-line</VIcon>
@@ -216,6 +241,8 @@ export default {
         end_date: null,
         price: null,
         seats_count: null,
+        has_reservation: false,
+        reservation_amount: null,
       },
     };
   },
@@ -239,6 +266,11 @@ export default {
           (value) => !!value || "هذا الحقل مطلوب",
           (value) => value > 0 || "عدد المقاعد يجب أن يكون أكبر من صفر",
         ],
+        reservation: [
+          (value) =>
+            !this.formData.has_reservation || (!!value && value > 0) ||
+            "مبلغ العربون يجب أن يكون رقمًا أكبر من صفر",
+        ],
       };
     },
   },
@@ -254,6 +286,11 @@ export default {
       if (newFiles && newFiles.length > 0) {
         this.imagesPreviews = [];
         this.processFiles(newFiles);
+      }
+    },
+    'formData.has_reservation'(val) {
+      if (!val) {
+        this.formData.reservation_amount = null;
       }
     },
   },
@@ -273,6 +310,8 @@ export default {
         end_date: null,
         price: null,
         seats_count: null,
+        has_reservation: false,
+        reservation_amount: null,
       };
       this.selectedFiles = [];
       this.imagesPreviews = [];
@@ -375,6 +414,10 @@ export default {
           end_date: this.formData.end_date,
           price: this.formData.price,
           seats_count: this.formData.seats_count,
+          has_reservation: this.formData.has_reservation,
+          reservation_amount: this.formData.has_reservation
+            ? this.formData.reservation_amount
+            : null,
         };
         const response = await TeacherApi.addCourse(courseData);
 
