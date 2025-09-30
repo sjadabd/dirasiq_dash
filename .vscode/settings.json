@@ -22,7 +22,7 @@
     "editor.defaultFormatter": "vscode.json-language-features"
   },
   "[vue]": {
-    "editor.defaultFormatter": "octref.vetur"
+    "editor.defaultFormatter": "Vue.volar"
   },
   "volar.preview.port": 3000,
   "volar.completion.preferredTagNameCase": "pascal",
@@ -91,5 +91,43 @@
         "borderStyle": "solid"
       }
     ]
+  },
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "scope": "entity.name.tag.vue",
+        "settings": {
+          "foreground": "#ff9800",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "scope": "variable.other.readwrite.js",
+        "settings": {
+          "foreground": "#4caf50"
+        }
+      },
+      {
+        "scope": "string.quoted.double.js",
+        "settings": {
+          "foreground": "#e91e63"
+        }
+      },
+      {
+        "scope": "keyword.operator.js",
+        "settings": {
+          "foreground": "#00bcd4"
+        }
+      }
+    ]
+  },
+  "editor.semanticTokenColorCustomizations": {
+    "enabled": true,
+    "rules": {
+      "variable": "#4caf50",
+      "string": "#e91e63",
+      "keyword": "#00bcd4",
+      "type": "#ff9800"
+    }
   }
 }
