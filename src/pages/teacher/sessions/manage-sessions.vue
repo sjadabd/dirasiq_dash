@@ -1,11 +1,7 @@
 <template>
   <div>
     <!-- Loading Overlay -->
-    <AppLoadingOverlay
-      :loading="loading"
-      :progress="progress"
-      :results="results"
-    />
+    <AppLoadingOverlay :loading="loading" :progress="progress" :results="results" />
 
     <!-- Breadcrumbs -->
     <AppBreadcrumbs :items="breadcrumbItems" />
@@ -13,73 +9,34 @@
     <!-- Operations Card -->
     <VCard class="my-4" elevation="3" rounded="lg">
       <VCardTitle class="d-flex align-center py-4 px-6">
-        <VIcon
-          icon="ri-calendar-schedule-line"
-          color="primary"
-          class="me-2"
-          size="24"
-        />
+        <VIcon icon="ri-calendar-schedule-line" color="primary" class="me-2" size="24" />
         <h3 class="text-h5 font-weight-bold">الجلسات الأسبوعية</h3>
         <VSpacer />
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          rounded="pill"
-          @click="openCreateDialog"
-          >إضافة جلسة</VBtn
-        >
+        <VBtn color="primary" prepend-icon="ri-add-line" rounded="pill" @click="openCreateDialog">إضافة جلسة</VBtn>
       </VCardTitle>
     </VCard>
 
     <!-- Filter Card -->
     <VCard class="my-4" elevation="3" rounded="lg">
       <VCardTitle class="d-flex align-center py-4 px-6">
-        <VIcon
-          icon="mdi mdi-filter-outline"
-          color="primary"
-          class="me-2"
-          size="24"
-        />
+        <VIcon icon="mdi mdi-filter-outline" color="primary" class="me-2" size="24" />
         <h3 class="text-h5 font-weight-bold">تصفية</h3>
       </VCardTitle>
       <VDivider />
       <VCardItem>
         <VRow class="py-3">
           <VCol cols="12" md="4">
-            <VSelect
-              v-model="table.tableSettings.options.weekday"
-              :items="weekdays"
-              item-title="text"
-              item-value="value"
-              label="يوم الأسبوع"
-              variant="outlined"
-              @update:model-value="getDataAxios"
-              clearable
-            />
+            <VSelect v-model="table.tableSettings.options.weekday" :items="weekdays" item-title="text"
+              item-value="value" label="يوم الأسبوع" variant="outlined" @update:model-value="getDataAxios" clearable />
           </VCol>
           <VCol cols="12" md="4">
-            <VSelect
-              v-model="table.tableSettings.options.course_id"
-              :items="courseItems"
-              item-title="text"
-              item-value="value"
-              label="الكورس"
-              variant="outlined"
-              :loading="coursesLoading"
-              :disabled="coursesLoading"
-              @update:model-value="getDataAxios"
-              clearable
-            />
+            <VSelect v-model="table.tableSettings.options.course_id" :items="courseItems" item-title="text"
+              item-value="value" label="الكورس" variant="outlined" :loading="coursesLoading" :disabled="coursesLoading"
+              @update:model-value="getDataAxios" clearable />
           </VCol>
           <VCol cols="12" md="4">
-            <VTextField
-              v-model="table.tableSettings.options.search"
-              label="بحث بالعنوان"
-              variant="outlined"
-              @keyup.enter="getDataAxios"
-              clearable
-              @click:clear="getDataAxios"
-            />
+            <VTextField v-model="table.tableSettings.options.search" label="بحث بالعنوان" variant="outlined"
+              @keyup.enter="getDataAxios" clearable @click:clear="getDataAxios" />
           </VCol>
         </VRow>
       </VCardItem>
@@ -90,24 +47,14 @@
       <VCardTitle class="py-4 px-6">
         <VRow class="align-center">
           <VCol cols="auto">
-            <VBtn
-              color="primary"
-              @click="reload()"
-              icon="ri-refresh-line"
-              variant="tonal"
-              rounded="circle"
-              size="small"
-            />
+            <VBtn color="primary" @click="reload()" icon="ri-refresh-line" variant="tonal" rounded="circle"
+              size="small" />
           </VCol>
           <VCol>
             <h3 class="text-h6 font-weight-bold text-center">قائمة الجلسات</h3>
           </VCol>
           <VCol cols="auto">
-            <VChip
-              color="primary"
-              variant="elevated"
-              class="font-weight-medium"
-            >
+            <VChip color="primary" variant="elevated" class="font-weight-medium">
               {{ numberWithComma(table.totalItems) }} عدد السجلات
             </VChip>
           </VCol>
@@ -115,90 +62,40 @@
       </VCardTitle>
       <VDivider />
       <VCardItem>
-        <SmartTable
-          :headers="table.headers"
-          :items="table.Data"
-          :actions="table.actions"
-          :loading="table.loading"
-          :totalItems="table.totalItems"
-          :tableOptions="table.tableSettings.options"
-          @updateTableOptions="updateTableOptions"
-          @editItem="editItem"
-          @deleteItem="deleteItem"
-          @showAttendeesItem="openAddAttendeesDialog"
-          @addAttendeesItem="openAddAttendeesDialog"
-          @removeAttendeesItem="openAddAttendeesDialog"
-          @endSessionItem="confirmEndSession"
-        />
+        <SmartTable :headers="table.headers" :items="table.Data" :actions="table.actions" :loading="table.loading"
+          :totalItems="table.totalItems" :tableOptions="table.tableSettings.options"
+          @updateTableOptions="updateTableOptions" @editItem="editItem" @deleteItem="deleteItem" @showItem="navigateToAttendance"
+          @showAttendeesItem="openViewStudentsDialog" @addAttendeesItem="openAddAttendeesDialog" @endSessionItem="openEndSessionDialog" />
       </VCardItem>
     </VCard>
 
     <!-- Create/Edit Session Dialog -->
     <v-dialog v-model="sessionDialog.open" max-width="700">
-      <v-card
-        :title="sessionDialog.mode === 'create' ? 'إضافة جلسة' : 'تعديل الجلسة'"
-      >
+      <v-card :title="sessionDialog.mode === 'create' ? 'إضافة جلسة' : 'تعديل الجلسة'">
         <v-card-text>
           <VRow>
             <VCol cols="12">
-              <VTextField
-                v-model="sessionDialog.form.title"
-                label="عنوان الجلسة"
-                variant="outlined"
-              />
+              <VTextField v-model="sessionDialog.form.title" label="عنوان الجلسة" variant="outlined" />
             </VCol>
             <VCol cols="12" md="6">
-              <VSelect
-                v-model="sessionDialog.form.course_id"
-                :items="courseItems"
-                item-title="text"
-                item-value="value"
-                label="اختر الكورس"
-                variant="outlined"
-                :loading="coursesLoading"
-                :disabled="coursesLoading"
-                clearable
-              />
+              <VSelect v-model="sessionDialog.form.course_id" :items="courseItems" item-title="text" item-value="value"
+                label="اختر الكورس" variant="outlined" :loading="coursesLoading" :disabled="coursesLoading" clearable />
             </VCol>
             <VCol cols="12" md="6">
-              <VSelect
-                v-model="sessionDialog.form.weekdays"
-                :items="weekdays.filter((w) => w.value !== null)"
-                item-title="text"
-                item-value="value"
-                label="أيام الأسبوع"
-                multiple
-                chips
-                variant="outlined"
-              />
+              <VSelect v-model="sessionDialog.form.weekdays" :items="weekdays.filter((w) => w.value !== null)"
+                item-title="text" item-value="value" label="أيام الأسبوع" multiple chips variant="outlined" />
             </VCol>
             <VCol cols="12" md="3">
-              <VTextField
-                v-model="sessionDialog.form.start_time"
-                type="time"
-                label="بداية"
-                variant="outlined"
-                :step="60"
-              />
+              <VTextField v-model="sessionDialog.form.start_time" type="time" label="بداية" variant="outlined"
+                :step="60" />
             </VCol>
             <VCol cols="12" md="3">
-              <VTextField
-                v-model="sessionDialog.form.end_time"
-                type="time"
-                label="نهاية"
-                variant="outlined"
-                :step="60"
-              />
+              <VTextField v-model="sessionDialog.form.end_time" type="time" label="نهاية" variant="outlined"
+                :step="60" />
             </VCol>
             <VCol cols="12" md="6">
-              <VSwitch
-                v-model="sessionDialog.form.recurrence"
-                inset
-                color="primary"
-                :true-value="true"
-                :false-value="false"
-                label="تكرار أسبوعي"
-              />
+              <VSwitch v-model="sessionDialog.form.recurrence" inset color="primary" :true-value="true"
+                :false-value="false" label="تكرار أسبوعي" />
             </VCol>
           </VRow>
           <VDivider class="my-4" />
@@ -228,9 +125,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="sessionDialog.open = false"
-            >إلغاء</v-btn
-          >
+          <v-btn variant="text" @click="sessionDialog.open = false">إلغاء</v-btn>
           <v-btn color="primary" @click="saveSession">
             {{ sessionDialog.mode === "create" ? "إضافة" : "تحديث" }}
           </v-btn>
@@ -238,49 +133,39 @@
       </v-card>
     </v-dialog>
 
-    <!-- Add Attendees Dialog -->
-    <v-dialog v-model="attendeesDialog.open" max-width="600">
-      <v-card title="إضافة طلاب للجلسة">
+    <!-- Add Attendees Dialog (Select confirmed students) -->
+    <v-dialog v-model="attendeesDialog.open" max-width="720">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <VIcon icon="ri-user-add-line" class="me-2" />
+          إضافة طلاب للجلسة
+          <VSpacer />
+          <VBtn icon variant="text" @click="attendeesDialog.open = false">
+            <VIcon icon="ri-close-line" />
+          </VBtn>
+        </v-card-title>
         <v-card-text>
-          <div class="text-caption mb-2">
-            أدخل معرفات الطلاب مفصولة بفواصل (,)
+          <div class="mb-4 text-medium-emphasis">
+            اختر الطلاب المؤكدين في هذا الكورس لإضافتهم إلى الجلسة. الطلاب
+            الموجودون مسبقًا محددون تلقائيًا.
           </div>
-          <v-textarea
-            v-model="attendeesDialog.studentIdsText"
-            rows="4"
-            variant="outlined"
-            placeholder="1001,1002,1003"
-          ></v-textarea>
+          <VRow>
+            <VCol cols="12">
+              <VSelect v-model="attendeesDialog.selectedIds" :items="attendeesDialog.candidates" item-title="name"
+                item-value="id" label="اختر الطلاب" variant="outlined" :loading="attendeesDialog.loading"
+                :disabled="attendeesDialog.loading" multiple chips clearable />
+            </VCol>
+          </VRow>
           <VDivider class="my-4" />
-          <div class="d-flex align-center justify-space-between mb-2">
-            <div class="text-subtitle-2">قائمة الحضور الحالية</div>
-            <VBtn
-              :loading="attendeesDialog.loading"
-              @click="loadAttendees()"
-              size="small"
-              variant="tonal"
-              prepend-icon="ri-refresh-line"
-              >تحديث</VBtn
-            >
-          </div>
+          <div class="text-subtitle-2 mb-2">الطلاب الحاليون في الجلسة</div>
           <div v-if="attendeesDialog.loading" class="text-medium-emphasis">
             جاري التحميل...
           </div>
           <div v-else>
-            <div
-              v-if="attendeesDialog.current && attendeesDialog.current.length"
-              class="d-flex flex-wrap gap-2"
-            >
-              <VChip
-                v-for="sid in attendeesDialog.current"
-                :key="sid"
-                size="small"
-                class="ma-1"
-                variant="outlined"
-                closable
-                @click:close="removeOneAttendee(sid)"
-              >
-                {{ sid }}
+            <div v-if="attendeesDialog.currentDetailed.length" class="d-flex flex-wrap gap-2">
+              <VChip v-for="st in attendeesDialog.currentDetailed" :key="st.student_id || st" size="small" class="ma-1"
+                variant="outlined" closable @click:close="removeOneAttendee(st.student_id || st)">
+                {{ st.student_name || st }}
               </VChip>
             </div>
             <div v-else class="text-medium-emphasis">
@@ -290,55 +175,63 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="attendeesDialog.open = false"
-            >إلغاء</v-btn
-          >
-          <v-btn
-            color="primary"
-            :loading="attendeesDialog.loading"
-            @click="submitAddAttendees"
-            >إضافة</v-btn
-          >
-          <v-btn
-            color="error"
-            :loading="attendeesDialog.loading"
-            @click="submitRemoveAttendees"
-            >حذف</v-btn
-          >
+          <v-btn variant="text" @click="attendeesDialog.open = false">إلغاء</v-btn>
+          <v-btn color="primary" :loading="attendeesDialog.loading" @click="submitAddAttendees">حفظ</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- View Students Dialog -->
+    <v-dialog v-model="studentsViewDialog.open" max-width="720">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <VIcon icon="ri-team-line" class="me-2" />
+          طلاب الجلسة
+          <VSpacer />
+          <VBtn icon variant="text" @click="studentsViewDialog.open = false">
+            <VIcon icon="ri-close-line" />
+          </VBtn>
+        </v-card-title>
+        <v-card-text>
+          <div v-if="studentsViewDialog.loading" class="text-medium-emphasis">
+            جاري التحميل...
+          </div>
+          <div v-else>
+            <VAlert v-if="!studentsViewDialog.students.length" type="info" variant="tonal">
+              لا يوجد طلاب مسجلون في هذه الجلسة بعد.
+            </VAlert>
+            <VRow v-else>
+              <VCol cols="12" md="6" v-for="st in studentsViewDialog.students" :key="st.student_id">
+                <VCard variant="tonal" class="pa-3 d-flex align-center justify-space-between">
+                  <div>
+                    <div class="text-subtitle-1">{{ st.student_name }}</div>
+                    <div class="text-caption text-medium-emphasis">
+                      {{ st.grade_name }} • {{ st.study_year }}
+                    </div>
+                  </div>
+                </VCard>
+              </VCol>
+            </VRow>
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn color="primary" variant="tonal" @click="studentsViewDialog.open = false">إغلاق</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Confirm End Session Dialog -->
-    <ConfirmDangerDialog
-      v-if="endDialog.open"
-      v-model="endDialog.open"
-      :messages="endDialog.messages"
-      :title="endDialog.title"
-      :confirmButtonText="endDialog.confirmButtonText"
-      @confirm="handleEndSession"
-    />
+    <ConfirmDangerDialog v-if="endDialog.open" v-model="endDialog.open" :messages="endDialog.messages"
+      :title="endDialog.title" :confirmButtonText="endDialog.confirmButtonText" @confirm="handleEndSession" />
 
     <!-- Delete Confirm Dialog -->
-    <ConfirmDangerDialog
-      v-if="deleteDialog.open"
-      v-model="deleteDialog.open"
-      :messages="deleteDialog.messages"
-      :title="deleteDialog.title"
-      :confirmButtonText="deleteDialog.confirmButtonText"
-      @confirm="handleDelete"
-    />
+    <ConfirmDangerDialog v-if="deleteDialog.open" v-model="deleteDialog.open" :messages="deleteDialog.messages"
+      :title="deleteDialog.title" :confirmButtonText="deleteDialog.confirmButtonText" @confirm="handleDelete" />
 
     <!-- Alerts -->
-    <BaseAlert
-      v-if="alert.open"
-      v-model="alert.open"
-      :type="alert.type"
-      :message="alert.message"
-      :closable="true"
-      close-text="موافق"
-      @close="alert.open = false"
-    />
+    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true"
+      close-text="موافق" @close="alert.open = false" />
   </div>
 </template>
 
@@ -372,23 +265,28 @@ export default {
       table: {
         totalItems: 0,
         Data: [],
-        actions: [
-          "عرض الحضور",
-          "إضافة طلاب",
-          "حذف طلاب",
-          "إنهاء الجلسة",
-          "تعديل",
-          "حذف",
-        ],
+        actions: ["عرض الطلاب", "إضافة طلاب", "إنهاء الجلسة", "تعديل", "حذف"],
         loading: false,
         headers: [
           { title: "#", type: "strong", sortable: false, key: "num" },
-          { title: "العنوان", type: "strong", sortable: true, key: "title" },
+          { title: "العنوان", type: "link", sortable: true, key: "title" },
           {
-            title: "المقرر",
+            title: "الدورة",
             type: "strong",
             sortable: true,
-            key: "course.courseName",
+            key: "course_name",
+          },
+          {
+            title: "المرحلة",
+            type: "strong",
+            sortable: true,
+            key: "grade_name",
+          },
+          {
+            title: "عدد الطلاب",
+            type: "strong",
+            sortable: true,
+            key: "attendees_count",
           },
           {
             title: "اليوم",
@@ -435,9 +333,18 @@ export default {
       attendeesDialog: {
         open: false,
         data: null,
-        studentIdsText: "",
-        current: [],
         loading: false,
+        candidates: [], // full objects from confirmed students API
+        selectedIds: [], // selection in the VSelect
+        currentIds: [], // ids currently in session
+        currentDetailed: [], // for chips display
+      },
+      studentsViewDialog: {
+        open: false,
+        data: null,
+        loading: false,
+        loadingItem: null,
+        students: [], // full objects
       },
       endDialog: {
         open: false,
@@ -469,6 +376,7 @@ export default {
     const stored = JSON.parse(localStorage.getItem(this.keyName));
     this.table.tableSettings = stored || this.table.tableSettings;
     this.tempScrollTop = stored?.scrollTop || 0;
+    this.loadCourseNames();
   },
   mounted() {
     window.addEventListener("scroll", this.handleScroll);
@@ -484,8 +392,6 @@ export default {
       },
       { deep: true }
     );
-    this.getDataAxios();
-    this.loadCourseNames();
   },
   beforeUnmount() {
     this.unwatch?.();
@@ -619,8 +525,8 @@ export default {
         weekdays: Array.isArray(item.weekdays)
           ? item.weekdays
           : item.weekday !== undefined
-          ? [item.weekday]
-          : [],
+            ? [item.weekday]
+            : [],
         start_time: item.start_time,
         end_time: item.end_time,
         recurrence: item.recurrence ?? true,
@@ -689,7 +595,7 @@ export default {
         this.showAlert(
           "success",
           response?.data?.message ||
-            (isCreate ? "تم إنشاء الجلسة" : "تم تحديث الجلسة")
+          (isCreate ? "تم إنشاء الجلسة" : "تم تحديث الجلسة")
         );
         this.sessionDialog.open = false;
         this.getDataAxios();
@@ -711,20 +617,60 @@ export default {
     // attendees
     openAddAttendeesDialog(item) {
       this.attendeesDialog.data = item;
-      this.attendeesDialog.studentIdsText = "";
       this.attendeesDialog.open = true;
-      this.attendeesDialog.current = [];
-      this.loadAttendees();
+      this.attendeesDialog.candidates = [];
+      this.attendeesDialog.selectedIds = [];
+      this.attendeesDialog.currentIds = [];
+      this.attendeesDialog.currentDetailed = [];
+      this.loadAddDialogData();
+    },
+    async loadAddDialogData() {
+      try {
+        this.attendeesDialog.loading = true;
+        // 1) current attendees (could be ids or objects)
+        const currentRes = await TeacherApi.getSessionAttendees(
+          this.attendeesDialog.data.id
+        );
+        const currentData = currentRes?.data?.data || [];
+        // normalize
+        const currentIds = currentData
+          .map((x) => (typeof x === "object" ? x.student_id || x.id : x))
+          .filter(Boolean);
+        const currentDetailed = currentData.map((x) =>
+          typeof x === "object" ? x : { student_id: x, student_name: String(x) }
+        );
+        this.attendeesDialog.currentIds = currentIds;
+        this.attendeesDialog.currentDetailed = currentDetailed;
+
+        // 2) confirmed students for this course
+        const courseId =
+          this.attendeesDialog.data.course_id ||
+          this.attendeesDialog.data.course?.id;
+        if (!courseId) throw new Error("لا يوجد معرّف كورس في هذه الجلسة");
+        const confRes = await TeacherApi.getCourseConfirmedStudents(courseId);
+        const candidates = confRes?.data?.data || [];
+        this.attendeesDialog.candidates = candidates;
+
+        // preselect existing
+        this.attendeesDialog.selectedIds = candidates
+          .map((c) => c.student_id)
+          .filter((id) => this.attendeesDialog.currentIds.includes(id));
+      } catch (e) {
+        this.showAlert(
+          "error",
+          e?.response?.data?.message || e?.message || "تعذر تحميل الطلاب"
+        );
+      } finally {
+        this.attendeesDialog.loading = false;
+      }
     },
     async submitAddAttendees() {
-      const raw = this.attendeesDialog.studentIdsText || "";
-      const ids = raw
-        .split(/[,\n\s]+/)
-        .map((x) => x.trim())
-        .filter((x) => x)
-        .map((x) => (isNaN(Number(x)) ? x : Number(x)));
-      if (ids.length === 0) {
-        this.showAlert("error", "يرجى إدخال معرفات الطلاب");
+      const selected = this.attendeesDialog.selectedIds || [];
+      const current = this.attendeesDialog.currentIds || [];
+      const toAdd = selected.filter((id) => !current.includes(id));
+      if (toAdd.length === 0) {
+        this.showAlert("info", "لا توجد إضافات جديدة");
+        this.attendeesDialog.open = false;
         return;
       }
 
@@ -734,17 +680,16 @@ export default {
       const fakeProgress = setInterval(() => {
         if (this.progress < 90) this.progress += 10;
       }, 100);
-
       try {
         const response = await TeacherApi.addSessionAttendees(
           this.attendeesDialog.data.id,
-          ids
+          toAdd
         );
         this.showAlert(
           "success",
-          response?.data?.message || "تمت الإضافة بنجاح"
+          response?.data?.message || "تم حفظ التغييرات"
         );
-        await this.loadAttendees();
+        await this.loadAddDialogData();
         this.attendeesDialog.open = false;
       } catch (error) {
         this.showAlert(
@@ -762,81 +707,45 @@ export default {
       }
     },
 
-    async loadAttendees() {
-      try {
-        this.attendeesDialog.loading = true;
-        const res = await TeacherApi.getSessionAttendees(
-          this.attendeesDialog.data.id
-        );
-        this.attendeesDialog.current = res?.data?.data || [];
-      } catch (e) {
-        this.showAlert(
-          "error",
-          e?.response?.data?.message || "تعذر جلب قائمة الحضور"
-        );
-      } finally {
-        this.attendeesDialog.loading = false;
-      }
+    openViewStudentsDialog(item) {
+      this.studentsViewDialog.data = item;
+      this.studentsViewDialog.open = true;
+      this.studentsViewDialog.students = [];
+      this.loadStudentsView();
     },
-    async removeOneAttendee(studentId) {
-      try {
-        this.attendeesDialog.loading = true;
-        const res = await TeacherApi.removeSessionAttendees(
-          this.attendeesDialog.data.id,
-          [studentId]
-        );
-        this.attendeesDialog.current = this.attendeesDialog.current.filter(
-          (id) => String(id) !== String(studentId)
-        );
-        this.showAlert(
-          "success",
-          res?.data?.message || "تم حذف الطالب من الجلسة"
-        );
-      } catch (e) {
-        this.showAlert(
-          "error",
-          e?.response?.data?.message || "تعذر حذف الطالب"
-        );
-      } finally {
-        this.attendeesDialog.loading = false;
-      }
-    },
-    async submitRemoveAttendees() {
-      const raw = this.attendeesDialog.studentIdsText || "";
-      const ids = raw
-        .split(/[\,\n\s]+/)
-        .map((x) => x.trim())
-        .filter(Boolean);
-      if (ids.length === 0) {
-        this.showAlert("error", "أدخل معرفات الطلاب المراد حذفهم");
-        return;
-      }
-      try {
-        this.attendeesDialog.loading = true;
-        const res = await TeacherApi.removeSessionAttendees(
-          this.attendeesDialog.data.id,
-          ids
-        );
-        // refresh current list
-        await this.loadAttendees();
-        this.showAlert(
-          "success",
-          res?.data?.message || "تم حذف الطلاب المحددين"
-        );
-      } catch (e) {
-        this.showAlert(
-          "error",
-          e?.response?.data?.message || "تعذر حذف الطلاب"
-        );
-      } finally {
-        this.attendeesDialog.loading = false;
-      }
-    },
-
-    // end session
-    confirmEndSession(item) {
+    openEndSessionDialog(item) {
       this.endDialog.data = item;
       this.endDialog.open = true;
+    },
+    navigateToAttendance(item) {
+      if (!item?.id) return;
+      this.$router.push(`/teacher/sessions/attendance/${item.id}`);
+    },
+    async loadStudentsView() {
+      try {
+        this.studentsViewDialog.loading = true;
+        const res = await TeacherApi.getSessionAttendees(this.studentsViewDialog.data.id);
+        const data = res?.data?.data || [];
+        // normalize to objects
+        const list = data.map((x) =>
+          typeof x === "object"
+            ? x
+            : {
+              student_id: x,
+              student_name: String(x),
+              grade_name: "",
+              study_year: "",
+            }
+        );
+        this.studentsViewDialog.students = list;
+      } catch (e) {
+        this.showAlert(
+          "error",
+          e?.response?.data?.message || "تعذر جلب طلاب الجلسة"
+        );
+      } finally {
+        this.studentsViewDialog.loading = false;
+      }
     },
     async handleEndSession() {
       this.progress = 0;

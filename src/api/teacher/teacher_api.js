@@ -150,9 +150,69 @@ class TeacherApi {
   }
   // sessions
 
+  // confirmed students for a course (to add to a session)
+  async getCourseConfirmedStudents(courseId) {
+    const response = await axiosInstance.get(`/teacher/sessions/courses/${courseId}/confirmed-students`);
+    return response;
+  }
+
+  // attendance
+  async getSessionAttendanceByDate(id, dateISO) {
+    const url = `/teacher/sessions/${id}/attendance` + (dateISO ? `?date=${encodeURIComponent(dateISO)}` : ``);
+    const response = await axiosInstance.get(url);
+    return response;
+  }
+  async bulkSetSessionAttendance(id, payload) {
+    // payload: { date: 'YYYY-MM-DD', items: [{ studentId, status }] }
+    const response = await axiosInstance.post(`/teacher/sessions/${id}/attendance`, payload);
+    return response;
+  }
+
   // course names for teacher
   async getCourseNames() {
     const response = await axiosInstance.get(`/teacher/courses/names`);
+    return response;
+  }
+
+  // notifications
+  async getNotifications(options = {}) {
+    const page = options.page ?? 1;
+    const limit = options.limit ?? 20;
+    const q = options.q ?? '';
+    const type = options.type ?? '';
+    const subType = options.subType ?? '';
+    const courseId = options.courseId ?? '';
+    const url = `/teacher/notifications?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}&q=${encodeURIComponent(q)}&type=${encodeURIComponent(type)}&subType=${encodeURIComponent(subType)}&courseId=${encodeURIComponent(courseId)}`;
+    const response = await axiosInstance.get(url);
+    return response;
+  }
+  async createNotification(payload) {
+    // payload should include: type, subType, title, message, courseId, subjectId, link, recipients{mode, studentIds}, attachments{pdfBase64, imagesBase64}, priority
+    const response = await axiosInstance.post(`/teacher/notifications`, payload);
+    return response;
+  }
+  async deleteNotification(id) {
+    const response = await axiosInstance.delete(`/teacher/notifications/${id}`);
+    return response;
+  }
+
+  // Roster: Students
+  async getTeacherStudents() {
+    const response = await axiosInstance.get(`/teacher/students`);
+    return response;
+  }
+  async getStudentsByCourse(courseId) {
+    const response = await axiosInstance.get(`/teacher/students/by-course/${encodeURIComponent(courseId)}`);
+    return response;
+  }
+  async getStudentsBySession(sessionId) {
+    const response = await axiosInstance.get(`/teacher/students/by-session/${encodeURIComponent(sessionId)}`);
+    return response;
+  }
+
+  // Roster: Sessions (names)
+  async getSessionNames() {
+    const response = await axiosInstance.get(`/teacher/sessions/names`);
     return response;
   }
 }

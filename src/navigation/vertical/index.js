@@ -40,25 +40,31 @@ export default [
     title: 'المواد الدراسية',
     to: { name: 'teacher-subjects-show-subjects' },
     type: 'teacher',
-    icon: { icon: 'ri-home-smile-line' },
+    icon: { icon: 'ri-book-2-line' },
   },
   {
     title: 'الكورسات',
     to: { name: 'teacher-course-show-course' },
     type: 'teacher',
-    icon: { icon: 'ri-home-smile-line' },
+    icon: { icon: 'ri-book-2-line' },
   },
   {
     title: 'الحجوزات',
     to: { name: 'teacher-bookings-show-bookings' },
     type: 'teacher',
-    icon: { icon: 'ri-home-smile-line' },
+    icon: { icon: 'ri-calendar-2-line' },
   },
   {
     title: 'الجدول الاسبوعي',
     to: { name: 'teacher-sessions-manage-sessions' },
     type: 'teacher',
-    icon: { icon: 'ri-home-smile-line' },
+    icon: { icon: 'ri-calendar-2-line' },
+  },
+  {
+    title: 'الاشعارات',
+    to: { name: 'teacher-notifications-show-notifications' },
+    type: 'teacher',
+    icon: { icon: 'ri-notification-3-line' },
   },
   // teacher
 ]

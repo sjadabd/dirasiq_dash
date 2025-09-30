@@ -31,7 +31,9 @@ declare module 'vue-router/auto-routes' {
     'teacher-bookings-show-bookings': RouteRecordInfo<'teacher-bookings-show-bookings', '/teacher/bookings/show-bookings', Record<never, never>, Record<never, never>>,
     'teacher-course-show-course': RouteRecordInfo<'teacher-course-show-course', '/teacher/course/show-course', Record<never, never>, Record<never, never>>,
     'teacher-dashboard': RouteRecordInfo<'teacher-dashboard', '/teacher/dashboard', Record<never, never>, Record<never, never>>,
+    'teacher-notifications-show-notifications': RouteRecordInfo<'teacher-notifications-show-notifications', '/teacher/notifications/show-notifications', Record<never, never>, Record<never, never>>,
     'teacher-profile-setup': RouteRecordInfo<'teacher-profile-setup', '/teacher/profile-setup', Record<never, never>, Record<never, never>>,
+    'teacher-sessions-attendance-id': RouteRecordInfo<'teacher-sessions-attendance-id', '/teacher/sessions/attendance/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'teacher-sessions-manage-sessions': RouteRecordInfo<'teacher-sessions-manage-sessions', '/teacher/sessions/manage-sessions', Record<never, never>, Record<never, never>>,
     'teacher-subjects-show-subjects': RouteRecordInfo<'teacher-subjects-show-subjects', '/teacher/subjects/show-subjects', Record<never, never>, Record<never, never>>,
   }
