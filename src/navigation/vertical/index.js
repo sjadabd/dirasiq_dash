@@ -66,5 +66,11 @@ export default [
     type: 'teacher',
     icon: { icon: 'ri-notification-3-line' },
   },
+  {
+    title: 'الواجبات',
+    to: { name: 'teacher-assignments-manage-assignments' },
+    type: 'teacher',
+    icon: { icon: 'ri-file-text-line' },
+  },
   // teacher
 ]

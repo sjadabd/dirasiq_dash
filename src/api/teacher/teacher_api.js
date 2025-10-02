@@ -209,10 +209,50 @@ class TeacherApi {
     const response = await axiosInstance.get(`/teacher/students/by-session/${encodeURIComponent(sessionId)}`);
     return response;
   }
-
   // Roster: Sessions (names)
   async getSessionNames() {
     const response = await axiosInstance.get(`/teacher/sessions/names`);
+    return response;
+  }
+
+  // assignments
+  async getAssignments(userData = {}) {
+    const page = userData?.options?.page ?? 1;
+    const limit = userData?.options?.limit ?? 10;
+    const url = `/teacher/assignments?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}`;
+    const response = await axiosInstance.get(url);
+    return response;
+  }
+  async createAssignment(payload) {
+    const response = await axiosInstance.post(`/teacher/assignments`, payload);
+    return response;
+  }
+  async updateAssignment(id, payload) {
+    const response = await axiosInstance.patch(`/teacher/assignments/${encodeURIComponent(id)}`, payload);
+    return response;
+  }
+  async deleteAssignment(id) {
+    const response = await axiosInstance.delete(`/teacher/assignments/${encodeURIComponent(id)}`);
+    return response;
+  }
+  async getAssignmentById(id) {
+    const response = await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(id)}`);
+    return response;
+  }
+  async setAssignmentRecipients(id, studentIds) {
+    const response = await axiosInstance.put(`/teacher/assignments/${encodeURIComponent(id)}/recipients`, { studentIds });
+    return response;
+  }
+  async gradeAssignment(assignmentId, studentId, payload) {
+    const response = await axiosInstance.put(`/teacher/assignments/${encodeURIComponent(assignmentId)}/grade/${encodeURIComponent(studentId)}`, payload);
+    return response;
+  }
+  async getAssignmentRecipients(id) {
+    const response = await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(id)}/recipients`);
+    return response;
+  }
+  async getAssignmentSubmission(assignmentId, studentId) {
+    const response = await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(assignmentId)}/submission/${encodeURIComponent(studentId)}`);
     return response;
   }
 }
