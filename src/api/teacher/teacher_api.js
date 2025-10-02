@@ -248,11 +248,45 @@ class TeacherApi {
     return response;
   }
   async getAssignmentRecipients(id) {
-    const response = await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(id)}/recipients`);
+    const response = await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(id)}/students`);
     return response;
   }
   async getAssignmentSubmission(assignmentId, studentId) {
     const response = await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(assignmentId)}/submission/${encodeURIComponent(studentId)}`);
+    return response;
+  }
+  async getAssignmentOverview(id) {
+    const response = await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(id)}/overview`);
+    return response;
+  }
+  // Exams
+  async listExams(params = {}) {
+    const response = await axiosInstance.get('/teacher/exams', { params });
+    return response;
+  }
+  async createExam(payload) {
+    const response = await axiosInstance.post('/teacher/exams', payload);
+    return response;
+  }
+  async getExamById(id) {
+    const response = await axiosInstance.get(`/teacher/exams/${encodeURIComponent(id)}`);
+    return response;
+  }
+  async updateExam(id, payload) {
+    const response = await axiosInstance.patch(`/teacher/exams/${encodeURIComponent(id)}`, payload);
+    return response;
+  }
+  async deleteExam(id) {
+    const response = await axiosInstance.delete(`/teacher/exams/${encodeURIComponent(id)}`);
+    return response;
+  }
+  async getExamStudents(id, sessionId) {
+    const params = sessionId ? { sessionId } : undefined;
+    const response = await axiosInstance.get(`/teacher/exams/${encodeURIComponent(id)}/students`, { params });
+    return response;
+  }
+  async gradeExam(examId, studentId, payload) {
+    const response = await axiosInstance.put(`/teacher/exams/${encodeURIComponent(examId)}/grade/${encodeURIComponent(studentId)}`, payload);
     return response;
   }
 }

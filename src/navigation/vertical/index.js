@@ -72,5 +72,11 @@ export default [
     type: 'teacher',
     icon: { icon: 'ri-file-text-line' },
   },
+  {
+    title: 'الامتحانات والدرجات',
+    to: { name: 'teacher-exams-manage-exams' },
+    type: 'teacher',
+    icon: { icon: 'ri-file-text-line' },
+  },
   // teacher
 ]

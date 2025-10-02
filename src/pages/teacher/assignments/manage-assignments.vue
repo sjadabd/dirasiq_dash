@@ -57,6 +57,7 @@
           @editItem="openEditDialog"
           @updateResponseItem="openGradeDialog"
           @sendNotificationsItem="openRecipientsDialog"
+          @showItem="openAssignmentOverview"
         />
       </VCardItem>
     </VCard>
@@ -100,7 +101,10 @@
               <VSelect v-model="form.session_id" :items="sessionItems" item-title="text" item-value="value" label="الجلسة (اختياري)" variant="outlined" :loading="sessionsLoading" :disabled="sessionsLoading" clearable />
             </VCol>
             <VCol cols="12" md="4">
-              <VSelect v-model="form.submission_type" :items="submissionTypes" label="طريقة التسليم" variant="outlined" />
+              <VSelect v-model="form.submission_type" :items="submissionTypes" label="نوع التسليم (مطلوب للطالب)" variant="outlined" />
+            </VCol>
+            <VCol cols="12" md="4">
+              <VSelect v-model="form.delivery_mode" :items="deliveryModes" label="وضع التسليم (ورقي/إلكتروني)" variant="outlined" />
             </VCol>
 
             <VCol cols="12" md="4">
@@ -213,6 +217,28 @@
       </VCard>
     </VDialog>
 
+    <!-- Image Preview Dialog -->
+    <VDialog v-model="imagePreview.open" max-width="900">
+      <VCard>
+        <VCardTitle class="d-flex align-center">
+          <VIcon class="me-2">ri-image-line</VIcon>
+          <span class="text-h6">{{ imagePreview.title || 'معاينة الصورة' }}</span>
+          <VSpacer />
+          <VBtn icon variant="text" @click="closeImage"><VIcon>ri-close-line</VIcon></VBtn>
+        </VCardTitle>
+        <VDivider />
+        <VCardText>
+          <VImg :src="imagePreview.src" :alt="imagePreview.title" height="70vh" contain class="rounded" />
+        </VCardText>
+        <VDivider />
+        <VCardActions>
+          <VSpacer />
+          <VBtn :href="imagePreview.src" target="_blank" rel="noopener" variant="tonal" prepend-icon="ri-download-2-line">فتح/تحميل</VBtn>
+          <VBtn color="primary" @click="closeImage">إغلاق</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
     <!-- Alerts -->
     <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true" close-text="موافق" @close="alert.open = false" />
 
@@ -245,6 +271,41 @@
             </VCol>
             <VCol cols="12" md="6">
               <VTextField v-model="gradeDialog.feedback" label="ملاحظات (اختياري)" />
+            </VCol>
+            <!-- Submission preview -->
+            <VCol cols="12" v-if="gradeDialog.submission">
+              <VCard variant="tonal" class="pa-3">
+                <div class="d-flex align-center mb-2">
+                  <VChip size="small" :color="gradeDialog.submission.status === 'submitted' ? 'primary' : 'default'" class="me-2">
+                    {{ gradeDialog.submission.status || '—' }}
+                  </VChip>
+                  <span class="text-caption">تم الإرسال: {{ formatDateTime(gradeDialog.submission.submitted_at) }}</span>
+                </div>
+                <div v-if="gradeDialog.submission.content_text" class="mb-2">
+                  <strong>النص:</strong>
+                  <div class="text-body-2 mt-1" style="white-space: pre-wrap;">{{ gradeDialog.submission.content_text }}</div>
+                </div>
+                <div v-if="gradeDialog.submission.link_url" class="mb-2">
+                  <strong>رابط:</strong>
+                  <a :href="gradeDialog.submission.link_url" target="_blank" rel="noopener" class="ms-1">فتح الرابط</a>
+                </div>
+                <div v-if="Array.isArray(gradeDialog.submission.attachments) && gradeDialog.submission.attachments.length">
+                  <strong class="d-block mb-2">مرفقات:</strong>
+                  <VRow class="ga-2">
+                    <VCol v-for="(att, i) in gradeDialog.submission.attachments" :key="i" cols="12" sm="6">
+                      <div v-if="(att.type || '').toLowerCase() === 'image'">
+                        <VImg :src="resolveUrl(att.url)" :alt="att.name" height="150" cover class="rounded" style="cursor: pointer;"
+                              @click="openImage(att)" />
+                      </div>
+                      <div v-else>
+                        <VBtn :href="resolveUrl(att.url)" target="_blank" rel="noopener" variant="tonal" size="small" prepend-icon="ri-attachment-2">
+                          {{ att.name || 'ملف' }}
+                        </VBtn>
+                      </div>
+                    </VCol>
+                  </VRow>
+                </div>
+              </VCard>
             </VCol>
           </VRow>
         </VCardText>
@@ -326,7 +387,7 @@ export default {
         loading: false,
         headers: [
           { title: '#', type: 'strong', sortable: false, key: 'num' },
-          { title: 'العنوان', type: 'strong', sortable: true, key: 'title' },
+          { title: 'العنوان', type: 'link', sortable: true, key: 'title' },
           { title: 'الدورة', type: 'strong', sortable: false, key: 'course_label' },
           { title: 'تاريخ التسليم', type: 'strong', sortable: true, key: 'due_date' },
           { title: 'الظهور', type: 'strong', sortable: false, key: 'visibility_label' },
@@ -348,9 +409,12 @@ export default {
       studentsOptions: [],
       studentsLoading: false,
       // grade dialog
-      gradeDialog: { open: false, loading: false, assignmentId: null, studentId: null, score: null, feedback: '' },
+      gradeDialog: { open: false, loading: false, assignmentId: null, studentId: null, score: null, feedback: '', submission: null },
       // recipients dialog
       recipientsDialog: { open: false, loading: false, assignmentId: null, studentIds: [] },
+
+      // image preview dialog
+      imagePreview: { open: false, src: '', title: '' },
 
       // form dialog
       formDialog: { open: false, mode: 'create', loading: false },
@@ -364,6 +428,7 @@ export default {
         assigned_date: '',
         due_date: '',
         submission_type: 'mixed',
+        delivery_mode: 'mixed',
         attachments: { pdf: { name: '', base64: '' }, images: [], existing: [] },
         resources: [],
         max_score: 100,
@@ -375,8 +440,14 @@ export default {
       },
 
       submissionTypes: [
+        { title: 'نصي فقط', value: 'text' },
+        { title: 'رابط فقط', value: 'link' },
+        { title: 'ملف فقط', value: 'file' },
+        { title: 'مختلط (نص/رابط/ملف)', value: 'mixed' },
+      ],
+      deliveryModes: [
         { title: 'ورقي', value: 'paper' },
-        { title: 'إلكتروني', value: 'online' },
+        { title: 'إلكتروني', value: 'electronic' },
         { title: 'مختلط', value: 'mixed' },
       ],
       visibilityItems: [
@@ -433,20 +504,23 @@ export default {
       async handler(sid) {
         try {
           const aId = this.gradeDialog.assignmentId;
-          if (!aId || !sid) { this.gradeDialog.score = null; this.gradeDialog.feedback = ''; return; }
+          if (!aId || !sid) { this.gradeDialog.score = null; this.gradeDialog.feedback = ''; this.gradeDialog.submission = null; return; }
           const res = await TeacherApi.getAssignmentSubmission(aId, sid);
           const sub = res?.data?.data;
           if (sub) {
             this.gradeDialog.score = typeof sub.score === 'number' ? sub.score : (sub.score ? Number(sub.score) : null);
             this.gradeDialog.feedback = sub.feedback || '';
+            this.gradeDialog.submission = sub;
           } else {
             this.gradeDialog.score = null;
             this.gradeDialog.feedback = '';
+            this.gradeDialog.submission = null;
           }
         } catch (e) {
           // if not found, clear fields silently
           this.gradeDialog.score = null;
           this.gradeDialog.feedback = '';
+          this.gradeDialog.submission = null;
         }
       },
       immediate: false,
@@ -454,6 +528,34 @@ export default {
   },
   methods: {
     showAlert(type, message) { Object.assign(this.alert, { type, message, open: true }); },
+    formatDateTime(val) {
+      if (!val) return '';
+      const d = new Date(val);
+      if (Number.isNaN(d.getTime())) return '';
+      return d.toLocaleString('ar-IQ');
+    },
+    resolveUrl(url) {
+      if (!url) return '';
+      if (/^https?:\/\//i.test(url)) return url;
+      try {
+        const cfg = JSON.parse(localStorage.getItem('results') || '{}');
+        const base = cfg?.content_url || 'http://localhost:3000';
+        // Use URL to properly join and percent-encode unicode characters
+        const full = new URL(url, base);
+        return full.href;
+      } catch {
+        // Fallback simple join
+        const base = 'http://localhost:3000';
+        return (base.replace(/\/$/, '')) + (String(url).startsWith('/') ? '' : '/') + String(url);
+      }
+    },
+    openImage(att) {
+      const src = this.resolveUrl(att?.url);
+      this.imagePreview = { open: true, src, title: att?.name || '' };
+    },
+    closeImage() {
+      this.imagePreview.open = false;
+    },
 
     // attachments handlers (Base64)
     async onPdfSelected(files) {
@@ -493,6 +595,7 @@ export default {
       try {
         if (!row?.id) return;
         this.gradeDialog.assignmentId = row.id;
+        this.gradeDialog.submission = null;
         // load eligible recipients for grading from backend
         this.studentsLoading = true;
         try {
@@ -525,7 +628,15 @@ export default {
       try {
         if (!row?.id) return;
         this.recipientsDialog.assignmentId = row.id;
-        // load students for selection
+        // preload existing recipients for this assignment
+        try {
+          const res = await TeacherApi.getAssignmentRecipients(row.id);
+          const existing = (res?.data?.data || []).map(s => String(s.id || s.studentId || s.student_id || s));
+          this.recipientsDialog.studentIds = existing;
+        } catch (_) {
+          this.recipientsDialog.studentIds = [];
+        }
+        // load students for selection (source priority: session > course > all)
         if (this.form.session_id) await this.loadStudentsBySession(this.form.session_id);
         else if (this.form.course_id) await this.loadStudentsByCourse(this.form.course_id);
         else await this.loadTeacherStudents();
@@ -650,7 +761,7 @@ export default {
           session_id: item.session_id || item.session?.id || null,
           assigned_date: item.assigned_date || '',
           due_date: item.due_date || '',
-          submission_type: item.submission_type || 'mixed',
+          submission_type: (['text','link','file','mixed'].includes(String(item.submission_type || '').toLowerCase()) ? String(item.submission_type).toLowerCase() : 'mixed'),
           attachments: (() => {
             const files = Array.isArray(item.attachments?.files) ? item.attachments.files : [];
             const pdf = { name: '', base64: '' };
@@ -673,6 +784,7 @@ export default {
           study_year: item.study_year || null,
           grade_id: item.grade_id || null,
           recipients: { studentIds: Array.isArray(item.recipients) ? item.recipients.map(s => String(s.id || s.studentId || s)) : [] },
+          delivery_mode: (item.attachments?.meta?.delivery_mode) ? String(item.attachments.meta.delivery_mode).toLowerCase() : 'mixed',
         };
         // Load students list as per watchers
         if (this.form.visibility === 'specific_students') {
@@ -708,9 +820,17 @@ export default {
             if (ex?.url && ex?.name && ex?.type) files.push({ type: ex.type, name: ex.name, url: ex.url });
           }
         }
-        const attachments = files.length ? { files } : {};
+        // Always include meta.delivery_mode
+        const normalizedDelivery = (['paper','electronic','mixed'].includes(String(f.delivery_mode || '').toLowerCase()) ? String(f.delivery_mode).toLowerCase() : 'mixed');
+        const attachments = { };
+        if (files.length) attachments.files = files;
+        attachments.meta = { delivery_mode: normalizedDelivery };
 
         // Build payload
+        // Normalize submission_type to allowed values
+        const allowedSubmission = ['text','link','file','mixed'];
+        const normalizedSubmissionType = allowedSubmission.includes(String(f.submission_type || '').toLowerCase()) ? String(f.submission_type).toLowerCase() : 'mixed';
+
         const payload = {
           course_id: f.course_id,
           subject_id: f.subject_id || null,
@@ -719,7 +839,7 @@ export default {
           description: f.description || null,
           assigned_date: f.assigned_date || null,
           due_date: f.due_date || null,
-          submission_type: f.submission_type || 'mixed',
+          submission_type: normalizedSubmissionType,
           attachments,
           resources: f.resources || [],
           max_score: f.max_score ?? 100,
@@ -781,6 +901,11 @@ export default {
         this.confirmDialog.targetId = null;
         this.confirmDialog.open = false;
       }
+    },
+
+    openAssignmentOverview(row) {
+      if (!row?.id) return;
+      this.$router.push({ name: 'teacher-assignments-assignment-overview', query: { id: row.id } });
     },
   },
 };
