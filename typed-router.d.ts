@@ -33,6 +33,8 @@ declare module 'vue-router/auto-routes' {
     'teacher-bookings-show-bookings': RouteRecordInfo<'teacher-bookings-show-bookings', '/teacher/bookings/show-bookings', Record<never, never>, Record<never, never>>,
     'teacher-course-show-course': RouteRecordInfo<'teacher-course-show-course', '/teacher/course/show-course', Record<never, never>, Record<never, never>>,
     'teacher-dashboard': RouteRecordInfo<'teacher-dashboard', '/teacher/dashboard', Record<never, never>, Record<never, never>>,
+    'teacher-evaluations-bulk-upsert-evaluations': RouteRecordInfo<'teacher-evaluations-bulk-upsert-evaluations', '/teacher/evaluations/bulk-upsert-evaluations', Record<never, never>, Record<never, never>>,
+    'teacher-evaluations-manage-evaluations': RouteRecordInfo<'teacher-evaluations-manage-evaluations', '/teacher/evaluations/manage-evaluations', Record<never, never>, Record<never, never>>,
     'teacher-exams-exam-details': RouteRecordInfo<'teacher-exams-exam-details', '/teacher/exams/exam-details', Record<never, never>, Record<never, never>>,
     'teacher-exams-manage-exams': RouteRecordInfo<'teacher-exams-manage-exams', '/teacher/exams/manage-exams', Record<never, never>, Record<never, never>>,
     'teacher-notifications-show-notifications': RouteRecordInfo<'teacher-notifications-show-notifications', '/teacher/notifications/show-notifications', Record<never, never>, Record<never, never>>,

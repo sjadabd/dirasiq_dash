@@ -289,5 +289,27 @@ class TeacherApi {
     const response = await axiosInstance.put(`/teacher/exams/${encodeURIComponent(examId)}/grade/${encodeURIComponent(studentId)}`, payload);
     return response;
   }
+
+  // Student Evaluations (Teacher)
+  async listEvaluations(params = {}) {
+    const response = await axiosInstance.get('/teacher/evaluations', { params });
+    return response;
+  }
+  async bulkUpsertEvaluations(payload) {
+    const response = await axiosInstance.post('/teacher/evaluations/bulk-upsert', payload);
+    return response;
+  }
+  async getEvaluationById(id) {
+    const response = await axiosInstance.get(`/teacher/evaluations/${encodeURIComponent(id)}`);
+    return response;
+  }
+  async updateEvaluation(id, payload) {
+    const response = await axiosInstance.patch(`/teacher/evaluations/${encodeURIComponent(id)}`, payload);
+    return response;
+  }
+  async getStudentsWithEval(params = {}) {
+    const response = await axiosInstance.get('/teacher/evaluations/students-with-eval', { params });
+    return response;
+  }
 }
 export default new TeacherApi();

@@ -78,5 +78,17 @@ export default [
     type: 'teacher',
     icon: { icon: 'ri-file-text-line' },
   },
+  {
+    title: 'تقييمات الطلاب',
+    to: { name: 'teacher-evaluations-manage-evaluations' },
+    type: 'teacher',
+    icon: { icon: 'ri-file-text-line' },
+  },
+  {
+    title: 'إضافة تقييمات يومية',
+    to: { name: 'teacher-evaluations-bulk-upsert-evaluations' },
+    type: 'teacher',
+    icon: { icon: 'ri-file-text-line' },
+  },
   // teacher
 ]
