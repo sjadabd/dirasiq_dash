@@ -55,10 +55,22 @@ export default [
     icon: { icon: 'ri-calendar-2-line' },
   },
   {
+    title: 'فواتير العربون',
+    to: { name: 'teacher-payments-reservations-show-reservation-payments' },
+    type: 'teacher',
+    icon: { icon: 'ri-file-text-line' },
+  },
+  {
     title: 'الجدول الاسبوعي',
     to: { name: 'teacher-sessions-manage-sessions' },
     type: 'teacher',
     icon: { icon: 'ri-calendar-2-line' },
+  },
+  {
+    title: 'فواتير الطلاب',
+    to: { name: 'teacher-invoices-manage-invoices' },
+    type: 'teacher',
+    icon: { icon: 'ri-bill-line' },
   },
   {
     title: 'الاشعارات',

@@ -311,5 +311,65 @@ class TeacherApi {
     const response = await axiosInstance.get('/teacher/evaluations/students-with-eval', { params });
     return response;
   }
+  
+  // Reservation Payments (Teacher)
+  async getReservationPayments(userData = {}) {
+    const page = userData?.options?.page ?? 1;
+    const limit = userData?.options?.limit ?? 10;
+    const studyYear = userData?.options?.study_year ?? '';
+    const url = `/teacher/payments/reservations?studyYear=${encodeURIComponent(studyYear)}&page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}`;
+    const response = await axiosInstance.get(url);
+    return response;
+  }
+  async getReservationPaymentsReport(studyYear) {
+    const url = `/teacher/payments/reservations/report?studyYear=${encodeURIComponent(studyYear)}`;
+    const response = await axiosInstance.get(url);
+    return response;
+  }
+  async getReservationPaymentByBooking(bookingId) {
+    const response = await axiosInstance.get(`/teacher/payments/reservations/${encodeURIComponent(bookingId)}`);
+    return response;
+  }
+
+  // Invoices (Teacher)
+  async listInvoices(params = {}) {
+    // params: { studyYear, status, page, limit }
+    const response = await axiosInstance.get('/teacher/invoices', { params });
+    return response;
+  }
+  async createInvoice(payload) {
+    // payload follows the backend spec
+    const response = await axiosInstance.post('/teacher/invoices', payload);
+    return response;
+  }
+  async addInvoicePayment(invoiceId, payload) {
+    const response = await axiosInstance.post(`/teacher/invoices/${encodeURIComponent(invoiceId)}/payments`, payload);
+    return response;
+  }
+  async addInvoiceDiscount(invoiceId, payload) {
+    const response = await axiosInstance.post(`/teacher/invoices/${encodeURIComponent(invoiceId)}/discounts`, payload);
+    return response;
+  }
+  async softDeleteInvoice(invoiceId) {
+    const response = await axiosInstance.delete(`/teacher/invoices/${encodeURIComponent(invoiceId)}`);
+    return response;
+  }
+  async restoreInvoice(invoiceId) {
+    const response = await axiosInstance.patch(`/teacher/invoices/${encodeURIComponent(invoiceId)}/restore`);
+    return response;
+  }
+  // Optional detail reads (if backend provides them)
+  async getInvoiceInstallments(invoiceId) {
+    const response = await axiosInstance.get(`/teacher/invoices/${encodeURIComponent(invoiceId)}/installments`);
+    return response;
+  }
+  async getInvoiceEntries(invoiceId) {
+    const response = await axiosInstance.get(`/teacher/invoices/${encodeURIComponent(invoiceId)}/entries`);
+    return response;
+  }
+  async getInvoiceEntriesReport(invoiceId) {
+    const response = await axiosInstance.get(`/teacher/invoices/${encodeURIComponent(invoiceId)}/entries/report`);
+    return response;
+  }
 }
 export default new TeacherApi();
