@@ -1,5 +1,6 @@
 {
-  "name": "materio-vuetify-vuejs-admin-template",
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "mulhim-iq",
   "version": "3.2.0",
   "private": true,
   "type": "module",
@@ -8,7 +9,6 @@
     "build": "vite build",
     "preview": "vite preview --port 5050",
     "lint": "eslint . -c .eslintrc.cjs --fix --ext .ts,.js,.cjs,.vue,.tsx,.jsx",
-    "build:icons": "tsx src/plugins/iconify/build-icons.js",
     "msw:init": "msw init public/ --save",
     "postinstall": "npm run build:icons && npm run msw:init"
   },

@@ -1,19 +1,17 @@
 <template>
   <v-app :rtl="true">
-    <!-- شريط علوي متطور -->
-    <v-app-bar
-      :color="isDark ? 'surface' : 'primary'"
-      :theme="isDark ? 'dark' : 'light'"
-      elevation="0"
-      fixed
-      class="navbar-glass"
-    >
+    <!-- 1️⃣ Header / Navigation -->
+    <v-app-bar color="primary" elevation="0" app fixed class="navbar-glass"
+      style=" position: fixed; z-index: 1000;background-color: white !important; inset-block-start: 0; inset-inline: 0;">
       <v-container>
         <v-row align="center" no-gutters>
           <v-col cols="auto">
             <div class="d-flex align-center">
-              <v-icon size="32" class="me-3" color="primary">mdi-school</v-icon>
-              <h1 class="text-h5 font-weight-bold">منصة دراسيق</h1>
+              <v-img :src="logo" width="50" height="50" />
+              <h1 class="text-h5 font-weight-bold">
+                <span class="text-primary-dark">Mulhim</span>
+                <span class="text-accent">IQ</span>
+              </h1>
             </div>
           </v-col>
 
@@ -21,131 +19,113 @@
 
           <v-col cols="auto" class="d-none d-md-flex">
             <div class="d-flex align-center gap-2">
-              <v-btn variant="text" @click="scrollToSection('features')"
-                >المميزات</v-btn
-              >
-              <v-btn variant="text" @click="scrollToSection('how-it-works')"
-                >كيف يعمل</v-btn
-              >
-              <v-btn variant="text" @click="scrollToSection('faq')"
-                >الأسئلة الشائعة</v-btn
-              >
+              <v-btn variant="text" @click="scrollToSection('hero')">الرئيسية</v-btn>
+              <v-btn variant="text" @click="scrollToSection('features')">للمعلمين</v-btn>
+              <v-btn variant="text" @click="scrollToSection('how-it-works')">للطلاب</v-btn>
+              <v-btn variant="text" @click="scrollToSection('pricing')">باقات الأشتراك</v-btn>
+              <v-btn variant="text" @click="scrollToSection('footer')">تواصل معنا</v-btn>
             </div>
           </v-col>
 
           <v-col cols="auto">
-            <div class="d-flex align-center gap-2">
-              <!-- تبديل الثيم -->
-              <v-btn
-                :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
-                variant="text"
-                @click="toggleTheme"
-              />
+            <!-- 🔹 زر ديناميكي حسب حالة تسجيل الدخول -->
+            <v-btn v-if="!isLoggedIn" color="support" style="background-color: #1c324c !important;" variant="elevated"
+              @click="openStartDialog">
+              <v-icon start>mdi-rocket-launch</v-icon>
+              ابدأ الآن
+            </v-btn>
 
-              <v-divider vertical class="mx-2" />
+            <v-btn v-else color="success" variant="elevated" block to="/teacher/dashboard">
+              <v-icon start>mdi-view-dashboard</v-icon>
+              لوحة التحكم
+            </v-btn>
 
-              <!-- أزرار تسجيل الدخول (عندما لا يكون المستخدم مسجل دخول) -->
-              <template v-if="!isAuthenticated">
-                <v-btn variant="outlined" @click="openLoginDialog">
-                  <v-icon start>mdi-login</v-icon>
-                  تسجيل الدخول
-                </v-btn>
-
-                <v-btn color="primary" @click="openRegisterDialog">
-                  <v-icon start>mdi-account-plus</v-icon>
-                  إنشاء حساب
-                </v-btn>
-              </template>
-
-              <!-- أزرار المستخدم المسجل دخول -->
-              <template v-else>
-                <v-btn variant="outlined" @click="goToDashboard">
-                  <v-icon start>mdi-account</v-icon>
-                  لوحة التحكم
-                </v-btn>
-
-                <v-btn color="error" variant="outlined" @click="logout">
-                  <v-icon start>ri-logout-box-line</v-icon>
-                  تسجيل الخروج
-                </v-btn>
-              </template>
-            </div>
           </v-col>
         </v-row>
       </v-container>
     </v-app-bar>
 
     <v-main>
-      <!-- قسم ترحيبي محسّن -->
-      <section class="hero-section">
+      <!-- 2️⃣ Hero Section -->
+      <!-- 2️⃣ Hero Section with Carousel -->
+      <section id="hero" class="hero-section">
         <v-container>
-          <v-row align="center" class="min-height-screen">
-            <v-col cols="12" md="6">
-              <div class="hero-content">
-                <v-slide-y-transition appear>
-                  <div>
-                    <h1 class="text-h2 font-weight-bold mb-4 text-gradient">
-                      تعلّم بذكاء مع منصة دراسيق
-                    </h1>
-                    <p class="text-h6 text-medium-emphasis mb-6 text-pretty">
-                      منصة تعليمية متطورة تربط المعلمين بالطلاب وتوفر تجربة
-                      تعليمية تفاعلية مع أحدث التقنيات
+          <v-row align="center" class="min-height-screen responsive-row">
+            <!-- Left side: Text content and CTA buttons for teachers -->
+            <v-col cols="12" md="6" order="2" order-md="1">
+              <v-slide-y-transition appear>
+                <div class="hero-content">
+                  <h1 class="text-h2 font-weight-bold mb-4 text-white text-balance">
+                    علّم، ألهم، وتواصل مع طلابك بسهولة
+                  </h1>
+                  <p class="text-h6 text-white mb-6 text-pretty" style="opacity: 0.95;">
+                    منصة ملهم تمكّنك من إدارة الكورسات، الحضور، الدروس، والطلاب في مكان واحد بواجهة بسيطة وسهلة.
+                  </p>
+
+                  <div class="d-flex gap-3 flex-wrap mb-6">
+                    <v-btn size="x-large" color="white" variant="elevated" @click="openStartDialog">
+                      <v-icon start>mdi-account-plus</v-icon>
+                      انضم كمعلم
+                    </v-btn>
+
+                    <v-btn size="x-large" variant="outlined" color="white" @click="openStartDialog">
+                      <v-icon start>mdi-login</v-icon>
+                      تسجيل الدخول
+                    </v-btn>
+                  </div>
+
+                  <!-- Download app section for students -->
+                  <div class="download-section mt-8 pa-4"
+                    style=" border-radius: 16px; backdrop-filter: blur(10px);background: rgba(255, 255, 255, 10%);">
+                    <h3 class="text-h6 font-weight-bold text-white mb-3">
+                      <v-icon start color="white">mdi-cellphone-download</v-icon>
+                      حمّل التطبيق للطلاب
+                    </h3>
+                    <p class="text-body-2 text-white mb-3" style="opacity: 0.9;">
+                      تابع دروسك وواجباتك من هاتفك المحمول
                     </p>
-
-                    <div class="d-flex gap-3 flex-wrap mb-6">
-                      <v-btn
-                        size="x-large"
-                        color="primary"
-                        @click="openLoginDialog"
-                        :loading="isLoading"
-                      >
-                        <v-icon start>mdi-rocket-launch</v-icon>
-                        ابدأ الآن مجاناً
-                      </v-btn>
-
-                      <v-btn
-                        size="x-large"
-                        variant="outlined"
-                        color="primary"
-                        @click="startTour"
-                      >
-                        <v-icon start>mdi-play-circle</v-icon>
-                        جولة سريعة
-                      </v-btn>
-                    </div>
-
-                    <!-- شارات المميزات -->
                     <div class="d-flex gap-2 flex-wrap">
-                      <v-chip color="success" variant="elevated">
-                        <v-icon start>mdi-check</v-icon>
-                        مجاني تماماً
-                      </v-chip>
-                      <v-chip color="info" variant="elevated">
-                        <v-icon start>mdi-certificate</v-icon>
-                        شهادات معتمدة
-                      </v-chip>
-                      <v-chip color="warning" variant="elevated">
-                        <v-icon start>mdi-clock</v-icon>
-                        متاح 24/7
-                      </v-chip>
+                      <v-btn color="white" variant="elevated" size="large" href="#">
+                        <v-icon start>mdi-apple</v-icon>
+                        App Store
+                      </v-btn>
+                      <v-btn color="white" variant="elevated" size="large" href="#">
+                        <v-icon start>mdi-google-play</v-icon>
+                        Google Play
+                      </v-btn>
                     </div>
                   </div>
-                </v-slide-y-transition>
-              </div>
+                </div>
+              </v-slide-y-transition>
             </v-col>
 
-            <v-col cols="12" md="6">
+            <!-- Right side: Carousel showing mobile app screenshots -->
+            <v-col cols="12" md="6" order="1" order-md="2">
               <v-fade-transition appear>
-                <div class="hero-image text-center">
-                  <div class="floating-card">
-                    <v-card elevation="8" class="pa-8 hero-card">
-                      <v-icon size="120" color="primary" class="mb-4"
-                        >mdi-school</v-icon
-                      >
-                      <h3 class="text-h5 text-primary mb-2">التعليم الذكي</h3>
-                      <p class="text-body-2">تجربة تعليمية مخصصة لكل طالب</p>
-                    </v-card>
-                  </div>
+                <div class="hero-carousel-container">
+                  <v-carousel v-model="carouselModel" cycle :interval="4000" hide-delimiter-background
+                    show-arrows="hover" height="auto" class="hero-carousel">
+                    <v-carousel-item v-for="(screen, index) in appScreenshots" :key="index">
+                      <div class="d-flex justify-center align-center pa-4">
+                        <div class="phone-mockup">
+                          <div class="phone-frame">
+                            <div class="phone-notch"></div>
+                            <div class="phone-screen">
+                              <v-img :src="screen.image" :alt="screen.title" cover class="phone-screen-image" />
+                            </div>
+                          </div>
+                          <div class="text-center mt-4">
+                            <h3 class="text-h5 font-weight-bold text-white mb-2">
+                              {{ screen.title }}
+                            </h3>
+                            <p class="text-body-1 text-white" style="opacity: 0.9;">
+                              {{ screen.description }}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </v-carousel-item>
+                  </v-carousel>
                 </div>
               </v-fade-transition>
             </v-col>
@@ -153,53 +133,28 @@
         </v-container>
       </section>
 
-      <!-- لماذا نظامنا؟ -->
+      <!-- 3️⃣ Feature Section -->
       <section id="features" class="features-section py-16">
         <v-container>
           <div class="text-center mb-12">
-            <h2 class="text-h3 font-weight-bold mb-4">
-              لماذا تختار منصة دراسيق؟
-            </h2>
-            <p class="text-h6 text-medium-emphasis">
-              مميزات فريدة تجعل تجربتك التعليمية استثنائية
-            </p>
+            <h2 class="text-h3 font-weight-bold mb-4">المميزات الرئيسية</h2>
+            <p class="text-h6 text-medium-emphasis">كل ما تحتاجه لإدارة تعليمية ناجحة</p>
           </div>
 
           <v-row>
-            <v-col
-              cols="12"
-              sm="6"
-              md="4"
-              v-for="(feature, index) in features"
-              :key="feature.id"
-            >
+            <v-col cols="12" sm="6" md="4" v-for="(feature, index) in features" :key="feature.id">
               <v-slide-y-transition :delay="index * 100" appear>
-                <v-card
-                  elevation="2"
-                  class="h-100 text-center pa-6 feature-card"
-                  :loading="isLoading"
-                >
+                <v-card elevation="2" class="h-100 text-center pa-6 feature-card"
+                  :class="`feature-card-${feature.colorClass}`">
                   <v-icon :size="64" :color="feature.color" class="mb-4">
                     {{ feature.icon }}
                   </v-icon>
                   <h3 class="text-h5 font-weight-bold mb-3">
                     {{ feature.title }}
                   </h3>
-                  <p class="text-body-1 text-medium-emphasis mb-4">
+                  <p class="text-body-1 text-medium-emphasis">
                     {{ feature.description }}
                   </p>
-
-                  <div class="d-flex justify-center gap-1">
-                    <v-chip
-                      v-for="tag in feature.tags"
-                      :key="tag"
-                      size="small"
-                      :color="feature.color"
-                      variant="outlined"
-                    >
-                      {{ tag }}
-                    </v-chip>
-                  </div>
                 </v-card>
               </v-slide-y-transition>
             </v-col>
@@ -207,220 +162,298 @@
         </v-container>
       </section>
 
-      <!-- كيف يعمل النظام؟ -->
-      <section id="how-it-works" class="how-it-works-section py-16">
+      <!-- 4️⃣ Dashboard Preview Section -->
+      <section class="dashboard-preview-section py-16">
         <v-container>
           <div class="text-center mb-12">
-            <h2 class="text-h3 font-weight-bold mb-4">كيف يعمل النظام؟</h2>
-            <p class="text-h6 text-medium-emphasis">
-              خطوات بسيطة للبدء في رحلتك التعليمية
-            </p>
+            <h2 class="text-h3 font-weight-bold mb-4">شاهد كيف يدير المعلم دروسه بسهولة</h2>
+            <p class="text-h6 text-medium-emphasis">جرب واجهة المعلم التفاعلية مباشرة</p>
           </div>
 
           <v-row justify="center">
-            <v-col cols="12" md="10">
-              <div class="steps-container">
-                <div
-                  v-for="(step, index) in steps"
-                  :key="step.id"
-                  class="step-item d-flex align-center mb-8"
-                  :class="{ 'flex-row-reverse': index % 2 === 1 }"
-                >
-                  <div class="step-number">
-                    <v-avatar size="80" :color="step.color">
-                      <span class="text-h4 font-weight-bold text-white">{{
-                        index + 1
-                      }}</span>
-                    </v-avatar>
-                  </div>
+            <v-col cols="12" lg="11">
+              <v-card elevation="8" class="dashboard-demo-card">
+                <v-row no-gutters>
+                  <!-- Sidebar -->
+                  <v-col cols="auto" class="dashboard-sidebar">
+                    <v-list density="compact" class="py-4">
+                      <v-list-item v-for="item in sidebarItems" :key="item.id" :prepend-icon="item.icon"
+                        :title="item.title" :active="item.active" class="mb-2" />
+                    </v-list>
+                  </v-col>
 
-                  <div class="step-content flex-grow-1 mx-6">
-                    <v-card elevation="2" class="pa-6">
-                      <div class="d-flex align-center mb-3">
-                        <v-icon :color="step.color" size="32" class="me-3">{{
-                          step.icon
-                        }}</v-icon>
-                        <h3 class="text-h5 font-weight-bold">
-                          {{ step.title }}
-                        </h3>
-                      </div>
-                      <p class="text-body-1 text-medium-emphasis">
-                        {{ step.description }}
-                      </p>
-                    </v-card>
-                  </div>
-                </div>
-              </div>
-            </v-col>
-          </v-row>
-        </v-container>
-      </section>
+                  <!-- Main Content -->
+                  <v-col>
+                    <!-- Toolbar -->
+                    <v-toolbar color="surface" elevation="0" class="dashboard-toolbar">
+                      <v-toolbar-title class="text-h6 font-weight-bold">
+                        لوحة التحكم
+                      </v-toolbar-title>
+                      <v-spacer />
+                      <v-btn icon variant="text">
+                        <v-badge color="error" content="3" overlap>
+                          <v-icon>mdi-bell</v-icon>
+                        </v-badge>
+                      </v-btn>
+                      <v-btn icon variant="text" @click="toggleDashboardTheme">
+                        <v-icon>{{ dashboardDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
+                      </v-btn>
+                      <v-avatar size="40" color="accent" class="ms-2">
+                        <v-icon color="white">mdi-account</v-icon>
+                      </v-avatar>
+                    </v-toolbar>
 
-      <!-- تجربة الدخول -->
-      <section class="cta-section py-16">
-        <v-container>
-          <v-row justify="center">
-            <v-col cols="12" md="8">
-              <v-card elevation="8" class="pa-8 text-center cta-card">
-                <h2 class="text-h3 font-weight-bold mb-4">جرب المنصة الآن</h2>
-                <p class="text-h6 text-medium-emphasis mb-6">
-                  ابدأ رحلتك التعليمية مع آلاف الطلاب والمعلمين
-                </p>
+                    <!-- Dashboard Content -->
+                    <div class="dashboard-content pa-6">
+                      <v-row>
+                        <!-- Stats Cards -->
+                        <v-col cols="12" sm="6" md="3" v-for="stat in stats" :key="stat.id">
+                          <v-card elevation="1" class="pa-4 stat-card">
+                            <div class="d-flex align-center justify-space-between mb-2">
+                              <v-icon :color="stat.color" size="32">{{ stat.icon }}</v-icon>
+                              <v-chip :color="stat.color" size="small" variant="tonal">
+                                {{ stat.change }}
+                              </v-chip>
+                            </div>
+                            <h4 class="text-h4 font-weight-bold mb-1">{{ stat.value }}</h4>
+                            <p class="text-body-2 text-medium-emphasis">{{ stat.label }}</p>
+                          </v-card>
+                        </v-col>
 
-                <v-btn
-                  size="x-large"
-                  color="primary"
-                  @click="openGoogleSignInDemo"
-                  :loading="isGoogleLoading"
-                  class="mb-4"
-                >
-                  <v-icon start>mdi-google</v-icon>
-                  تسجيل الدخول بـ Google
-                </v-btn>
+                        <!-- Upcoming Classes Table -->
+                        <v-col cols="12" md="8">
+                          <v-card elevation="1">
+                            <v-card-title class="d-flex align-center">
+                              <v-icon start color="primary">mdi-calendar-clock</v-icon>
+                              الدروس القادمة
+                            </v-card-title>
+                            <v-data-table :headers="tableHeaders" :items="upcomingClasses" density="comfortable"
+                              :items-per-page="5" hide-default-footer>
+                              <template #item.status="{ item }">
+                                <v-chip :color="item.statusColor" size="small" variant="tonal">
+                                  {{ item.status }}
+                                </v-chip>
+                              </template>
+                              <template #item.actions>
+                                <v-btn icon size="small" variant="text">
+                                  <v-icon>mdi-pencil</v-icon>
+                                </v-btn>
+                              </template>
+                            </v-data-table>
+                          </v-card>
+                        </v-col>
 
-                <div class="text-caption text-medium-emphasis">
-                  آمن وسريع • لا حاجة لكلمة مرور
-                </div>
-
-                <!-- حالات التحميل والخطأ -->
-                <v-alert
-                  v-if="hasError"
-                  type="error"
-                  class="mt-4"
-                  closable
-                  @click:close="hasError = false"
-                >
-                  حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.
-                </v-alert>
+                        <!-- Notifications -->
+                        <v-col cols="12" md="4">
+                          <v-card elevation="1">
+                            <v-card-title class="d-flex align-center">
+                              <v-icon start color="warning">mdi-bell</v-icon>
+                              الإشعارات
+                            </v-card-title>
+                            <v-list density="compact">
+                              <v-list-item v-for="notification in notifications" :key="notification.id"
+                                :prepend-icon="notification.icon" :title="notification.title"
+                                :subtitle="notification.time" class="notification-item">
+                                <template #prepend>
+                                  <v-avatar :color="notification.color" size="32">
+                                    <v-icon size="16" color="white">{{ notification.icon }}</v-icon>
+                                  </v-avatar>
+                                </template>
+                              </v-list-item>
+                            </v-list>
+                          </v-card>
+                        </v-col>
+                      </v-row>
+                    </div>
+                  </v-col>
+                </v-row>
               </v-card>
             </v-col>
           </v-row>
         </v-container>
       </section>
 
-      <!-- الأسئلة الشائعة -->
-      <section id="faq" class="faq-section py-16">
+      <!-- 5️⃣ How It Works Section -->
+      <section id="how-it-works" class="how-it-works-section py-16">
         <v-container>
           <div class="text-center mb-12">
-            <h2 class="text-h3 font-weight-bold mb-4">الأسئلة الشائعة</h2>
-            <p class="text-h6 text-medium-emphasis">
-              إجابات على أكثر الأسئلة شيوعاً
-            </p>
+            <h2 class="text-h3 font-weight-bold mb-4">كيف تعمل ملهم</h2>
+            <p class="text-h6 text-medium-emphasis">أربع خطوات بسيطة للبدء</p>
           </div>
 
           <v-row justify="center">
             <v-col cols="12" md="10">
-              <v-expansion-panels variant="accordion" class="faq-panels">
-                <v-expansion-panel
-                  v-for="faq in faqs"
-                  :key="faq.id"
-                  :title="faq.question"
-                  :text="faq.answer"
-                />
-              </v-expansion-panels>
+              <div class="timeline-container">
+                <v-timeline side="end" align="start">
+                  <v-timeline-item v-for="(step, index) in steps" :key="step.id" :dot-color="step.color" size="large">
+                    <template #icon>
+                      <v-icon color="white">{{ step.icon }}</v-icon>
+                    </template>
+                    <v-card elevation="2" class="pa-6">
+                      <div class="d-flex align-center mb-3">
+                        <v-chip :color="step.color" class="me-3">خطوة {{ index + 1 }}</v-chip>
+                        <h3 class="text-h5 font-weight-bold">{{ step.title }}</h3>
+                      </div>
+                      <p class="text-body-1 text-medium-emphasis">{{ step.description }}</p>
+                    </v-card>
+                  </v-timeline-item>
+                </v-timeline>
+              </div>
             </v-col>
           </v-row>
         </v-container>
       </section>
 
-      <!-- شهادات المستخدمين -->
+      <!-- 6️⃣ Testimonials Section -->
       <section class="testimonials-section py-16">
         <v-container>
           <div class="text-center mb-12">
-            <h2 class="text-h3 font-weight-bold mb-4">ماذا يقول مستخدمونا؟</h2>
-            <p class="text-h6 text-medium-emphasis">
-              تجارب حقيقية من طلاب ومعلمين
-            </p>
+            <h2 class="text-h3 font-weight-bold mb-4 text-white">آراء المستخدمين</h2>
+            <p class="text-h6 text-white" style="opacity: 0.95;">ماذا يقول معلمونا وطلابنا</p>
           </div>
 
           <v-row>
-            <v-col
-              cols="12"
-              md="4"
-              v-for="testimonial in testimonials"
-              :key="testimonial.id"
-            >
-              <v-card elevation="2" class="pa-6 h-100 testimonial-card">
+            <v-col cols="12" md="4" v-for="testimonial in testimonials" :key="testimonial.id">
+              <v-card elevation="4" class="pa-6 h-100 testimonial-card">
                 <div class="d-flex align-center mb-4">
-                  <v-avatar size="48" :color="testimonial.color">
-                    <v-icon color="white">{{ testimonial.avatar }}</v-icon>
+                  <v-avatar size="56" :color="testimonial.color">
+                    <v-icon color="white" size="32">{{ testimonial.avatar }}</v-icon>
                   </v-avatar>
                   <div class="mr-3">
-                    <h4 class="text-h6 font-weight-bold">
-                      {{ testimonial.name }}
-                    </h4>
-                    <p class="text-body-2 text-medium-emphasis">
-                      {{ testimonial.role }}
-                    </p>
+                    <h4 class="text-h6 font-weight-bold">{{ testimonial.name }}</h4>
+                    <p class="text-body-2 text-medium-emphasis">{{ testimonial.role }}</p>
                   </div>
                 </div>
 
                 <p class="text-body-1 mb-4">"{{ testimonial.comment }}"</p>
 
-                <div class="d-flex">
-                  <v-icon v-for="i in 5" :key="i" color="amber" size="16">
-                    mdi-star
-                  </v-icon>
-                </div>
+                <v-rating :model-value="5" color="amber" density="compact" readonly size="small" />
               </v-card>
             </v-col>
           </v-row>
         </v-container>
       </section>
 
-      <!-- تذييل محسّن -->
-      <v-footer color="primary" class="footer-section">
+      <!-- 7️⃣ Pricing Section -->
+      <section id="pricing" class="pricing-section py-16">
+        <v-container>
+          <div class="text-center mb-12">
+            <h2 class="text-h3 font-weight-bold mb-4">باقات الأشتراك</h2>
+            <p class="text-h6 text-medium-emphasis">اختر الخطة المناسبة لك</p>
+          </div>
+
+          <v-row justify="center">
+            <v-col cols="12" md="3" v-for="plan in pricingPlans" :key="plan.id">
+              <v-hover v-slot="{ isHovering, props }">
+                <v-card v-bind="props" elevation="2" class="pa-6 text-center pricing-card h-100"
+                  :class="{ 'pricing-card-hover': isHovering, 'pricing-featured': plan.featured }"
+                  :color="plan.featured ? 'accent' : undefined">
+                  <v-chip v-if="plan.featured" color="highlight" class="mb-4" variant="elevated">
+                    الأكثر شعبية
+                  </v-chip>
+
+                  <v-icon :size="64" :color="plan.iconColor" class="mb-4">
+                    {{ plan.icon }}
+                  </v-icon>
+
+                  <h3 class="text-h4 font-weight-bold mb-2">
+                    {{ plan.name }}
+                  </h3>
+
+                  <div class="mb-4">
+                    <span class="text-h3 font-weight-bold">
+                      {{ plan.price }}
+                    </span>
+                    <span class="text-body-1">
+                      {{ plan.period }}
+                    </span>
+                  </div>
+
+                  <v-divider class="my-4" />
+
+                  <v-list density="compact" class="mb-6 bg-transparent">
+                    <v-list-item v-for="feature in plan.features" :key="feature" class="px-0">
+                      <template #prepend>
+                        <v-icon size="20">
+                          mdi-check-circle
+                        </v-icon>
+                      </template>
+                      <v-list-item-title>
+                        {{ feature }}
+                      </v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+
+                  <v-btn :variant="plan.featured ? 'elevated' : 'outlined'" size="large" block
+                    @click="selectPlan(plan)">
+                    {{ plan.buttonText }}
+                  </v-btn>
+                </v-card>
+              </v-hover>
+            </v-col>
+          </v-row>
+        </v-container>
+      </section>
+
+      <!-- 8️⃣ Call To Action Section -->
+      <section class="cta-section py-16">
+        <v-container>
+          <v-row justify="center">
+            <v-col cols="12" md="8">
+              <div class="text-center">
+                <h2 class="text-h2 font-weight-bold mb-4 text-white text-balance">
+                  ابدأ رحلتك التعليمية مع ملهم اليوم
+                </h2>
+                <p class="text-h6 text-white mb-6" style="opacity: 0.95;">
+                  انضم إلى آلاف المعلمين والطلاب الذين يستخدمون ملهم
+                </p>
+                <v-btn size="x-large" color="white" variant="elevated" @click="openStartDialog">
+                  <v-icon start>mdi-account-plus</v-icon>
+                  أنشئ حسابك مجانًا
+                </v-btn>
+              </div>
+            </v-col>
+          </v-row>
+        </v-container>
+      </section>
+
+      <!-- 9️⃣ Footer -->
+      <v-footer id="footer" color="primary" class="footer-section">
         <v-container>
           <v-row>
             <v-col cols="12" md="4">
               <div class="d-flex align-center mb-4">
-                <v-icon size="32" class="me-3" color="white">mdi-school</v-icon>
-                <h3 class="text-h5 font-weight-bold text-white">منصة دراسيق</h3>
+                <v-icon size="32" class="me-3" color="support">mdi-lightbulb-on</v-icon>
+                <h3 class="text-h5 font-weight-bold text-white">
+                  <span>Mulhim</span><span class="text-accent">IQ</span>
+                </h3>
               </div>
-              <p class="text-body-2 text-white mb-4">
-                منصة تعليمية متطورة تهدف إلى تطوير التعليم وجعله متاحاً للجميع
+              <p class="text-body-2 text-white mb-4" style="opacity: 0.9;">
+                منصة تعليمية متكاملة تربط بين المعلمين والطلاب والإدارة في منظومة واحدة للتعليم الذكي
               </p>
             </v-col>
 
             <v-col cols="12" md="4">
-              <h4 class="text-h6 font-weight-bold text-white mb-4">
-                روابط سريعة
-              </h4>
+              <h4 class="text-h6 font-weight-bold text-white mb-4">روابط سريعة</h4>
               <div class="d-flex flex-column gap-2">
-                <v-btn
-                  variant="text"
-                  color="white"
-                  size="small"
-                  class="justify-start"
-                  >حول المنصة</v-btn
-                >
-                <v-btn
-                  variant="text"
-                  color="white"
-                  size="small"
-                  class="justify-start"
-                  >سياسة الخصوصية</v-btn
-                >
-                <v-btn
-                  variant="text"
-                  color="white"
-                  size="small"
-                  class="justify-start"
-                  >شروط الاستخدام</v-btn
-                >
-                <v-btn
-                  variant="text"
-                  color="white"
-                  size="small"
-                  class="justify-start"
-                  >تواصل معنا</v-btn
-                >
+                <v-btn variant="text" color="white" size="small" class="justify-start">
+                  عن المنصة
+                </v-btn>
+                <v-btn variant="text" color="white" size="small" class="justify-start">
+                  سياسة الخصوصية
+                </v-btn>
+                <v-btn variant="text" color="white" size="small" class="justify-start">
+                  شروط الاستخدام
+                </v-btn>
+                <v-btn variant="text" color="white" size="small" class="justify-start">
+                  الدعم الفني
+                </v-btn>
               </div>
             </v-col>
 
             <v-col cols="12" md="4">
-              <h4 class="text-h6 font-weight-bold text-white mb-4">تابعنا</h4>
-              <div class="d-flex gap-2">
+              <h4 class="text-h6 font-weight-bold text-white mb-4">تواصل معنا</h4>
+              <div class="d-flex gap-2 mb-4">
                 <v-btn icon variant="outlined" color="white" size="small">
                   <v-icon>mdi-facebook</v-icon>
                 </v-btn>
@@ -440,77 +473,42 @@
           <v-divider class="my-6" color="white" opacity="0.3" />
 
           <div class="text-center">
-            <p class="text-body-2 text-white">
-              © 2024 منصة دراسيق التعليمية. جميع الحقوق محفوظة.
+            <p class="text-body-2 text-white" style="opacity: 0.9;">
+              © 2025 MulhimIQ — جميع الحقوق محفوظة.
             </p>
           </div>
         </v-container>
       </v-footer>
     </v-main>
 
-    <!-- نافذة تسجيل الدخول التجريبية -->
-    <v-dialog v-model="loginDialog" max-width="500">
+    <!-- Dialogs -->
+    <v-dialog v-model="startDialog" max-width="500">
       <v-card class="pa-6">
         <v-card-title class="text-center">
-          <h2 class="text-h4 font-weight-bold">تسجيل الدخول</h2>
+          <h2 class="text-h4 font-weight-bold">ابدأ مع ملهم</h2>
         </v-card-title>
-
         <v-card-text class="text-center">
-          <v-icon size="64" color="primary" class="mb-4">mdi-google</v-icon>
-          <p class="text-body-1 mb-4">
-            سيتم توجيهك إلى Google لتسجيل الدخول بشكل آمن
-          </p>
-          <p class="text-body-2 text-medium-emphasis">
-            بعد التحقق، ستتمكن من الوصول إلى جميع ميزات المنصة
-          </p>
-        </v-card-text>
+          <v-icon size="64" color="accent" class="mb-4">mdi-rocket-launch</v-icon>
+          <p class="text-body-1 mb-4">اختر نوع حسابك للبدء</p>
+          <div class="d-flex flex-column gap-3">
+            <v-btn color="primary" size="large" block to="/login">
+              <v-icon start>mdi-account-tie</v-icon>
+              حساب معلم
+            </v-btn>
 
+            <v-btn color="accent" size="large" block>
+              <v-icon start>mdi-school</v-icon>
+              حساب طالب
+            </v-btn>
+          </div>
+        </v-card-text>
         <v-card-actions class="justify-center">
-          <v-btn
-            color="primary"
-            @click="simulateGoogleLogin"
-            :loading="isGoogleLoading"
-          >
-            متابعة مع Google
-          </v-btn>
-          <v-btn variant="text" @click="loginDialog = false">إلغاء</v-btn>
+          <v-btn variant="text" @click="startDialog = false">إلغاء</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <!-- نافذة إنشاء حساب -->
-    <v-dialog v-model="registerDialog" max-width="500">
-      <v-card class="pa-6">
-        <v-card-title class="text-center">
-          <h2 class="text-h4 font-weight-bold">إنشاء حساب جديد</h2>
-        </v-card-title>
-
-        <v-card-text class="text-center">
-          <p class="text-body-1 mb-4">انضم إلى آلاف الطلاب والمعلمين</p>
-          <v-btn
-            color="primary"
-            block
-            size="large"
-            @click="simulateGoogleLogin"
-          >
-            <v-icon start>mdi-google</v-icon>
-            إنشاء حساب بـ Google
-          </v-btn>
-        </v-card-text>
-
-        <v-card-actions class="justify-center">
-          <v-btn variant="text" @click="registerDialog = false">إلغاء</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- رسائل النجاح/الفشل -->
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      :timeout="3000"
-      location="top"
-    >
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000" location="top">
       {{ snackbar.message }}
       <template #actions>
         <v-btn icon @click="snackbar.show = false">
@@ -521,366 +519,430 @@
   </v-app>
 </template>
 
-<script setup>
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-import { useTheme } from "vuetify";
+<script>
+import teacher_api from '@/api/teacher/teacher_api';
+import app1 from '@/assets/app/1.jpg';
+import app2 from '@/assets/app/2.jpg';
+import app3 from '@/assets/app/3.jpg';
+import app4 from '@/assets/app/4.jpg';
+import logo from '@/assets/images/logo.png';
 
+export default {
+  name: 'IndexPage',
+  layout: 'blank',
+
+  data() {
+    return {
+      carouselModel: 0,
+      appScreenshots: [
+        {
+          title: 'واجهة الطالب الرئيسية',
+          description: 'تصفح كورساتك ومتابعة تقدمك بسهولة',
+          image: app1
+        },
+        {
+          title: 'جدول الحصص',
+          description: 'تابع مواعيد دروسك القادمة',
+          image: app2
+        },
+        {
+          title: 'الواجبات والاختبارات',
+          description: 'أكمل واجباتك واختباراتك من هاتفك',
+          image: app3
+        },
+        {
+          title: 'الإشعارات والرسائل',
+          description: 'ابقَ على تواصل مع معلميك',
+          image: app4
+        },
+        {
+          title: 'التقارير والإحصائيات',
+          description: 'راقب أدائك وتقدمك الدراسي',
+          image: app2
+        }
+      ],
+      // حالة الدخول
+      isLoggedIn: false,
+
+      // Dialogs
+      startDialog: false,
+      studentDialog: false,
+
+      // Dashboard theme
+      dashboardDark: false,
+
+      // Snackbar
+      snackbar: {
+        show: false,
+        message: '',
+        color: 'success'
+      },
+
+      // Features data
+      features: [
+        {
+          id: 1,
+          icon: 'mdi-calendar-check',
+          title: 'إدارة الحصص بسهولة',
+          description: 'نظّم جدولك الدراسي وحدد المواعيد بكل سهولة ومرونة',
+          color: 'primary',
+          colorClass: 'primary'
+        },
+        {
+          id: 2,
+          icon: 'mdi-message-text',
+          title: 'تواصل مباشر مع الطلاب',
+          description: 'تواصل فوري مع طلابك عبر الرسائل والإشعارات',
+          color: 'accent',
+          colorClass: 'accent'
+        },
+        {
+          id: 3,
+          icon: 'mdi-chart-bar',
+          title: 'إحصاءات وتقارير تفاعلية',
+          description: 'تابع أداء طلابك من خلال تقارير مفصلة ورسوم بيانية',
+          color: 'support',
+          colorClass: 'support'
+        },
+        {
+          id: 4,
+          icon: 'mdi-cash-multiple',
+          title: 'نظام مالي واشتراكات ذكي',
+          description: 'إدارة المدفوعات والاشتراكات بشكل آلي وآمن',
+          color: 'highlight',
+          colorClass: 'highlight'
+        },
+        {
+          id: 5,
+          icon: 'mdi-bell-ring',
+          title: 'إشعارات فورية وتنبيهات تلقائية',
+          description: 'ابقَ على اطلاع دائم بكل جديد من خلال الإشعارات الذكية',
+          color: 'warning',
+          colorClass: 'warning'
+        },
+        {
+          id: 6,
+          icon: 'mdi-earth',
+          title: 'موقعك، طلابك، كل شيء متصل',
+          description: 'منصة متكاملة تربط جميع عناصر العملية التعليمية',
+          color: 'info',
+          colorClass: 'info'
+        }
+      ],
+
+      // Dashboard sidebar items
+      sidebarItems: [
+        { id: 1, icon: 'mdi-view-dashboard', title: 'الرئيسية', active: true },
+        { id: 2, icon: 'mdi-book-open-variant', title: 'الكورسات', active: false },
+        { id: 3, icon: 'mdi-account-group', title: 'الطلاب', active: false },
+        { id: 4, icon: 'mdi-clipboard-check', title: 'الحضور', active: false },
+        { id: 5, icon: 'mdi-bell', title: 'الإشعارات', active: false }
+      ],
+
+      // Dashboard stats
+      stats: [
+        { id: 1, icon: 'mdi-account-group', value: '248', label: 'إجمالي الطلاب', color: 'primary', change: '+12%' },
+        { id: 2, icon: 'mdi-book-open', value: '12', label: 'الكورسات النشطة', color: 'accent', change: '+3' },
+        { id: 3, icon: 'mdi-calendar-today', value: '8', label: 'حصص اليوم', color: 'support', change: '2 قادمة' },
+        { id: 4, icon: 'mdi-cash', value: '15,240', label: 'الإيرادات (ريال)', color: 'highlight', change: '+8%' }
+      ],
+
+      // Table headers
+      tableHeaders: [
+        { title: 'الكورس', key: 'course' },
+        { title: 'الوقت', key: 'time' },
+        { title: 'الطلاب', key: 'students' },
+        { title: 'الحالة', key: 'status' },
+        { title: 'إجراءات', key: 'actions', sortable: false }
+      ],
+
+      // Upcoming classes
+      upcomingClasses: [
+        { course: 'الرياضيات المتقدمة', time: '10:00 ص', students: 25, status: 'قريباً', statusColor: 'warning' },
+        { course: 'الفيزياء الحديثة', time: '12:00 م', students: 18, status: 'مجدول', statusColor: 'info' },
+        { course: 'الكيمياء العضوية', time: '02:00 م', students: 22, status: 'مجدول', statusColor: 'info' },
+        { course: 'البرمجة بلغة Python', time: '04:00 م', students: 30, status: 'مجدول', statusColor: 'info' },
+        { course: 'تصميم الجرافيك', time: '06:00 م', students: 15, status: 'مجدول', statusColor: 'info' }
+      ],
+
+      // Notifications
+      notifications: [
+        { id: 1, icon: 'mdi-account-plus', title: 'طالب جديد انضم للكورس', time: 'منذ 5 دقائق', color: 'success' },
+        { id: 2, icon: 'mdi-message', title: 'رسالة جديدة من أحمد', time: 'منذ 15 دقيقة', color: 'primary' },
+        { id: 3, icon: 'mdi-calendar', title: 'تذكير: حصة الرياضيات', time: 'منذ 30 دقيقة', color: 'warning' },
+        { id: 4, icon: 'mdi-cash', title: 'دفعة جديدة مستلمة', time: 'منذ ساعة', color: 'highlight' }
+      ],
+
+      // Steps
+      steps: [
+        {
+          id: 1,
+          icon: 'mdi-account-plus',
+          title: 'سجّل حسابك كمعلم',
+          description: 'أنشئ حسابك المجاني في دقائق معدودة وابدأ رحلتك التعليمية',
+          color: 'primary'
+        },
+        {
+          id: 2,
+          icon: 'mdi-book-plus',
+          title: 'أضف كورساتك وحدد المواعيد وباقات الأشتراك',
+          description: 'أنشئ كورساتك الخاصة وحدد الجدول الزمني وباقات الأشتراك المناسبة',
+          color: 'accent'
+        },
+        {
+          id: 3,
+          icon: 'mdi-account-group',
+          title: 'الطلاب يسجلون ويتابعون دروسهم',
+          description: 'يمكن للطلاب التسجيل في كورساتك ومتابعة الدروس بسهولة',
+          color: 'support'
+        },
+        {
+          id: 4,
+          icon: 'mdi-chart-line',
+          title: 'تابع الحضور والتقييمات من لوحة التحكم',
+          description: 'راقب تقدم طلابك وأدائهم من خلال لوحة تحكم شاملة',
+          color: 'highlight'
+        }
+      ],
+
+      // Testimonials
+      testimonials: [
+        {
+          id: 1,
+          name: 'د. محمد العتيبي',
+          role: 'معلم رياضيات',
+          comment: 'منصة ملهم غيرت طريقة تدريسي بالكامل. أصبح التواصل مع الطلاب أسهل والإدارة أكثر فعالية',
+          avatar: 'mdi-account-tie',
+          color: 'primary'
+        },
+        {
+          id: 2,
+          name: 'أ. سارة الأحمد',
+          role: 'معلمة لغة إنجليزية',
+          comment: 'أدوات رائعة لتتبع تقدم الطلاب. النظام المالي المدمج وفر علي الكثير من الوقت والجهد',
+          avatar: 'mdi-account-circle',
+          color: 'accent'
+        },
+        {
+          id: 3,
+          name: 'خالد السالم',
+          role: 'طالب ثانوي',
+          comment: 'واجهة سهلة الاستخدام وتجربة تعليمية ممتازة. أستطيع متابعة دروسي من أي مكان',
+          avatar: 'mdi-school',
+          color: 'support'
+        }
+      ],
+
+      // Pricing plans
+      pricingPlans: [
+        {
+          id: 1,
+          name: 'مجانية',
+          price: '0 ريال',
+          period: '/ شهرياً',
+          icon: 'mdi-gift',
+          iconColor: 'support',
+          buttonColor: 'support',
+          buttonText: 'ابدأ مجاناً',
+          featured: false,
+          features: [
+            'حتى 20 طالب',
+            'كورس واحد نشط',
+            'تقارير أساسية',
+            'دعم فني محدود',
+            'تخزين 1 جيجا'
+          ]
+        },
+        {
+          id: 2,
+          name: 'أساسية',
+          price: '99 ريال',
+          period: '/ شهرياً',
+          icon: 'mdi-star',
+          iconColor: 'white',
+          buttonColor: 'accent',
+          buttonText: 'اشترك الآن',
+          featured: true,
+          features: [
+            'حتى 100 طالب',
+            '5 كورسات نشطة',
+            'تقارير متقدمة',
+            'دعم فني على مدار الساعة',
+            'تخزين 10 جيجا',
+            'إشعارات SMS'
+          ]
+        },
+        {
+          id: 3,
+          name: 'احترافية',
+          price: '249 ريال',
+          period: '/ شهرياً',
+          icon: 'mdi-crown',
+          iconColor: 'highlight',
+          buttonColor: 'highlight',
+          buttonText: 'اشترك الآن',
+          featured: false,
+          features: [
+            'طلاب غير محدودين',
+            'كورسات غير محدودة',
+            'تقارير وتحليلات شاملة',
+            'دعم فني مخصص',
+            'تخزين غير محدود',
+            'إشعارات SMS',
+            'تطبيق موبايل مخصص'
+          ]
+        }
+      ],
+
+      // الأصول
+      logo
+    }
+  },
+
+  mounted() {
+    const token = localStorage.getItem('accessToken')
+    const user = localStorage.getItem('user')
+    this.isLoggedIn = !!(token && user)
+    // Load pricing plans from backend
+    this.fetchPricingPlans()
+  },
+
+  methods: {
+    scrollToSection(sectionId) {
+      const element = document.getElementById(sectionId)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' })
+      }
+    },
+
+    openStartDialog() {
+      this.startDialog = true
+    },
+
+    openStudentDialog() {
+      this.snackbar = {
+        show: true,
+        message: 'صفحة الطلاب قيد التطوير',
+        color: 'info'
+      }
+    },
+
+    toggleDashboardTheme() {
+      this.dashboardDark = !this.dashboardDark
+      this.snackbar = {
+        show: true,
+        message: this.dashboardDark ? 'تم التبديل للوضع الليلي' : 'تم التبديل للوضع النهاري',
+        color: 'info'
+      }
+    },
+
+    async fetchPricingPlans() {
+      try {
+        // ✅ جلب البيانات من API
+        const res = await teacher_api.getActivePackages();
+
+        // ✅ دعم Axios أو Fetch
+        const payload = res.data?.data ? res.data : res;
+
+        const items = Array.isArray(payload?.data) ? payload.data : [];
+
+        // 🧩 تحويل البيانات إلى شكل واجهة المستخدم
+        const mapped = items.map((p) => {
+          const isFree = p.isFree || p.price === 0;
+          const formattedPrice = isFree
+            ? "0"
+            : new Intl.NumberFormat("ar-IQ").format(p.price);
+
+          return {
+            id: p.id,
+            name: p.name,
+            price: `${formattedPrice} دينار`,
+            period: p.durationDays === 30 ? "/ شهرياً" : `/ ${p.durationDays} يوماً`,
+            icon: isFree ? "mdi-gift" : "mdi-star",
+            iconColor: isFree ? "support" : "white",
+            buttonColor: isFree ? "support" : "accent",
+            buttonText: isFree ? "ابدأ مجاناً" : "اشترك الآن",
+            featured: false,
+            features: [
+              `حتى ${p.maxStudents} طالب`,
+              p.description || (isFree ? "مجاناً للمعلمين الجدد" : "ميزات متقدمة"),
+              p.durationDays === 30 ? "اشتراك شهري" : `اشتراك ${p.durationDays} يوم`,
+              "دعم فني مخصص",
+            ],
+          };
+        });
+
+        // 🌟 تحديد أول باقة مدفوعة كباقة مميزة
+        const paidIndex = mapped.findIndex((pl) => pl.price !== "0 دينار");
+        if (paidIndex !== -1) mapped[paidIndex].featured = true;
+
+        // ✅ حفظ النتائج في الحالة
+        if (mapped.length) {
+          this.pricingPlans = mapped;
+        } else {
+          throw new Error("لم يتم العثور على باقات.");
+        }
+      } catch (err) {
+        // ⚠️ عرض رسالة خطأ جميلة للمستخدم
+        this.snackbar = {
+          show: true,
+          message: "تعذر تحميل الباقات. يرجى المحاولة لاحقًا",
+          color: "error",
+        };
+        console.warn("⚠️ Failed to fetch pricing plans:", err);
+      }
+    },
+
+    selectPlan(plan) {
+      this.snackbar = {
+        show: true,
+        message: `تم اختيار خطة ${plan.name}`,
+        color: 'success'
+      }
+    }
+  }
+}
+</script>
+
+<script setup>
 definePage({
   meta: {
     layout: "blank",
   },
 });
-const router = useRouter();
-
-// إعداد الثيم
-const theme = useTheme();
-const isDark = ref(false);
-
-// حالات التفاعل
-const isLoading = ref(false);
-const isGoogleLoading = ref(false);
-const hasError = ref(false);
-const loginDialog = ref(false);
-const registerDialog = ref(false);
-// حالة المستخدم
-const user = ref(null);
-const isAuthenticated = ref(false);
-
-// فحص حالة المستخدم عند تحميل الصفحة
-onMounted(() => {
-  const userData = localStorage.getItem("user");
-  const token = localStorage.getItem("accessToken");
-
-  if (userData && token) {
-    user.value = JSON.parse(userData);
-    isAuthenticated.value = true;
-  }
-});
-
-// رسائل التنبيه
-const snackbar = ref({
-  show: false,
-  message: "",
-  color: "success",
-});
-
-// بيانات المميزات المحسّنة
-const features = ref([
-  {
-    id: 1,
-    icon: "mdi-account-group",
-    title: "مجتمع تعليمي نشط",
-    description: "انضم إلى مجتمع من المعلمين والطلاب المتحمسين للتعلم والتطوير",
-    color: "primary",
-    tags: ["تفاعل", "مشاركة", "تعاون"],
-  },
-  {
-    id: 2,
-    icon: "mdi-brain",
-    title: "تعلم ذكي مخصص",
-    description: "نظام ذكي يتكيف مع أسلوب تعلمك ويقدم محتوى مخصص لك",
-    color: "success",
-    tags: ["ذكي", "مخصص", "تكيفي"],
-  },
-  {
-    id: 3,
-    icon: "mdi-certificate",
-    title: "شهادات معتمدة",
-    description: "احصل على شهادات معتمدة دولياً عند إكمال الدورات بنجاح",
-    color: "warning",
-    tags: ["معتمد", "دولي", "مهني"],
-  },
-  {
-    id: 4,
-    icon: "mdi-chart-line",
-    title: "تتبع التقدم",
-    description: "تابع تقدمك في التعلم واحصل على تقارير مفصلة وإحصائيات",
-    color: "info",
-    tags: ["تقارير", "إحصائيات", "تحليل"],
-  },
-  {
-    id: 5,
-    icon: "mdi-message-video",
-    title: "فصول افتراضية",
-    description: "احضر فصول مباشرة مع المعلمين والطلاب من جميع أنحاء العالم",
-    color: "purple",
-    tags: ["مباشر", "تفاعلي", "عالمي"],
-  },
-  {
-    id: 6,
-    icon: "mdi-devices",
-    title: "متاح على جميع الأجهزة",
-    description: "تعلم في أي وقت ومن أي مكان باستخدام هاتفك أو حاسوبك",
-    color: "teal",
-    tags: ["متنقل", "مرن", "متاح"],
-  },
-]);
-
-// خطوات النظام
-const steps = ref([
-  {
-    id: 1,
-    icon: "mdi-google",
-    title: "تسجيل الدخول بـ Google",
-    description: "سجل دخولك بسهولة وأمان باستخدام حساب Google الخاص بك",
-    color: "primary",
-  },
-  {
-    id: 2,
-    icon: "mdi-account-edit",
-    title: "إكمال الملف الشخصي",
-    description: "أضف معلوماتك الأساسية واختر اهتماماتك التعليمية",
-    color: "success",
-  },
-  {
-    id: 3,
-    icon: "mdi-book-open",
-    title: "اختيار الدورات",
-    description: "تصفح مكتبة الدورات الواسعة واختر ما يناسب أهدافك",
-    color: "warning",
-  },
-  {
-    id: 4,
-    icon: "mdi-rocket-launch",
-    title: "بدء التعلم",
-    description: "ابدأ رحلتك التعليمية واستمتع بتجربة تعلم فريدة",
-    color: "info",
-  },
-]);
-
-// الأسئلة الشائعة
-const faqs = ref([
-  {
-    id: 1,
-    question: "هل المنصة مجانية؟",
-    answer:
-      "نعم، المنصة مجانية بالكامل للطلاب. نوفر محتوى تعليمي عالي الجودة دون أي رسوم.",
-  },
-  {
-    id: 2,
-    question: "كيف يمكنني الحصول على شهادة؟",
-    answer:
-      "بعد إكمال الدورة بنجاح واجتياز الاختبارات، ستحصل على شهادة معتمدة يمكنك تحميلها ومشاركتها.",
-  },
-  {
-    id: 3,
-    question: "هل يمكنني التعلم من الهاتف؟",
-    answer:
-      "بالطبع! المنصة متوافقة مع جميع الأجهزة ويمكنك التعلم من هاتفك أو جهازك اللوحي بسهولة.",
-  },
-  {
-    id: 4,
-    question: "كم من الوقت أحتاج لإكمال دورة؟",
-    answer:
-      "يختلف الوقت حسب الدورة، لكن معظم الدورات تستغرق من 2-8 أسابيع بمعدل ساعة يومياً.",
-  },
-  {
-    id: 5,
-    question: "هل يمكنني التفاعل مع المعلمين؟",
-    answer:
-      "نعم، يمكنك التفاعل مع المعلمين من خلال الفصول المباشرة والمنتديات والرسائل الخاصة.",
-  },
-  {
-    id: 6,
-    question: "ماذا لو لم أفهم درساً معيناً؟",
-    answer:
-      "يمكنك إعادة مشاهدة الدروس أي عدد من المرات، وطرح الأسئلة في المنتدى أو طلب المساعدة من المعلم.",
-  },
-]);
-
-// شهادات المستخدمين
-const testimonials = ref([
-  {
-    id: 1,
-    name: "أحمد محمد",
-    role: "طالب جامعي",
-    comment:
-      "منصة رائعة ساعدتني في تطوير مهاراتي البرمجية. المحتوى عالي الجودة والمعلمون محترفون.",
-    avatar: "mdi-account",
-    color: "primary",
-  },
-  {
-    id: 2,
-    name: "فاطمة أحمد",
-    role: "معلمة رياضيات",
-    comment:
-      "كمعلمة، أجد المنصة مفيدة جداً لتطوير طرق التدريس والتواصل مع الطلاب بشكل أفضل.",
-    avatar: "mdi-account-circle",
-    color: "success",
-  },
-  {
-    id: 3,
-    name: "خالد العلي",
-    role: "مطور برمجيات",
-    comment:
-      "حصلت على شهادة في تطوير الويب من المنصة وساعدتني في الحصول على وظيفة أحلامي.",
-    avatar: "mdi-account-star",
-    color: "warning",
-  },
-]);
-
-// الوظائف
-const toggleTheme = () => {
-  isDark.value = !isDark.value;
-  theme.global.name.value = isDark.value ? "dark" : "light";
-};
-
-const scrollToSection = (sectionId) => {
-  const element = document.getElementById(sectionId);
-  if (element) {
-    element.scrollIntoView({ behavior: "smooth" });
-  }
-};
-
-const openLoginDialog = () => {
-  // التوجه إلى صفحة تسجيل الدخول
-  router.push("/login");
-};
-
-const openRegisterDialog = () => {
-  // التوجه إلى صفحة تسجيل الدخول (حيث يمكن إنشاء حساب جديد)
-  router.push("/login");
-};
-
-const openGoogleSignInDemo = () => {
-  // التوجه إلى صفحة تسجيل الدخول
-  router.push("/login");
-};
-
-// وظيفة تسجيل الخروج
-const logout = async () => {
-  try {
-    // استدعاء API لتسجيل الخروج
-    await Auth.logout();
-
-    // مسح البيانات من localStorage
-    localStorage.removeItem("user");
-    localStorage.removeItem("accessToken");
-
-    // إعادة تعيين حالة المستخدم
-    user.value = null;
-    isAuthenticated.value = false;
-
-    // إظهار رسالة نجاح
-    snackbar.value = {
-      show: true,
-      message: "تم تسجيل الخروج بنجاح",
-      color: "success",
-    };
-
-    // إعادة تحميل الصفحة للتأكد من تحديث الواجهة
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
-  } catch (error) {
-    console.error("خطأ في تسجيل الخروج:", error);
-
-    // حتى لو فشل API، نمسح البيانات المحلية
-    localStorage.removeItem("user");
-    localStorage.removeItem("accessToken");
-    user.value = null;
-    isAuthenticated.value = false;
-
-    // إظهار رسالة نجاح
-    snackbar.value = {
-      show: true,
-      message: "تم تسجيل الخروج بنجاح",
-      color: "success",
-    };
-
-    // إعادة تحميل الصفحة
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
-  }
-};
-
-// وظيفة الذهاب إلى لوحة التحكم
-const goToDashboard = () => {
-  if (!user.value) return;
-
-  const userType = user.value.userType;
-
-  switch (userType) {
-    case "student":
-      router.push("/student/dashboard");
-      break;
-    case "teacher":
-      router.push("/teacher/dashboard");
-      break;
-    case "admin":
-    case "super_admin":
-      router.push("/admin/dashboard");
-      break;
-    default:
-      router.push("/dashboard");
-  }
-};
-
-const simulateGoogleLogin = async () => {
-  isGoogleLoading.value = true;
-  hasError.value = false;
-
-  try {
-    // محاكاة تأخير الشبكة
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // محاكاة نجاح تسجيل الدخول
-    loginDialog.value = false;
-    registerDialog.value = false;
-
-    snackbar.value = {
-      show: true,
-      message: "تم تسجيل الدخول بنجاح! مرحباً بك في منصة دراسيق",
-      color: "success",
-    };
-  } catch (error) {
-    hasError.value = true;
-    snackbar.value = {
-      show: true,
-      message: "حدث خطأ أثناء تسجيل الدخول",
-      color: "error",
-    };
-  } finally {
-    isGoogleLoading.value = false;
-  }
-};
-
-const startTour = () => {
-  snackbar.value = {
-    show: true,
-    message: "جولة سريعة قادمة قريباً!",
-    color: "info",
-  };
-};
-
-// تهيئة المكون
-onMounted(() => {
-  // تعيين الثيم الافتراضي
-  theme.global.name.value = "light";
-});
 </script>
-
 <style scoped>
-/* الأنيميشن والتأثيرات */
 .navbar-glass {
-  backdrop-filter: blur(10px);
-  background: rgba(var(--v-theme-surface), 0.95) !important;
+  backdrop-filter: blur(12px);
+  background: rgba(11, 37, 69, 90%) !important;
 }
 
 .hero-section {
-  display: flex;
-  align-items: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-secondary)) 100%);
   min-block-size: 100vh;
   padding-block-start: 80px;
 }
 
-.text-gradient {
-  background: linear-gradient(45deg, #667eea, #764ba2);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+.dashboard-preview-section {
+  background: linear-gradient(135deg, #e6f7f1 0%, #d9f5ff 100%);
+}
+
+.testimonials-section {
+  background: linear-gradient(135deg, #0b2545 0%, #3fa9f5 100%);
+}
+
+.cta-section {
+  background: linear-gradient(135deg, #0b2545 0%, #6ef2b4 100%);
+}
+
+.footer-section {
+  background: linear-gradient(135deg, #0b2545 0%, #3fa9f5 100%);
+}
+
+@media (max-width: 960px) {
+  .responsive-row {
+    flex-direction: column-reverse !important;
+  }
 }
 
 .floating-card {
@@ -888,6 +950,7 @@ onMounted(() => {
 }
 
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0);
@@ -898,109 +961,93 @@ onMounted(() => {
   }
 }
 
-.hero-card {
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 95%);
-}
-
-.feature-card {
-  border-radius: 16px;
-  transition: all 0.3s ease;
-}
-
-.feature-card:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 15%);
-  transform: translateY(-8px);
-}
-
-.how-it-works-section {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-}
-
-.step-item {
-  position: relative;
-}
-
-.step-item:not(:last-child)::after {
-  position: absolute;
-  z-index: 1;
-  background: linear-gradient(to bottom, #667eea, #764ba2);
-  block-size: 60px;
-  content: "";
-  inline-size: 2px;
-  inset-block-start: 80px;
-  inset-inline-end: 40px;
-}
-
-.cta-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.cta-card {
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 95%);
-}
-
-.faq-section {
-  background-color: #f8f9fa;
-}
-
-.faq-panels {
-  overflow: hidden;
-  border-radius: 12px;
-}
-
-.testimonials-section {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.testimonial-card {
-  border-radius: 16px;
-  transition: all 0.3s ease;
-}
-
-.testimonial-card:hover {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 12%);
-  transform: translateY(-5px);
-}
-
-.footer-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-/* تحسينات الاستجابة */
 @media (max-width: 768px) {
+  .dashboard-preview-section {
+    display: none;
+  }
+
   .hero-section {
     padding-block-start: 100px;
     text-align: center;
   }
 
-  .step-item {
-    flex-direction: column !important;
-    text-align: center;
+  .dashboard-sidebar {
+    inline-size: 60px;
   }
 
-  .step-item:not(:last-child)::after {
+  .dashboard-sidebar .v-list-item-title {
     display: none;
   }
 
-  .step-content {
-    margin-block: 16px !important;
-    margin-inline: 0 !important;
+  .pricing-featured {
+    transform: scale(1);
   }
 }
 
-/* تحسينات الخطوط العربية */
-* {
-  font-family: Cairo, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+.v-list-item-title {
+  white-space: pre-wrap;
 }
 
-.v-btn {
-  font-weight: 600;
+@media (max-width: 960px) {
+  .hero-section {
+    padding-block-start: 100px;
+  }
+
+  .phone-mockup {
+    max-inline-size: 280px;
+  }
+
+  .phone-frame {
+    padding: 10px;
+    border-radius: 30px;
+  }
+
+  .phone-notch {
+    block-size: 20px;
+    inline-size: 100px;
+  }
+
+  .phone-screen {
+    border-radius: 24px;
+  }
+
+  .hero-content {
+    text-align: center;
+  }
+
+  .hero-content .d-flex {
+    justify-content: center;
+  }
+
+  .download-section {
+    text-align: center;
+  }
 }
 
+@media (max-width: 600px) {
+  .phone-mockup {
+    max-inline-size: 240px;
+  }
+
+  .hero-section h1 {
+    font-size: 1.75rem !important;
+  }
+
+  .hero-section .text-h6 {
+    font-size: 1rem !important;
+  }
+
+  .download-section h3 {
+    font-size: 1rem !important;
+  }
+
+  .download-section .v-btn {
+    font-size: 0.875rem;
+    padding-inline: 12px;
+  }
+}
+
+/* Typography */
 .text-h1,
 .text-h2,
 .text-h3,
@@ -1016,17 +1063,70 @@ onMounted(() => {
   line-height: 1.6;
 }
 
-/* تأثيرات إضافية */
+/* Utilities */
+.v-btn {
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: none;
+}
+
 .v-card {
   border-radius: 12px;
 }
 
-.v-btn {
-  border-radius: 8px;
-  text-transform: none;
-}
-
 .v-chip {
   border-radius: 20px;
+  font-weight: 600;
+}
+
+.min-height-screen {
+  min-block-size: calc(100vh - 80px);
+}
+
+/* Carousel and Phone Mockup Styles */
+.hero-carousel-container {
+  margin-inline: auto;
+  max-inline-size: 100%;
+}
+
+/* .hero-carousel {
+  overflow: visible !important;
+  border-radius: 20px;
+} */
+
+.phone-mockup {
+  margin-inline: auto;
+  max-inline-size: 350px;
+}
+
+.phone-frame {
+  position: relative;
+  padding: 12px;
+  border-radius: 40px;
+  aspect-ratio: 9 / 19;
+  background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 40%),
+    0 0 0 2px rgba(255, 255, 255, 10%),
+    inset 0 0 0 1px rgba(255, 255, 255, 5%);
+  inline-size: 100%;
+}
+
+.phone-screen {
+  position: relative;
+  overflow: hidden;
+  border-radius: 32px;
+  background: white;
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+.phone-screen-image {
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+.download-section {
+  border: 2px solid rgba(255, 255, 255, 20%);
 }
 </style>

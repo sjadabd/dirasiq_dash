@@ -49,36 +49,45 @@
                 </div>
               </template>
               <template v-else-if="header.type === 'status'">
-                <VChip class="font-weight-medium" size="small" :color="
-                  getNestedValue(item, header.key) === 'paid' ? 'success' :
+                <VChip class="font-weight-medium" size="small" :color="getNestedValue(item, header.key) === 'paid' ? 'success' :
                   getNestedValue(item, header.key) === 'partial' ? 'warning' :
-                  getNestedValue(item, header.key) === 'unpaid' ? 'secondary' :
-                  getNestedValue(item, header.key) === 'overdue' ? 'error' :
-                  getNestedValue(item, header.key) === 'pending' ? 'warning' :
-                  getNestedValue(item, header.key) === 'pre_approved' ? 'info' :
-                  getNestedValue(item, header.key) === 'confirmed' ? 'primary' :
-                  getNestedValue(item, header.key) === 'approved' ? 'success' :
-                  getNestedValue(item, header.key) === 'rejected' ? 'error' :
-                  getNestedValue(item, header.key) === 'cancelled' ? 'secondary' :
-                  'default'" variant="flat">
+                    getNestedValue(item, header.key) === 'unpaid' ? 'secondary' :
+                      getNestedValue(item, header.key) === 'overdue' ? 'error' :
+                        getNestedValue(item, header.key) === 'pending' ? 'warning' :
+                          getNestedValue(item, header.key) === 'pre_approved' ? 'info' :
+                            getNestedValue(item, header.key) === 'confirmed' ? 'primary' :
+                              getNestedValue(item, header.key) === 'approved' ? 'success' :
+                                getNestedValue(item, header.key) === 'rejected' ? 'error' :
+                                  getNestedValue(item, header.key) === 'cancelled' ? 'secondary' :
+                                    'default'" variant="flat">
                   {{
                     getNestedValue(item, header.key) === 'paid' ? 'مدفوعة' :
-                    getNestedValue(item, header.key) === 'partial' ? 'جزئية' :
-                    getNestedValue(item, header.key) === 'unpaid' ? 'غير مدفوعة' :
-                    getNestedValue(item, header.key) === 'overdue' ? 'متأخرة' :
-                    getNestedValue(item, header.key) === 'pending' ? 'قيد الانتظار' :
-                    getNestedValue(item, header.key) === 'pre_approved' ? 'موافقة أولية' :
-                    getNestedValue(item, header.key) === 'confirmed' ? 'تأكيد الحجز' :
-                    getNestedValue(item, header.key) === 'approved' ? 'مقبول' :
-                    getNestedValue(item, header.key) === 'rejected' ? 'مرفوض' :
-                    getNestedValue(item, header.key) === 'cancelled' ? 'ملغي' :
-                    getNestedValue(item, header.key)
+                      getNestedValue(item, header.key) === 'partial' ? 'جزئية' :
+                        getNestedValue(item, header.key) === 'unpaid' ? 'غير مدفوعة' :
+                          getNestedValue(item, header.key) === 'overdue' ? 'متأخرة' :
+                            getNestedValue(item, header.key) === 'pending' ? 'قيد الانتظار' :
+                              getNestedValue(item, header.key) === 'pre_approved' ? 'موافقة أولية' :
+                                getNestedValue(item, header.key) === 'confirmed' ? 'تأكيد الحجز' :
+                                  getNestedValue(item, header.key) === 'approved' ? 'مقبول' :
+                                    getNestedValue(item, header.key) === 'rejected' ? 'مرفوض' :
+                                      getNestedValue(item, header.key) === 'cancelled' ? 'ملغي' :
+                                        getNestedValue(item, header.key)
                   }}
                 </VChip>
               </template>
               <template v-else-if="header.type === 'date'">
                 <div class="font-weight-medium">
                   {{ formatDate(getNestedValue(item, header.key)) }}
+                </div>
+              </template>
+              <template v-else-if="header.type === 'session_title'">
+                <div class="font-weight-medium">
+                  {{ item.grade_name + ' - ' + item.session_title }}
+                </div>
+              </template>
+              <template v-else-if="header.key === 'payment_mode'">
+                <div class="font-weight-medium">
+                  {{ item.payment_mode === 'installments' ? 'اقساط' : 'كاش' }}
                 </div>
               </template>
               <template v-else-if="

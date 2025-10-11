@@ -16,40 +16,26 @@
       <VCardText>
         <VRow>
           <VCol cols="12" md="4">
-            <VSelect
-              v-model="form.courseId"
-              :items="courseItems"
-              item-title="text"
-              item-value="value"
-              label="اختر الكورس"
-              variant="outlined"
-              :loading="coursesLoading"
-              :disabled="coursesLoading"
-              clearable
-              @update:model-value="onCourseChange"
-            />
+            <VSelect v-model="form.courseId" :items="courseItems" item-title="text" item-value="value"
+              label="اختر الكورس" variant="outlined" :loading="coursesLoading" :disabled="coursesLoading" clearable
+              @update:model-value="onCourseChange" />
           </VCol>
           <VCol cols="12" md="4">
-            <VSelect
-              v-model="form.studentId"
-              :items="studentItems"
-              item-title="name"
-              item-value="id"
-              label="اختر الطالب"
-              variant="outlined"
-              :loading="studentsLoading"
-              :disabled="studentsLoading || !form.courseId"
-              clearable
-            />
+            <VSelect v-model="form.studentId" :items="studentItems" item-title="name" item-value="id"
+              label="اختر الطالب" variant="outlined" :loading="studentsLoading"
+              :disabled="studentsLoading || !form.courseId" clearable />
           </VCol>
           <VCol cols="12" md="4">
-            <VSelect v-model="form.studyYear" :items="studyYears" item-title="label" item-value="value" label="السنة الدراسية" variant="outlined" />
+            <VSelect v-model="form.studyYear" :items="studyYears" item-title="label" item-value="value"
+              label="السنة الدراسية" variant="outlined" />
           </VCol>
           <VCol cols="12" md="4">
-            <VSelect v-model="form.paymentMode" :items="paymentModes" item-title="text" item-value="value" label="طريقة الدفع" variant="outlined" />
+            <VSelect v-model="form.paymentMode" :items="paymentModes" item-title="text" item-value="value"
+              label="طريقة الدفع" variant="outlined" />
           </VCol>
           <VCol cols="12" md="4">
-            <VSelect v-model="form.invoiceType" :items="invoiceTypes" item-title="text" item-value="value" label="نوع الفاتورة" variant="outlined" />
+            <VSelect v-model="form.invoiceType" :items="invoiceTypes" item-title="text" item-value="value"
+              label="نوع الفاتورة" variant="outlined" />
           </VCol>
           <VCol cols="12" md="4">
             <VTextField v-model.number="form.amountDue" type="number" label="المبلغ المستحق" variant="outlined" />
@@ -86,67 +72,12 @@
                 <VTextField v-model="ins.dueDate" type="date" label="تاريخ الاستحقاق" variant="outlined" />
               </VCol>
               <VCol cols="12" md="3">
-                <VTextField v-model.number="ins.initialPaidAmount" type="number" label="مدفوع ابتدائي" variant="outlined" />
+                <VTextField v-model.number="ins.initialPaidAmount" type="number" label="مدفوع ابتدائي"
+                  variant="outlined" />
               </VCol>
               <VCol cols="12" md="1" class="d-flex align-center">
-                <VBtn color="error" size="small" icon="ri-delete-bin-line" variant="text" @click="removeInstallment(idx)" />
-              </VCol>
-            </VRow>
-          </VCardText>
-        </VCard>
-
-        <!-- Payments Builder -->
-        <VCard variant="tonal" class="mt-4">
-          <VCardTitle class="d-flex align-center">
-            <VIcon icon="ri-money-dollar-circle-line" class="me-2" /> دفعات إضافية (اختياري)
-            <VSpacer />
-            <VBtn size="small" variant="tonal" prepend-icon="ri-add-line" @click="addPayment">إضافة دفعة</VBtn>
-          </VCardTitle>
-          <VDivider />
-          <VCardText>
-            <VAlert v-if="!form.payments.length" type="info" variant="tonal">لا يوجد دفعات</VAlert>
-            <VRow v-for="(p, idx) in form.payments" :key="idx" class="mb-1">
-              <VCol cols="12" md="3">
-                <VTextField v-model.number="p.amount" type="number" label="المبلغ" variant="outlined" />
-              </VCol>
-              <VCol cols="12" md="3">
-                <VSelect v-model="p.paymentMethod" :items="paymentMethods" item-title="text" item-value="value" label="طريقة الدفع" variant="outlined" />
-              </VCol>
-              <VCol cols="12" md="3">
-                <VTextField v-model="p.paidAt" type="datetime-local" label="تاريخ الدفع" variant="outlined" />
-              </VCol>
-              <VCol cols="12" md="2">
-                <VTextField v-model.number="p.installmentNumber" type="number" label="# القسط (اختياري)" variant="outlined" />
-              </VCol>
-              <VCol cols="12" md="1" class="d-flex align-center">
-                <VBtn color="error" size="small" icon="ri-delete-bin-line" variant="text" @click="removePayment(idx)" />
-              </VCol>
-              <VCol cols="12">
-                <VTextField v-model="p.notes" label="ملاحظات" variant="outlined" />
-              </VCol>
-            </VRow>
-          </VCardText>
-        </VCard>
-
-        <!-- Additional Discounts Builder -->
-        <VCard variant="tonal" class="mt-4">
-          <VCardTitle class="d-flex align-center">
-            <VIcon icon="ri-price-tag-3-line" class="me-2" /> خصومات إضافية (اختياري)
-            <VSpacer />
-            <VBtn size="small" variant="tonal" prepend-icon="ri-add-line" @click="addAdditionalDiscount">إضافة خصم</VBtn>
-          </VCardTitle>
-          <VDivider />
-          <VCardText>
-            <VAlert v-if="!form.additionalDiscounts.length" type="info" variant="tonal">لا يوجد خصومات</VAlert>
-            <VRow v-for="(d, idx) in form.additionalDiscounts" :key="idx" class="mb-1">
-              <VCol cols="12" md="4">
-                <VTextField v-model.number="d.amount" type="number" label="المبلغ" variant="outlined" />
-              </VCol>
-              <VCol cols="12" md="7">
-                <VTextField v-model="d.notes" label="ملاحظات" variant="outlined" />
-              </VCol>
-              <VCol cols="12" md="1" class="d-flex align-center">
-                <VBtn color="error" size="small" icon="ri-delete-bin-line" variant="text" @click="removeAdditionalDiscount(idx)" />
+                <VBtn color="error" size="small" icon="ri-delete-bin-line" variant="text"
+                  @click="removeInstallment(idx)" />
               </VCol>
             </VRow>
           </VCardText>
@@ -158,12 +89,13 @@
       </VCardText>
     </VCard>
 
-    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true" close-text="موافق" @close="alert.open = false" />
+    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true"
+      close-text="موافق" @close="alert.open = false" />
   </div>
 </template>
 
 <script>
-import TeacherApi from '@/api/teacher/teacher_api'
+import TeacherApi from '@/api/teacher/teacher_api';
 
 export default {
   data() {

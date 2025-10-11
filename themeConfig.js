@@ -13,7 +13,7 @@ import {
 
 export const { themeConfig, layoutConfig } = defineThemeConfig({
   app: {
-    title: "materio",
+    title: "mulhim-iq",
 
     logo: h("div", {
       innerHTML: logo,
@@ -23,7 +23,7 @@ export const { themeConfig, layoutConfig } = defineThemeConfig({
     contentLayoutNav: AppContentLayoutNav.Vertical,
     overlayNavFromBreakpoint: breakpointsVuetifyV3.lg - 1,
 
-    theme: "system",
+    theme: "light",
     skin: Skins.Default,
     iconRenderer: VIcon,
     i18n: {

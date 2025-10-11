@@ -14,23 +14,36 @@ initConfigStore();
 
 const configStore = useConfigStore();
 
-// التحقق من حالة اكتمال البيانات
-const isProfileComplete = ref(
-  JSON.parse(localStorage.getItem("isProfileComplete"))
-);
+// ✅ التحقق من حالة اكتمال البيانات بشكل آمن
+const isProfileComplete = ref(false)
+const userType = ref(null)
+
+try {
+  const storedUser = localStorage.getItem("user")
+  const storedProfileComplete = localStorage.getItem("isProfileComplete")
+
+  if (storedProfileComplete !== null)
+    isProfileComplete.value = JSON.parse(storedProfileComplete)
+
+  if (storedUser) {
+    const parsedUser = JSON.parse(storedUser)
+    userType.value = parsedUser?.userType || null
+  }
+} catch (err) {
+  console.warn("⚠️ Error reading user data:", err)
+  isProfileComplete.value = false
+  userType.value = null
+}
+
 </script>
 
 <template>
   <VLocaleProvider :rtl="configStore.isAppRTL">
-    <VApp
-      :style="`--v-global-theme-primary: ${hexToRgb(
-        global.current.value.colors.primary
-      )}`"
-    >
+    <VApp :style="`--v-global-theme-primary: ${hexToRgb(
+      global.current.value.colors.primary
+    )}`">
       <!-- 🚨 تنبيه دائم يظهر إذا البيانات غير مكتملة -->
-      <v-alert
-        v-if="isProfileComplete === false"
-        type="warning"
+      <v-alert v-if="isProfileComplete === false && userType !== 'super_admin' && userType !== null" type="warning"
         style="
           position: fixed;
           z-index: 98999999;
@@ -38,12 +51,7 @@ const isProfileComplete = ref(
           inline-size: 78%;
           inset-block-start: 1%;
           inset-inline-end: 1%;
-        "
-        prominent
-        border="start"
-        elevation="2"
-        class="mb-4"
-      >
+" prominent border="start" elevation="2" class="mb-4">
         <template #prepend>
           <v-icon color="warning" size="28">mdi-account-alert</v-icon>
         </template>

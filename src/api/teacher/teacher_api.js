@@ -6,7 +6,23 @@ class TeacherApi {
     const response = await axiosInstance.post(`/auth/complete-profile`, userData);
     return response;
   }
+  async getDashboard() {
+    const response = await axiosInstance.get(`/teacher/dashboard`);
+    return response;
+  }
+  async getActivePackages() {
+    const response = await axiosInstance.get(`/teacher/subscription-packages/active`);
+    return response;
+  }
   // profile
+
+  // dashboard
+  async getUpcomingToday() {
+    // returns: { success, message, data: [ { sessionId, courseId, courseName, title, startTime, endTime, startAt, endAt, state } ], count }
+    const response = await axiosInstance.get(`/teacher/dashboard/upcoming-today`);
+    return response;
+  }
+  // dashboard
 
   // grades
   async getAllGrades() {
@@ -311,7 +327,7 @@ class TeacherApi {
     const response = await axiosInstance.get('/teacher/evaluations/students-with-eval', { params });
     return response;
   }
-  
+
   // Reservation Payments (Teacher)
   async getReservationPayments(userData = {}) {
     const page = userData?.options?.page ?? 1;
@@ -337,6 +353,16 @@ class TeacherApi {
     const response = await axiosInstance.get('/teacher/invoices', { params });
     return response;
   }
+  async getInvoiceDetails(invoiceId) {
+    // returns: { invoice, installments, entries }
+    const response = await axiosInstance.get(`/teacher/invoices/${encodeURIComponent(invoiceId)}`)
+    return response;
+  }
+  async getInvoicesSummary(params = {}) {
+    // params: { studyYear, status, deleted }
+    const response = await axiosInstance.get('/teacher/invoices/summary', { params });
+    return response;
+  }
   async createInvoice(payload) {
     // payload follows the backend spec
     const response = await axiosInstance.post('/teacher/invoices', payload);
@@ -356,6 +382,10 @@ class TeacherApi {
   }
   async restoreInvoice(invoiceId) {
     const response = await axiosInstance.patch(`/teacher/invoices/${encodeURIComponent(invoiceId)}/restore`);
+    return response;
+  }
+  async updateInvoice(invoiceId, payload) {
+    const response = await axiosInstance.patch(`/teacher/invoices/${encodeURIComponent(invoiceId)}`, payload);
     return response;
   }
   // Optional detail reads (if backend provides them)

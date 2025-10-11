@@ -39,6 +39,7 @@ declare module 'vue-router/auto-routes' {
     'teacher-exams-manage-exams': RouteRecordInfo<'teacher-exams-manage-exams', '/teacher/exams/manage-exams', Record<never, never>, Record<never, never>>,
     'teacher-invoices-invoice-id': RouteRecordInfo<'teacher-invoices-invoice-id', '/teacher/invoices/:invoiceId', { invoiceId: ParamValue<true> }, { invoiceId: ParamValue<false> }>,
     'teacher-invoices-create-invoice': RouteRecordInfo<'teacher-invoices-create-invoice', '/teacher/invoices/create-invoice', Record<never, never>, Record<never, never>>,
+    'teacher-invoices-edit-invoice-id': RouteRecordInfo<'teacher-invoices-edit-invoice-id', '/teacher/invoices/edit/:invoiceId', { invoiceId: ParamValue<true> }, { invoiceId: ParamValue<false> }>,
     'teacher-invoices-manage-invoices': RouteRecordInfo<'teacher-invoices-manage-invoices', '/teacher/invoices/manage-invoices', Record<never, never>, Record<never, never>>,
     'teacher-notifications-show-notifications': RouteRecordInfo<'teacher-notifications-show-notifications', '/teacher/notifications/show-notifications', Record<never, never>, Record<never, never>>,
     'teacher-payments-reservations-booking-id': RouteRecordInfo<'teacher-payments-reservations-booking-id', '/teacher/payments/reservations/:bookingId', { bookingId: ParamValue<true> }, { bookingId: ParamValue<false> }>,

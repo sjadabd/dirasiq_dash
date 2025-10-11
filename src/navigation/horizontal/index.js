@@ -30,12 +30,32 @@ export default [
   // super_admin
 
   // teacher
+  // ── الرئيسية ─────────────────────────────────────────────
+  { heading: 'الرئيسية' },
   {
     title: 'الصفحة الرئيسية',
     to: { name: 'teacher-dashboard' },
     type: 'teacher',
     icon: { icon: 'ri-home-smile-line' },
   },
+
+  // ── الحسابات والفوترة ────────────────────────────────────
+  { heading: 'الحسابات والفوترة' },
+  {
+    title: 'فواتير العربون',
+    to: { name: 'teacher-payments-reservations-show-reservation-payments' },
+    type: 'teacher',
+    icon: { icon: 'ri-wallet-3-line' }, // محفظة/عربون
+  },
+  {
+    title: 'فواتير الطلاب',
+    to: { name: 'teacher-invoices-manage-invoices' },
+    type: 'teacher',
+    icon: { icon: 'ri-bill-line' }, // فواتير
+  },
+
+  // ── المحتوى الدراسي والحجوزات ────────────────────────────
+  { heading: 'المحتوى الدراسي والحجوزات' },
   {
     title: 'المواد الدراسية',
     to: { name: 'teacher-subjects-show-subjects' },
@@ -46,25 +66,58 @@ export default [
     title: 'الكورسات',
     to: { name: 'teacher-course-show-course' },
     type: 'teacher',
-    icon: { icon: 'ri-book-2-line' },
+    icon: { icon: 'ri-graduation-cap-line' },
   },
   {
     title: 'الحجوزات',
     to: { name: 'teacher-bookings-show-bookings' },
     type: 'teacher',
-    icon: { icon: 'ri-calendar-2-line' },
+    icon: { icon: 'ri-calendar-check-line' },
   },
+
+  // ── الجدول والمتابعة ─────────────────────────────────────
+  { heading: 'الجدول والمتابعة' },
   {
-    title: 'الجدول الاسبوعي',
+    title: 'الجدول الأسبوعي',
     to: { name: 'teacher-sessions-manage-sessions' },
     type: 'teacher',
-    icon: { icon: 'ri-calendar-2-line' },
+    icon: { icon: 'ri-calendar-event-line' },
   },
   {
-    title: 'الاشعارات',
+    title: 'تقييمات الطلاب',
+    to: { name: 'teacher-evaluations-manage-evaluations' },
+    type: 'teacher',
+    icon: { icon: 'ri-award-line' },
+  },
+  {
+    title: 'إضافة تقييمات يومية',
+    to: { name: 'teacher-evaluations-bulk-upsert-evaluations' },
+    type: 'teacher',
+    icon: { icon: 'ri-calendar-todo-line' },
+  },
+
+  // ── التواصل والمهام ──────────────────────────────────────
+  { heading: 'التواصل والمهام' },
+  {
+    title: 'الإشعارات',
     to: { name: 'teacher-notifications-show-notifications' },
     type: 'teacher',
     icon: { icon: 'ri-notification-3-line' },
+  },
+  {
+    title: 'الواجبات',
+    to: { name: 'teacher-assignments-manage-assignments' },
+    type: 'teacher',
+    icon: { icon: 'ri-task-line' },
+  },
+
+  // ── الاختبارات والنتائج ──────────────────────────────────
+  { heading: 'الاختبارات والنتائج' },
+  {
+    title: 'الامتحانات والدرجات',
+    to: { name: 'teacher-exams-manage-exams' },
+    type: 'teacher',
+    icon: { icon: 'ri-file-list-3-line' },
   },
   // teacher
 ]

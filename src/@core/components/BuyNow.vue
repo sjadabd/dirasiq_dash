@@ -1,15 +1,9 @@
 <script setup>
-const buyNowUrl = typeof window !== 'undefined' && 'isMarketplace' in window && window.isMarketplace ? 'https://store.vuetifyjs.com/products/materio-vuetify-vuejs-admin-template' : 'https://themeselection.com/item/materio-vuetify-vuejs-admin-template/'
+const buyNowUrl = typeof window !== 'undefined' && 'isMarketplace' in window && window.isMarketplace ? 'https://store.vuetifyjs.com/products/mulhim-iq' : 'https://themeselection.com/item/mulhim-iq/'
 </script>
 
 <template>
-  <a
-    class="buy-now-button d-print-none"
-    role="button"
-    rel="noopener noreferrer"
-    :href="buyNowUrl"
-    target="_blank"
-  >
+  <a class="buy-now-button d-print-none" role="button" rel="noopener noreferrer" :href="buyNowUrl" target="_blank">
     Buy Now
     <span class="button-inner" />
   </a>

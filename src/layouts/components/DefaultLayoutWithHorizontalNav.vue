@@ -3,11 +3,12 @@ import navItems from "@/navigation/horizontal";
 import { themeConfig } from "@themeConfig";
 
 // Components
+import logo from "@/assets/images/logo.png";
 import Footer from "@/layouts/components/Footer.vue";
 import NavbarThemeSwitcher from "@/layouts/components/NavbarThemeSwitcher.vue";
 import UserProfile from "@/layouts/components/UserProfile.vue";
 import { HorizontalNavLayout } from "@layouts";
-import { VNodeRenderer } from "@layouts/components/VNodeRenderer";
+
 </script>
 
 <template>
@@ -15,7 +16,8 @@ import { VNodeRenderer } from "@layouts/components/VNodeRenderer";
     <!-- 👉 navbar -->
     <template #navbar>
       <RouterLink to="/" class="d-flex align-start gap-x-4">
-        <VNodeRenderer :nodes="themeConfig.app.logo" />
+        <img style="
+    background-color: white;inline-size: 60px;" :src="logo" />
 
         <h1 class="leading-normal text-xl text-uppercase">
           {{ themeConfig.app.title }}

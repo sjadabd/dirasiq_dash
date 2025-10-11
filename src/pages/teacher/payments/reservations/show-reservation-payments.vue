@@ -3,6 +3,9 @@
     <AppLoadingOverlay :loading="loading" :progress="progress" :results="results" />
     <AppBreadcrumbs :items="breadcrumbItems" />
 
+    <br />
+    <ReportReservation :report="report" />
+
     <VCard class="my-4 filter-card" elevation="3" rounded="lg">
       <VCardTitle class="d-flex align-center py-4 px-6">
         <VIcon icon="mdi mdi-filter-outline" color="primary" class="me-2" size="24" />
@@ -10,17 +13,10 @@
       </VCardTitle>
       <VDivider />
       <VCardItem>
-        <VRow style="padding-block: 10px">
+        <VRow style="padding-block: 10px;">
           <VCol cols="12" md="4">
-            <VSelect
-              v-model="table.tableSettings.options.study_year"
-              :items="studyYears"
-              item-title="label"
-              item-value="value"
-              label="السنة الدراسية"
-              variant="outlined"
-              @update:model-value="getDataAxios"
-            />
+            <VSelect v-model="table.tableSettings.options.study_year" :items="studyYears" item-title="label"
+              item-value="value" label="السنة الدراسية" variant="outlined" @update:model-value="getDataAxios" />
           </VCol>
         </VRow>
       </VCardItem>
@@ -30,15 +26,13 @@
       <VCardTitle class="py-4 px-6">
         <VRow class="align-center">
           <VCol cols="auto">
-            <VBtn color="primary" @click="reload()" icon="ri-refresh-line" variant="tonal" rounded="circle" size="small" class="rotate-on-hover" />
+            <VBtn color="primary" @click="reload()" icon="ri-refresh-line" variant="tonal" rounded="circle" size="small"
+              class="rotate-on-hover" />
           </VCol>
           <VCol>
             <h3 class="text-h5 font-weight-bold text-center">فواتير عربون الحجوزات</h3>
           </VCol>
           <VCol cols="auto" class="d-flex gap-2">
-            <RouterLink :to="{ name: 'teacher-payments-reservations-report' }">
-              <VBtn color="primary" prepend-icon="ri-file-list-3-line" variant="elevated">تقرير الملخص</VBtn>
-            </RouterLink>
             <VChip color="primary" variant="elevated" class="font-weight-medium">
               {{ numberWithComma(table.totalItems) }} عدد السجلات
             </VChip>
@@ -47,27 +41,23 @@
       </VCardTitle>
       <VDivider />
       <VCardItem>
-        <SmartTable
-          :headers="table.headers"
-          :items="table.Data"
-          :actions="table.actions"
-          :loading="table.loading"
-          :totalItems="table.totalItems"
-          :tableOptions="table.tableSettings.options"
-          @updateTableOptions="updateTableOptions"
-          @showItem="goToDetails"
-          class="reservation-payments-table"
-        />
+        <SmartTable :headers="table.headers" :items="table.Data" :actions="table.actions" :loading="table.loading"
+          :totalItems="table.totalItems" :tableOptions="table.tableSettings.options"
+          @updateTableOptions="updateTableOptions" @showItem="goToDetails" class="reservation-payments-table" />
       </VCardItem>
     </VCard>
   </div>
 </template>
 
 <script>
-import TeacherApi from '@/api/teacher/teacher_api'
-import numberWithComma from '@/constant/number'
+import TeacherApi from '@/api/teacher/teacher_api';
+import ReportReservation from '@/components/teacher/report-reservation.vue';
+import numberWithComma from '@/constant/number';
 
 export default {
+  components: {
+    ReportReservation
+  },
   data() {
     return {
       keyName: 'show-reservation-payments',
@@ -106,15 +96,15 @@ export default {
         },
       },
 
+      // summary report from API
+      report: null,
+
       alert: { open: false, message: null, type: 'success' },
     }
   },
   created() {
     const stored = JSON.parse(localStorage.getItem(this.keyName))
     if (stored) this.table.tableSettings = stored
-  },
-  mounted() {
-    this.getDataAxios()
   },
   methods: {
     numberWithComma,
@@ -155,6 +145,7 @@ export default {
         const response = await TeacherApi.getReservationPayments(this.table.tableSettings)
         const payload = response?.data?.data || {}
         const items = payload.items || []
+        this.report = payload.report || null
         this.table.Data = items.map((it, idx) => ({
           num: (this.table.tableSettings.options.page - 1) * this.table.tableSettings.options.limit + idx + 1,
           studentName: it.studentName,
