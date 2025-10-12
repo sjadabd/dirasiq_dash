@@ -68,12 +68,24 @@
               <VCol cols="12" md="3">
                 <VTextField v-model.number="ins.plannedAmount" type="number" label="المبلغ المخطط" variant="outlined" />
               </VCol>
-              <VCol cols="12" md="3">
+              <VCol cols="12" md="2">
                 <VTextField v-model="ins.dueDate" type="date" label="تاريخ الاستحقاق" variant="outlined" />
               </VCol>
-              <VCol cols="12" md="3">
-                <VTextField v-model.number="ins.initialPaidAmount" type="number" label="مدفوع ابتدائي"
-                  variant="outlined" />
+              <VCol cols="12" md="2">
+                <VSelect
+                  v-model="ins.paid"
+                  :items="[
+                    { text: 'غير مدفوع', value: false },
+                    { text: 'مدفوع', value: true }
+                  ]"
+                  item-title="text"
+                  item-value="value"
+                  label="مدفوع؟"
+                  variant="outlined"
+                />
+              </VCol>
+              <VCol cols="12" md="2">
+                <VTextField v-model="ins.paidDate" :disabled="!ins.paid" type="date" label="تاريخ التسديد" variant="outlined" />
               </VCol>
               <VCol cols="12" md="1" class="d-flex align-center">
                 <VBtn color="error" size="small" icon="ri-delete-bin-line" variant="text"
@@ -159,7 +171,13 @@ export default {
       return list
     },
     addInstallment() {
-      this.form.installments.push({ installmentNumber: this.form.installments.length + 1, plannedAmount: null, dueDate: '', initialPaidAmount: 0 })
+      this.form.installments.push({
+        installmentNumber: this.form.installments.length + 1,
+        plannedAmount: null,
+        dueDate: '',
+        paid: false,
+        paidDate: ''
+      })
     },
     removeInstallment(idx) {
       this.form.installments.splice(idx, 1)
@@ -205,13 +223,59 @@ export default {
       }
     },
     async submit() {
-      if (!this.form.studentId || !this.form.courseId || !this.form.studyYear || !this.form.amountDue) {
+      // Basic required fields
+      if (!this.form.studentId || !this.form.courseId || !this.form.studyYear || this.form.amountDue == null) {
         this.showAlert('error', 'الرجاء إدخال الحقول الأساسية (طالب، كورس، سنة، مبلغ)')
         return
       }
+
+      // Build payload according to API guide
+      const payload = {
+        studentId: this.form.studentId,
+        courseId: this.form.courseId,
+        studyYear: this.form.studyYear,
+        paymentMode: this.form.paymentMode,
+        amountDue: Number(this.form.amountDue),
+      }
+      if (this.form.invoiceType) payload.invoiceType = this.form.invoiceType
+      if (this.form.discountAmount != null && this.form.discountAmount !== '') payload.discountAmount = Number(this.form.discountAmount)
+      if (this.form.dueDate === null) payload.dueDate = null
+      else if (this.form.dueDate && this.form.dueDate.trim() !== '') payload.dueDate = this.form.dueDate
+      if (this.form.notes === null) payload.notes = null
+      else if (typeof this.form.notes === 'string' && this.form.notes.trim() !== '') payload.notes = this.form.notes.trim()
+
+      // installments only for installments mode, require at least one
+      if (this.form.paymentMode === 'installments') {
+        if (!Array.isArray(this.form.installments) || this.form.installments.length === 0) {
+          return this.showAlert('error', 'خطة الأقساط مطلوبة عند اختيار طريقة الدفع بالأقساط')
+        }
+        const normalized = []
+        for (const inst of this.form.installments) {
+          if (
+            inst && Number.isFinite(Number(inst.installmentNumber)) &&
+            Number.isFinite(Number(inst.plannedAmount)) && inst.dueDate
+          ) {
+            const entry = {
+              installmentNumber: Number(inst.installmentNumber),
+              plannedAmount: Number(inst.plannedAmount),
+              dueDate: inst.dueDate,
+              ...(inst.notes ? { notes: String(inst.notes) } : {}),
+            }
+            if (inst.paid === true) {
+              entry.paid = true
+              if (inst.paidDate) {
+                entry.paidDate = inst.paidDate
+              }
+            }
+            normalized.push(entry)
+          }
+        }
+        if (normalized.length === 0) return this.showAlert('error', 'خطة الأقساط غير صالحة')
+        payload.installments = normalized
+      }
+
       this.saving = true
       try {
-        const payload = { ...this.form }
         const { data } = await TeacherApi.createInvoice(payload)
         this.showAlert('success', data?.message || 'تم إنشاء الفاتورة')
         this.$router.push({ name: 'teacher-invoices-manage-invoices' })

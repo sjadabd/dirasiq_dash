@@ -71,7 +71,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import ReportCharts from '../components/ReportCharts.vue'
+import ReportCharts from '../ReportCharts.vue'
 
 const sampleReport = ref({
   success: true,

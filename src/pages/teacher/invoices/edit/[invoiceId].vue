@@ -16,6 +16,9 @@
       <VCardText>
         <VRow>
           <VCol cols="12" md="4">
+            <VTextField v-model="form.studentId" label="معرّف الطالب" variant="outlined" />
+          </VCol>
+          <VCol cols="12" md="4">
             <VSelect v-model="form.studyYear" :items="studyYears" item-title="label" item-value="value"
               label="السنة الدراسية" variant="outlined" />
           </VCol>
@@ -32,6 +35,9 @@
           </VCol>
           <VCol cols="12" md="4">
             <VTextField v-model="form.dueDate" type="date" label="تاريخ الاستحقاق" variant="outlined" />
+          </VCol>
+          <VCol cols="12" md="4">
+            <VTextField v-model="form.invoiceDate" type="date" label="تاريخ الفاتورة" variant="outlined" />
           </VCol>
           <VCol cols="12" md="4">
             <VTextField v-model.number="form.discountAmount" type="number" label="خصم عام" variant="outlined" />
@@ -75,14 +81,20 @@
               <VCol cols="12" md="2">
                 <VTextField v-model.number="ins.installmentNumber" type="number" label="# القسط" variant="outlined" />
               </VCol>
-              <VCol cols="12" md="3">
+              <VCol cols="12" md="2">
                 <VTextField v-model.number="ins.plannedAmount" type="number" label="المبلغ المخطط" variant="outlined" />
               </VCol>
-              <VCol cols="12" md="3">
+              <VCol cols="12" md="2">
                 <VTextField v-model="ins.dueDate" type="date" label="تاريخ الاستحقاق" variant="outlined" />
               </VCol>
-              <VCol cols="12" md="3">
-                <VTextField v-model.number="ins.initialPaidAmount" type="number" label="مدفوع ابتدائي"
+              <VCol cols="12" md="2">
+                <VSelect v-model="ins.paid" :items="[
+                  { text: 'غير مدفوع', value: false },
+                  { text: 'مدفوع', value: true }
+                ]" item-title="text" item-value="value" label="مدفوع؟" variant="outlined" />
+              </VCol>
+              <VCol cols="12" md="2">
+                <VTextField v-model="ins.paidDate" :disabled="!ins.paid" type="date" label="تاريخ التسديد"
                   variant="outlined" />
               </VCol>
               <VCol cols="12" md="1" class="d-flex align-center">
@@ -191,30 +203,36 @@ export default {
 
         // Prefill invoice fields
         if (inv) {
+          this.form.studentId = inv.student_id || this.form.studentId
           this.form.studyYear = inv.study_year || this.form.studyYear
           this.form.paymentMode = inv.payment_mode || this.form.paymentMode
           this.form.invoiceType = inv.invoice_type || this.form.invoiceType
           this.form.amountDue = inv.amount_due != null ? Number(inv.amount_due) : this.form.amountDue
           this.form.dueDate = inv.due_date ? String(inv.due_date).slice(0, 10) : this.form.dueDate
+          this.form.invoiceDate = inv.invoice_date ? String(inv.invoice_date).slice(0, 10) : this.form.invoiceDate
           this.form.notes = inv.notes || this.form.notes
 
           const paid = inv.amount_paid != null ? Number(inv.amount_paid) : 0
           const disc = inv.discount_total != null ? Number(inv.discount_total) : 0
           const remaining = inv.remaining_amount != null ? Number(inv.remaining_amount) : 0
           this.current = { amountPaid: paid, totalDiscount: disc, remaining }
+          // Reflect current discount in the field
+          this.form.discountAmount = disc
         }
 
         // Map installments
         this.form.installments = installments
           .filter(i => typeof i.installment_number !== 'undefined')
           .map(i => ({
-          installmentNumber: i.installment_number,
-          plannedAmount: i.planned_amount != null ? Number(i.planned_amount) : null,
-          dueDate: i.due_date ? String(i.due_date).slice(0, 10) : '',
-          initialPaidAmount: i.paid_amount != null ? Number(i.paid_amount) : 0,
-          notes: i.notes || '',
-          _id: i.id,
-        }))
+            installmentNumber: i.installment_number,
+            plannedAmount: i.planned_amount != null ? Number(i.planned_amount) : null,
+            dueDate: i.due_date ? String(i.due_date).slice(0, 10) : '',
+            paid: i.is_paid === true,
+            paidDate: i.paid_date ? String(i.paid_date).slice(0, 10) : '',
+            paidAmount: i.paid_amount != null ? Number(i.paid_amount) : null,
+            notes: i.notes || '',
+            _id: i.id,
+          }))
 
         // Build index map to resolve installment_id -> installment_number
         const idx = {}
@@ -253,7 +271,8 @@ export default {
         this.form.payments = payments
         // Do not prefill existing discounts in the form list; use discountAmount to show total
         this.form.additionalDiscounts = []
-        this.form.discountAmount = discountsTotal
+        // Only fallback to computed discounts if API did not provide invoice.discount_total
+        if (!inv || inv.discount_total == null) this.form.discountAmount = discountsTotal
 
         // If invoice.amount_paid not provided, compute from installments
         if ((!inv || inv.amount_paid == null) && installments?.length) {
@@ -290,104 +309,46 @@ export default {
       this.form.additionalDiscounts.splice(idx, 1)
     },
     async submit() {
-      // validations similar to manage-invoices handleUpdate
+      // Build full update payload per new requirement
       const payload = {}
 
-      // dueDate
-      if (this.form.dueDate === null) payload.dueDate = null
-      else if (this.form.dueDate && this.form.dueDate.trim() !== '') payload.dueDate = new Date(this.form.dueDate + 'T00:00:00Z').toISOString()
+      if (this.form.studentId) payload.studentId = this.form.studentId
+      if (this.form.paymentMode) payload.paymentMode = this.form.paymentMode
+      if (this.form.invoiceType) payload.invoiceType = this.form.invoiceType
+      if (this.form.amountDue != null && this.form.amountDue !== '') payload.amountDue = Number(this.form.amountDue)
+      if (this.form.discountAmount != null && this.form.discountAmount !== '') payload.discountAmount = Number(this.form.discountAmount)
 
-      // notes
+      if (this.form.invoiceDate === null) payload.invoiceDate = null
+      else if (this.form.invoiceDate && this.form.invoiceDate.trim() !== '') payload.invoiceDate = this.form.invoiceDate
+
+      if (this.form.dueDate === null) payload.dueDate = null
+      else if (this.form.dueDate && this.form.dueDate.trim() !== '') payload.dueDate = this.form.dueDate
+
       if (this.form.notes === null) payload.notes = null
       else if (typeof this.form.notes === 'string' && this.form.notes.trim() !== '') payload.notes = this.form.notes.trim()
 
-      if (this.form.invoiceType) payload.invoiceType = this.form.invoiceType
-      if (this.form.paymentMode) payload.paymentMode = this.form.paymentMode
-
-      if (this.form.amountDue != null && this.form.amountDue !== '') {
-        const amountDueNum = Number(this.form.amountDue)
-        const minAllowed = Number(this.current.amountPaid) + Number(this.current.totalDiscount)
-        if (isNaN(amountDueNum)) return this.showAlert('error', 'المبلغ المستحق غير صالح')
-        if (amountDueNum < minAllowed) return this.showAlert('error', `المبلغ المستحق يجب ألا يقل عن مجموع المدفوع (${this.current.amountPaid}) + الخصومات (${this.current.totalDiscount})`)
-        payload.amountDue = amountDueNum
-      }
-
-      // installments
       if (Array.isArray(this.form.installments) && this.form.installments.length > 0) {
         const normalized = []
         for (const inst of this.form.installments) {
           if (inst && Number.isFinite(Number(inst.installmentNumber)) && Number.isFinite(Number(inst.plannedAmount)) && inst.dueDate) {
-            normalized.push({
+            const entry = {
+              ...(inst._id ? { id: String(inst._id) } : {}),
               installmentNumber: Number(inst.installmentNumber),
               plannedAmount: Number(inst.plannedAmount),
-              dueDate: new Date(inst.dueDate).toISOString(),
+              dueDate: inst.dueDate,
               ...(inst.notes ? { notes: String(inst.notes) } : {}),
-              ...(inst.initialPaidAmount != null && inst.initialPaidAmount !== '' ? { initialPaidAmount: Number(inst.initialPaidAmount) } : {}),
-            })
+              ...(inst.paidAmount != null && inst.paidAmount !== '' ? { paidAmount: Number(inst.paidAmount) } : {}),
+            }
+            if (inst.paid === true) {
+              entry.is_paid = true
+              if (inst.paidDate) entry.paidDate = inst.paidDate
+            } else {
+              entry.is_paid = false
+            }
+            normalized.push(entry)
           }
         }
         if (normalized.length > 0) payload.installments = normalized
-      }
-
-      // payments
-      let totalNewPayments = 0
-      if (Array.isArray(this.form.payments) && this.form.payments.length > 0) {
-        const normalized = []
-        for (const p of this.form.payments) {
-          if (p && Number.isFinite(Number(p.amount)) && p.paymentMethod) {
-            const entry = { amount: Number(p.amount), paymentMethod: String(p.paymentMethod) }
-            if (p.installmentNumber != null && p.installmentNumber !== '') entry.installmentNumber = Number(p.installmentNumber)
-            if (p.paidAt) entry.paidAt = p.paidAt.includes('T') ? new Date(p.paidAt).toISOString() : new Date(p.paidAt + 'T00:00:00Z').toISOString()
-            if (p.notes) entry.notes = String(p.notes)
-            totalNewPayments += entry.amount
-            normalized.push(entry)
-          }
-        }
-        if (normalized.length > 0) payload.payments = normalized
-      }
-
-      // additional discounts
-      let totalNewDiscounts = 0
-      if (Array.isArray(this.form.additionalDiscounts) && this.form.additionalDiscounts.length > 0) {
-        const normalized = []
-        for (const d of this.form.additionalDiscounts) {
-          if (d && Number.isFinite(Number(d.amount))) {
-            const entry = { amount: Number(d.amount) }
-            if (d.notes) entry.notes = String(d.notes)
-            totalNewDiscounts += entry.amount
-            normalized.push(entry)
-          }
-        }
-        if (normalized.length > 0) payload.additionalDiscounts = normalized
-      } else {
-        // If user changed the general discount, compute delta vs current totalDiscount
-        const desiredTotal = Number(this.form.discountAmount) || 0
-        const currentTotal = Number(this.current.totalDiscount) || 0
-        const delta = desiredTotal - currentTotal
-        if (delta < 0) {
-          return this.showAlert('error', 'لا يمكن تقليل الخصم الإجمالي الحالي. أزل الخصومات يدويًا من النظام إن كان مدعومًا.')
-        }
-        if (delta > 0) {
-          payload.additionalDiscounts = [{ amount: delta, notes: 'تعديل خصم عام' }]
-          totalNewDiscounts += delta
-        }
-      }
-
-      // studyYear
-      if (this.form.studyYear) payload.studyYear = this.form.studyYear
-
-      // Strict validation: (currentPaid + newPayments) + (currentDiscount + newDiscounts) must equal amountDue
-      const newPaymentsSum = Array.isArray(this.form.payments)
-        ? this.form.payments.reduce((s, p) => s + (Number(p.amount) || 0), 0)
-        : 0
-      const newDiscountsSum = (Array.isArray(this.form.additionalDiscounts) && this.form.additionalDiscounts.length > 0)
-        ? this.form.additionalDiscounts.reduce((s, d) => s + (Number(d.amount) || 0), 0)
-        : (Number(this.form.discountAmount) || 0)
-      const lhs = Number(this.current.amountPaid) + newPaymentsSum + Number(this.current.totalDiscount) + newDiscountsSum
-      const rhs = Number(this.form.amountDue || 0)
-      const epsilon = 0.0001
-      if (Math.abs(lhs - rhs) > epsilon) {
-        return this.showAlert('error', `يجب أن يساوي مجموع (الدفعات الحالية والجديدة + الخصومات الحالية والجديدة) المبلغ الكلي. الحالي: ${lhs} ≠ ${rhs}`)
       }
 
       if (Object.keys(payload).length === 0) return this.showAlert('error', 'لم يتم تحديد أي تعديل لإرساله')

@@ -358,6 +358,11 @@ class TeacherApi {
     const response = await axiosInstance.get(`/teacher/invoices/${encodeURIComponent(invoiceId)}`)
     return response;
   }
+  async getInvoiceFull(invoiceId) {
+    // returns: { invoice, installments, totals }
+    const response = await axiosInstance.get(`/teacher/invoices/${encodeURIComponent(invoiceId)}/full`)
+    return response;
+  }
   async getInvoicesSummary(params = {}) {
     // params: { studyYear, status, deleted }
     const response = await axiosInstance.get('/teacher/invoices/summary', { params });

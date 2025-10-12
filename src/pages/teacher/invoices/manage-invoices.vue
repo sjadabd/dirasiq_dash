@@ -350,7 +350,7 @@ export default {
         { title: 'العمليات', type: 'strong', sortable: false, key: 'actions' },
       ],
       items: [],
-      tableActions: ['تعديل', 'تحديث رد', 'حذف', 'اعادة تفعيل'],
+      tableActions: ['تعديل', 'حذف', 'اعادة تفعيل'],
       loadingTable: false,
       totalItems: 0,
       tableOptions: { page: 1, limit: 10, search: null },

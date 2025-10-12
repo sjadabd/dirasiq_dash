@@ -63,6 +63,7 @@ declare module 'vue' {
     PricingPlanDialog: typeof import('./src/components/dialogs/PricingPlanDialog.vue')['default']
     ProductDescriptionEditor: typeof import('./src/@core/components/ProductDescriptionEditor.vue')['default']
     ReferAndEarnDialog: typeof import('./src/components/dialogs/ReferAndEarnDialog.vue')['default']
+    ReportCharts: typeof import('./src/components/ReportCharts.vue')['default']
     ReportInvoices: typeof import('./src/components/teacher/report-invoices.vue')['default']
     ReportReservation: typeof import('./src/components/teacher/report-reservation.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

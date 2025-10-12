@@ -49,37 +49,25 @@
       </VCardText>
     </VCard>
 
-    <!-- Entries -->
+    <!-- Totals (from full endpoint) -->
     <VCard class="my-4" elevation="3" rounded="lg">
       <VCardTitle class="py-4 px-6 d-flex align-center">
-        <VIcon icon="ri-list-unordered" class="me-2" /> قيود الفاتورة
+        <VIcon icon="ri-pie-chart-2-line" class="me-2" /> إحصائيات الفاتورة
       </VCardTitle>
       <VDivider />
       <VCardText>
-        <VAlert v-if="entriesLoading" type="info" variant="tonal">جاري التحميل...</VAlert>
-        <VAlert v-else-if="!entries.length" type="info" variant="tonal">لا توجد قيود مسجّلة</VAlert>
-        <VTable v-else density="comfortable">
-          <thead>
-            <tr>
-              <th>النوع</th>
-              <th>المبلغ</th>
-              <th>الطريقة</th>
-              <th>رقم القسط</th>
-              <th>التاريخ</th>
-              <th>ملاحظات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(e, idx) in entries" :key="idx">
-              <td>{{ toArabicType(e.entry_type) }}</td>
-              <td>{{ numberWithComma(e.amount) }}</td>
-              <td>{{ e.payment_method || '-' }}</td>
-              <td>{{ e.installment_number || '-' }}</td>
-              <td>{{ formatDateTime(e.paid_at) }}</td>
-              <td>{{ e.notes || '' }}</td>
-            </tr>
-          </tbody>
-        </VTable>
+        <VRow>
+          <VCol cols="12" md="2"><VAlert variant="tonal" type="info">عدد الأقساط: {{ totals.count }}</VAlert></VCol>
+          <VCol cols="12" md="2"><VAlert variant="tonal" type="success">مدفوعة: {{ totals.paidCount }}</VAlert></VCol>
+          <VCol cols="12" md="2"><VAlert variant="tonal" type="warning">قيد السداد: {{ totals.pendingCount }}</VAlert></VCol>
+          <VCol cols="12" md="2"><VAlert variant="tonal" type="warning">جزئية: {{ totals.partialCount }}</VAlert></VCol>
+          <VCol cols="12" md="2"><VAlert variant="tonal" type="error">متأخرة: {{ totals.overdueCount }}</VAlert></VCol>
+        </VRow>
+        <VRow class="mt-2">
+          <VCol cols="12" md="4"><VCard variant="tonal"><VCardText><div class="text-caption">مجموع المخطط</div><div class="text-h6">{{ numberWithComma(totals.plannedTotal) }}</div></VCardText></VCard></VCol>
+          <VCol cols="12" md="4"><VCard variant="tonal"><VCardText><div class="text-caption">مجموع المدفوع</div><div class="text-h6">{{ numberWithComma(totals.paidTotal) }}</div></VCardText></VCard></VCol>
+          <VCol cols="12" md="4"><VCard variant="tonal"><VCardText><div class="text-caption">مجموع المتبقي</div><div class="text-h6">{{ numberWithComma(totals.remainingTotal) }}</div></VCardText></VCard></VCol>
+        </VRow>
       </VCardText>
     </VCard>
 
@@ -136,19 +124,18 @@
 
     <!-- Add Payment Dialog -->
     <v-dialog v-model="payDialog.open" max-width="520">
-      <v-card title="إضافة دفعة">
+      <v-card title="تسديد الدفعة">
         <v-card-text>
           <VRow>
             <VCol cols="12">
-              <VTextField v-model.number="payDialog.form.amount" type="number" label="المبلغ" variant="outlined" />
+              <VTextField v-model.number="payDialog.form.amount" type="number" label="المبلغ" variant="outlined" :disabled="true" />
             </VCol>
             <VCol cols="12">
               <VSelect v-model="payDialog.form.paymentMethod" :items="paymentMethods" item-title="text"
                 item-value="value" label="طريقة الدفع" variant="outlined" />
             </VCol>
             <VCol cols="12">
-              <VTextField v-model="payDialog.form.paidAt" type="datetime-local" label="تاريخ الدفع"
-                variant="outlined" />
+              <VTextField v-model="payDialog.form.paidAt" type="date" label="تاريخ الدفع" variant="outlined" />
             </VCol>
             <VCol cols="12">
               <VTextField v-model="payDialog.form.notes" label="ملاحظات" variant="outlined" />
@@ -157,7 +144,7 @@
         </v-card-text>
         <v-card-actions>
           <v-btn @click="payDialog.open = false">إلغاء</v-btn>
-          <v-btn color="primary" :loading="saving" @click="handleAddPayment">حفظ</v-btn>
+          <v-btn color="primary" :loading="saving" @click="handleAddPayment">تسديد</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -220,6 +207,7 @@ export default {
 
       invoiceId: this.$route.params.invoiceId,
       inv: { id: '', amount_due: 0, discount_total: 0, amount_paid: 0, remaining_amount: 0, invoice_status: '', study_year: '', payment_mode: '' },
+      totals: { count: 0, paidCount: 0, partialCount: 0, pendingCount: 0, overdueCount: 0, plannedTotal: 0, paidTotal: 0, remainingTotal: 0 },
 
       entries: [],
       entriesLoading: false,
@@ -265,9 +253,7 @@ export default {
     }
   },
   mounted() {
-    this.loadEntries()
-    this.loadInstallments()
-    this.loadReport()
+    this.loadFull()
   },
   methods: {
     numberWithComma,
@@ -291,20 +277,47 @@ export default {
       if (s === 'cancelled' || s === 'canceled') return 'ملغي'
       return String(s || '')
     },
-    async loadReport() {
+    async loadFull() {
       try {
-        const res = await TeacherApi.getInvoiceEntriesReport(this.invoiceId)
-        const rep = res?.data?.data
-        if (rep) {
-          // Coerce to numbers for uniform formatting in UI
-          this.inv.amount_due = rep.amount_due != null ? Number(rep.amount_due) : this.inv.amount_due
-          this.inv.discount_total = rep.discount_total != null ? Number(rep.discount_total) : this.inv.discount_total
-          this.inv.amount_paid = rep.amount_paid != null ? Number(rep.amount_paid) : this.inv.amount_paid
-          this.inv.remaining_amount = rep.remaining_amount != null ? Number(rep.remaining_amount) : this.inv.remaining_amount
+        this.loading = true
+        const res = await TeacherApi.getInvoiceFull(this.invoiceId)
+        const data = res?.data?.data || {}
+        const inv = data.invoice || {}
+        const installments = Array.isArray(data.installments) ? data.installments : []
+        const totals = data.totals || {}
+
+        // Map invoice summary
+        this.inv.amount_due = inv.amount_due != null ? Number(inv.amount_due) : 0
+        this.inv.discount_total = inv.discount_total != null ? Number(inv.discount_total) : 0
+        this.inv.amount_paid = inv.amount_paid != null ? Number(inv.amount_paid) : 0
+        this.inv.remaining_amount = inv.remaining_amount != null ? Number(inv.remaining_amount) : 0
+        this.inv.study_year = inv.study_year || this.inv.study_year
+        this.inv.payment_mode = inv.payment_mode || this.inv.payment_mode
+        this.inv.invoice_type = inv.invoice_type || this.inv.invoice_type
+
+        // Map installments
+        this.installments = installments.map(i => ({
+          ...i,
+          planned_amount: i?.planned_amount != null ? Number(i.planned_amount) : i.planned_amount,
+          paid_amount: i?.paid_amount != null ? Number(i.paid_amount) : i.paid_amount,
+          remaining_amount: i?.remaining_amount != null ? Number(i.remaining_amount) : i.remaining_amount,
+        }))
+
+        // Map totals
+        this.totals = {
+          count: totals.count ?? 0,
+          paidCount: totals.paidCount ?? 0,
+          partialCount: totals.partialCount ?? 0,
+          pendingCount: totals.pendingCount ?? 0,
+          overdueCount: totals.overdueCount ?? 0,
+          plannedTotal: totals.plannedTotal ?? 0,
+          paidTotal: totals.paidTotal ?? 0,
+          remainingTotal: totals.remainingTotal ?? 0,
         }
       } catch (e) {
-        // report is optional; ignore 404 gracefully
-        if (e?.response?.status !== 404) this.showAlert('error', e?.response?.data?.message || 'تعذر جلب تقرير الفاتورة')
+        this.showAlert('error', e?.response?.data?.message || 'تعذر جلب تفاصيل الفاتورة')
+      } finally {
+        this.loading = false
       }
     },
     async handleSoftDelete() {
@@ -325,9 +338,7 @@ export default {
         const res = await TeacherApi.restoreInvoice(this.invoiceId)
         this.showAlert('success', res?.data?.message || 'تم الاسترجاع')
         this.restoreDialog.open = false
-        await this.loadEntries()
-        await this.loadInstallments()
-        await this.loadReport()
+        await this.loadFull()
       } catch (e) {
         this.showAlert('error', e?.response?.data?.message || 'تعذر الاسترجاع')
       } finally {
@@ -407,8 +418,8 @@ export default {
         amount: remaining && isFinite(remaining) ? remaining : this.payDialog.form.amount,
         paymentMethod: this.payDialog.form.paymentMethod || 'cash',
         installmentId: ins.id || '',
-        // datetime-local expects 'YYYY-MM-DDTHH:MM'
-        paidAt: this.payDialog.form.paidAt || new Date().toISOString().slice(0, 16),
+        // date input expects 'YYYY-MM-DD'
+        paidAt: this.payDialog.form.paidAt || new Date().toISOString().slice(0, 10),
         notes: this.payDialog.form.notes || ''
       }
       this.payDialog.open = true
@@ -437,9 +448,7 @@ export default {
         this.showAlert('success', res?.data?.message || 'تمت إضافة الدفعة')
         this.payDialog.open = false
         this.payDialog.form = { amount: null, paymentMethod: 'cash', installmentId: '', paidAt: '', notes: '' }
-        await this.loadEntries()
-        await this.loadInstallments()
-        await this.loadReport()
+        await this.loadFull()
       } catch (e) {
         this.showAlert('error', e?.response?.data?.message || 'تعذر إضافة الدفعة')
       } finally {
