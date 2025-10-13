@@ -1,123 +1,112 @@
 <template>
-  <VApp>
-    <VMain>
-      <VContainer fluid class="pa-6">
+  <div>
+    <VCard elevation="2" rounded="lg" class="mb-4">
+      <VCardTitle class="d-flex align-center">
+        <VIcon icon="ri-bar-chart-2-line" class="me-2" />
+        ملخص السنة الدراسية {{ studyYear }}
+      </VCardTitle>
+      <VCardText>
         <VRow>
-          <VCol cols="12">
-            <h1 class="text-h3 font-weight-bold mb-6 text-center">
-              لوحة تحكم التقارير المالية
-            </h1>
-          </VCol>
-        </VRow>
-
-        <!-- Report Charts Component -->
-        <!-- Updated to pass new data structure -->
-        <VRow>
-          <VCol cols="12">
-            <ReportCharts :data="sampleReport.data" :studyYear="sampleReport.studyYear" />
-          </VCol>
-        </VRow>
-
-        <!-- Data Controls -->
-        <VRow class="mt-6">
-          <VCol cols="12">
-            <VCard elevation="3" rounded="lg">
-              <VCardTitle class="text-h6 font-weight-bold">
-                تحديث البيانات
-              </VCardTitle>
+          <VCol cols="12" md="3">
+            <VCard variant="tonal">
               <VCardText>
-                <VRow>
-                  <!-- Updated form fields to match new data structure -->
-                  <VCol cols="12" md="6">
-                    <VTextField v-model.number="sampleReport.data.paidCount" label="عدد المدفوعة" type="number"
-                      variant="outlined" density="comfortable" />
-                  </VCol>
-                  <VCol cols="12" md="6">
-                    <VTextField v-model.number="sampleReport.data.remainingCount" label="عدد المتبقية" type="number"
-                      variant="outlined" density="comfortable" />
-                  </VCol>
-                  <VCol cols="12" md="6">
-                    <VTextField v-model.number="sampleReport.data.totalAmount" label="إجمالي المبالغ" type="number"
-                      variant="outlined" density="comfortable" suffix="د.ع" />
-                  </VCol>
-                  <VCol cols="12" md="6">
-                    <VTextField v-model.number="sampleReport.data.totalPaid" label="إجمالي المدفوع" type="number"
-                      variant="outlined" density="comfortable" suffix="د.ع" />
-                  </VCol>
-                  <VCol cols="12" md="6">
-                    <VTextField v-model.number="sampleReport.data.totalDiscount" label="إجمالي الخصومات" type="number"
-                      variant="outlined" density="comfortable" suffix="د.ع" />
-                  </VCol>
-                  <VCol cols="12" md="6">
-                    <VTextField v-model.number="sampleReport.data.totalRemaining" label="المتبقي" type="number"
-                      variant="outlined" density="comfortable" suffix="د.ع" />
-                  </VCol>
-                </VRow>
-                <VRow>
-                  <VCol cols="12" class="text-center">
-                    <VBtn color="primary" size="large" @click="loadSampleData">
-                      تحميل بيانات تجريبية
-                    </VBtn>
-                  </VCol>
-                </VRow>
+                <div class="text-caption">إجمالي المبالغ</div>
+                <div class="text-h6">{{ number(data.totalAmount) }}</div>
+              </VCardText>
+            </VCard>
+          </VCol>
+          <VCol cols="12" md="3">
+            <VCard variant="tonal">
+              <VCardText>
+                <div class="text-caption">إجمالي المدفوع</div>
+                <div class="text-h6">{{ number(data.totalPaid) }}</div>
+              </VCardText>
+            </VCard>
+          </VCol>
+          <VCol cols="12" md="3">
+            <VCard variant="tonal">
+              <VCardText>
+                <div class="text-caption">إجمالي الخصومات</div>
+                <div class="text-h6">{{ number(data.totalDiscount) }}</div>
+              </VCardText>
+            </VCard>
+          </VCol>
+          <VCol cols="12" md="3">
+            <VCard variant="tonal">
+              <VCardText>
+                <div class="text-caption">المتبقي</div>
+                <div class="text-h6">{{ number(data.totalRemaining) }}</div>
               </VCardText>
             </VCard>
           </VCol>
         </VRow>
-      </VContainer>
-    </VMain>
-  </VApp>
+
+        <VDivider class="my-4" />
+
+        <VRow>
+          <VCol cols="12" md="3">
+            <VAlert type="success" variant="tonal">
+              <div class="text-caption">عدد المدفوعة</div>
+              <div class="text-h6">{{ number(data.paidCount) }}</div>
+            </VAlert>
+          </VCol>
+          <VCol cols="12" md="3">
+            <VAlert type="warning" variant="tonal">
+              <div class="text-caption">عدد المتبقية</div>
+              <div class="text-h6">{{ number(data.remainingCount) }}</div>
+            </VAlert>
+          </VCol>
+          <VCol cols="12" md="3">
+            <VAlert type="info" variant="tonal">
+              <div class="text-caption">عدد بخصم</div>
+              <div class="text-h6">{{ number(data.discountCount) }}</div>
+            </VAlert>
+          </VCol>
+          <VCol cols="12" md="3">
+            <VAlert color="primary" variant="tonal">
+              <div class="text-caption">إجمالي الفواتير</div>
+              <div class="text-h6">{{ number(data.totalCount) }}</div>
+            </VAlert>
+          </VCol>
+        </VRow>
+
+        <VRow class="mt-4">
+          <VCol cols="12">
+            <div class="d-flex align-center mb-2">
+              <span class="me-2">نسبة المدفوع</span>
+              <strong>{{ paidPercent.toFixed(1) }}%</strong>
+            </div>
+            <VProgressLinear :model-value="paidPercent" color="success" height="10" rounded />
+          </VCol>
+        </VRow>
+      </VCardText>
+    </VCard>
+  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import ReportCharts from '../ReportCharts.vue'
+import { computed } from 'vue'
 
-const sampleReport = ref({
-  success: true,
-  message: 'Invoices summary fetched',
-  studyYear: '2025-2026',
+const props = defineProps({
   data: {
-    totalAmount: 250000,
-    totalPaid: 110000,
-    partialPaidTotal: 110000,
-    totalDiscount: 10000,
-    totalRemaining: 130000,
-    totalCount: 1,
-    paidCount: 1,
-    discountCount: 1,
-    remainingCount: 1
+    type: Object,
+    required: true,
+    default: () => ({})
+  },
+  studyYear: {
+    type: String,
+    default: ''
   }
 })
 
-const loadSampleData = () => {
-  const totalAmount = Math.floor(Math.random() * 50000000) + 10000000
-  const totalPaid = Math.floor(Math.random() * (totalAmount * 0.7)) + (totalAmount * 0.2)
-  const totalDiscount = Math.floor(Math.random() * 5000000) + 500000
-  const totalRemaining = totalAmount - totalPaid
+const number = (v) => Number(v || 0).toLocaleString()
 
-  sampleReport.value = {
-    success: true,
-    message: 'Invoices summary fetched',
-    studyYear: '2025-2026',
-    data: {
-      totalAmount,
-      totalPaid,
-      partialPaidTotal: totalPaid,
-      totalDiscount,
-      totalRemaining,
-      totalCount: Math.floor(Math.random() * 100) + 50,
-      paidCount: Math.floor(Math.random() * 80) + 20,
-      discountCount: Math.floor(Math.random() * 30) + 5,
-      remainingCount: Math.floor(Math.random() * 40) + 10
-    }
-  }
-}
+const paidPercent = computed(() => {
+  const amt = Number(props.data.totalAmount || 0)
+  const paid = Number(props.data.totalPaid || 0)
+  if (amt <= 0) return 0
+  return Math.min(100, Math.max(0, (paid / amt) * 100))
+})
 </script>
 
-<style scoped>
-.v-container {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  min-block-size: 100vh;
-}
-</style>
+<style scoped></style>

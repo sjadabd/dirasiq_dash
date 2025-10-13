@@ -34,10 +34,6 @@
               item-value="value" label="الكورس" variant="outlined" :loading="coursesLoading" :disabled="coursesLoading"
               @update:model-value="getDataAxios" clearable />
           </VCol>
-          <VCol cols="12" md="4">
-            <VTextField v-model="table.tableSettings.options.search" label="بحث بالعنوان" variant="outlined"
-              @keyup.enter="getDataAxios" clearable @click:clear="getDataAxios" />
-          </VCol>
         </VRow>
       </VCardItem>
     </VCard>
@@ -64,8 +60,9 @@
       <VCardItem>
         <SmartTable :headers="table.headers" :items="table.Data" :actions="table.actions" :loading="table.loading"
           :totalItems="table.totalItems" :tableOptions="table.tableSettings.options"
-          @updateTableOptions="updateTableOptions" @editItem="editItem" @deleteItem="deleteItem" @showItem="navigateToAttendance"
-          @showAttendeesItem="openViewStudentsDialog" @addAttendeesItem="openAddAttendeesDialog" @endSessionItem="openEndSessionDialog" />
+          @updateTableOptions="updateTableOptions" @editItem="editItem" @deleteItem="deleteItem"
+          @showItem="navigateToAttendance" @showAttendeesItem="openViewStudentsDialog"
+          @addAttendeesItem="openAddAttendeesDialog" @endSessionItem="openEndSessionDialog" />
       </VCardItem>
     </VCard>
 
@@ -86,12 +83,22 @@
                 item-title="text" item-value="value" label="أيام الأسبوع" multiple chips variant="outlined" />
             </VCol>
             <VCol cols="12" md="3">
-              <VTextField v-model="sessionDialog.form.start_time" type="time" label="بداية" variant="outlined"
-                :step="60" />
+              <AppDateTimePicker
+                v-model="sessionDialog.form.start_time"
+                label="بداية"
+                variant="outlined"
+                clearable
+                :config="{ enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true, minuteIncrement: 5 }"
+              />
             </VCol>
             <VCol cols="12" md="3">
-              <VTextField v-model="sessionDialog.form.end_time" type="time" label="نهاية" variant="outlined"
-                :step="60" />
+              <AppDateTimePicker
+                v-model="sessionDialog.form.end_time"
+                label="نهاية"
+                variant="outlined"
+                clearable
+                :config="{ enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true, minuteIncrement: 5 }"
+              />
             </VCol>
             <VCol cols="12" md="6">
               <VSwitch v-model="sessionDialog.form.recurrence" inset color="primary" :true-value="true"
@@ -99,29 +106,6 @@
             </VCol>
           </VRow>
           <VDivider class="my-4" />
-          <!-- <VExpansionPanels variant="accordion">
-            <VExpansionPanel>
-              <VExpansionPanelTitle>خيارات متقدمة</VExpansionPanelTitle>
-              <VExpansionPanelText>
-                <VRow>
-                  <VCol cols="12" md="6">
-                    <VTextField v-model.number="sessionDialog.form.flex_minutes" label="دقائق المرونة (اختياري)" type="number" variant="outlined" />
-                  </VCol>
-                  <VCol cols="12" md="6">
-                    <VSelect
-                      v-model="sessionDialog.form.flex_type"
-                      :items="flexTypes"
-                      item-title="text"
-                      item-value="value"
-                      label="نوع المرونة"
-                      variant="outlined"
-                      clearable
-                    />
-                  </VCol>
-                </VRow>
-              </VExpansionPanelText>
-            </VExpansionPanel>
-          </VExpansionPanels> -->
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -352,9 +336,12 @@ export default {
         messages: ["سيتم إنهاء المحاضرة وإشعار الطلاب الحاضرين اليوم."],
         title: "تأكيد إنهاء الجلسة",
         confirmButtonText: "إنهاء الجلسة",
+        saving: false,
+        menus: { start: false, end: false },
       },
       deleteDialog: {
         open: false,
+        loading: false,
         data: null,
         messages: ["سيتم حذف الجلسة.", "لا يمكن استرجاعها بعد الحذف."],
         title: "تأكيد الحذف",
@@ -810,8 +797,9 @@ export default {
     },
 
     // alerts
+    allowEvery5(m) { return m % 5 === 0 },
     showAlert(type, message) {
-      Object.assign(this.alert, { type, message, open: true });
+      this.alert = { open: true, type, message }
     },
   },
 };

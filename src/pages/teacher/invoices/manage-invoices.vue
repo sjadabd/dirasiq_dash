@@ -6,6 +6,22 @@
     <!-- Invoices Summary Report -->
     <br />
     <ReportInvoices :report="report" />
+    <!-- Operations Card -->
+    <VCard class="my-4 operations-card" elevation="3" rounded="lg">
+      <VCardTitle class="d-flex align-center py-4 px-6">
+        <VIcon icon="mdi-cog-outline" color="primary" class="me-2" size="24" />
+        <h3 class="text-h5 font-weight-bold">العمليات</h3>
+      </VCardTitle>
+      <VDivider />
+      <VCardItem>
+        <VRow class="align-center justify-start pa-2">
+          <RouterLink :to="{ name: 'teacher-invoices-create-invoice' }">
+            <VBtn color="primary" prepend-icon="ri-add-line">إنشاء فاتورة</VBtn>
+          </RouterLink>
+        </VRow>
+      </VCardItem>
+    </VCard>
+    <!-- Operations Card -->
 
     <!-- Filters -->
     <VCard class="my-4" elevation="3" rounded="lg">
@@ -13,16 +29,13 @@
         <VIcon icon="ri-filter-3-line" color="primary" class="me-2" size="24" />
         <h3 class="text-h6 font-weight-bold">تصفية</h3>
         <VSpacer />
-        <RouterLink :to="{ name: 'teacher-invoices-create-invoice' }">
-          <VBtn color="primary" prepend-icon="ri-add-line">إنشاء فاتورة</VBtn>
-        </RouterLink>
       </VCardTitle>
       <VDivider />
       <VCardItem>
         <VRow class="py-3">
           <VCol cols="12" md="4">
             <VSelect v-model="filters.studyYear" :items="studyYears" item-title="label" item-value="value"
-              label="السنة الدراسية" variant="outlined" @update:model-value="fetchInvoices" />
+              label="السنة الدراسية" variant="outlined" :loading="yearsLoading" @update:model-value="fetchInvoices" />
           </VCol>
           <VCol cols="12" md="4">
             <VSelect v-model="filters.status" :items="statusItems" item-title="text" item-value="value"
@@ -38,10 +51,21 @@
 
     <!-- Invoices Table -->
     <VCard class="my-4" elevation="3" rounded="lg">
-      <VCardTitle class="py-4 px-6 d-flex align-center">
-        <h3 class="text-h6 font-weight-bold">فواتير الطلاب</h3>
-        <VSpacer />
-        <VChip color="primary" variant="elevated">{{ numberWithComma(totalItems) }} سجل</VChip>
+      <VCardTitle class="py-4 px-6">
+        <VRow class="align-center">
+          <VCol cols="auto">
+            <VBtn color="primary" @click="reload()" icon="ri-refresh-line" variant="tonal" rounded="circle" size="small"
+              class="rotate-on-hover" />
+          </VCol>
+          <VCol>
+            <h3 class="text-h5 font-weight-bold text-center">فواتير الطلاب</h3>
+          </VCol>
+          <VCol cols="auto" class="d-flex gap-2">
+            <VChip color="primary" variant="elevated" class="font-weight-medium">
+              {{ numberWithComma(totalItems) }} عدد السجلات
+            </VChip>
+          </VCol>
+        </VRow>
       </VCardTitle>
       <VDivider />
       <VCardItem>
@@ -84,58 +108,13 @@
     </v-dialog>
 
     <!-- Restore Confirm Dialog -->
-    <v-dialog v-model="restoreDialog.open" max-width="520">
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          <VIcon icon="ri-refresh-line" class="me-2" /> تأكيد الاسترجاع
-        </v-card-title>
-        <v-card-text>
-          سيتم استرجاع الفاتورة مع أقساطها وقيودها. هل تريد المتابعة؟
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="restoreDialog.open = false">إلغاء</v-btn>
-          <v-btn color="success" :loading="restoreDialog.loading" @click="handleRestore">استرجاع</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <ConfirmDangerDialog v-if="restoreDialog.open" v-model="restoreDialog.open" :messages="restoreDialog.messages"
+      :title="restoreDialog.title" :confirmButtonText="restoreDialog.confirmButtonText"
+      :checkboxLabel="restoreDialog.checkboxLabel" @confirm="handleRestore" />
 
     <!-- Delete Confirm Dialog -->
-    <v-dialog v-model="deleteDialog.open" max-width="520">
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          <VIcon icon="ri-delete-bin-line" class="me-2" /> تأكيد الحذف
-        </v-card-title>
-        <v-card-text>
-          سيتم حذف الفاتورة حذفًا منطقيًا (Soft Delete). هل تريد المتابعة؟
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="deleteDialog.open = false">إلغاء</v-btn>
-          <v-btn color="error" :loading="deleteDialog.loading" @click="handleDelete">حذف</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Add Discount Dialog -->
-    <v-dialog v-model="discDialog.open" max-width="520">
-      <v-card title="إضافة خصم">
-        <v-card-text>
-          <VRow>
-            <VCol cols="12">
-              <VTextField v-model.number="discDialog.form.amount" type="number" label="المبلغ" variant="outlined" />
-            </VCol>
-            <VCol cols="12">
-              <VTextField v-model="discDialog.form.notes" label="ملاحظات" variant="outlined" />
-            </VCol>
-          </VRow>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn @click="discDialog.open = false">إلغاء</v-btn>
-          <v-btn color="primary" :loading="saving" @click="handleAddDiscount">حفظ</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <ConfirmDangerDialog v-if="deleteDialog.open" v-model="deleteDialog.open" :messages="deleteDialog.messages"
+      :title="deleteDialog.title" :confirmButtonText="deleteDialog.confirmButtonText" @confirm="handleDelete" />
 
     <!-- Edit Invoice Dialog -->
     <v-dialog v-model="editDialog.open" max-width="520">
@@ -191,16 +170,19 @@
                   <VTextField v-model.number="ins.installmentNumber" type="number" label="# القسط" variant="outlined" />
                 </VCol>
                 <VCol cols="12" md="3">
-                  <VTextField v-model.number="ins.plannedAmount" type="number" label="المبلغ المخطط" variant="outlined" />
+                  <VTextField v-model.number="ins.plannedAmount" type="number" label="المبلغ المخطط"
+                    variant="outlined" />
                 </VCol>
                 <VCol cols="12" md="3">
                   <VTextField v-model="ins.dueDate" type="date" label="تاريخ الاستحقاق" variant="outlined" />
                 </VCol>
                 <VCol cols="12" md="3">
-                  <VTextField v-model.number="ins.initialPaidAmount" type="number" label="مدفوع ابتدائي" variant="outlined" />
+                  <VTextField v-model.number="ins.initialPaidAmount" type="number" label="مدفوع ابتدائي"
+                    variant="outlined" />
                 </VCol>
                 <VCol cols="12" md="1" class="d-flex align-center">
-                  <VBtn color="error" size="small" icon="ri-delete-bin-line" variant="text" @click="removeEditInstallment(idx)" />
+                  <VBtn color="error" size="small" icon="ri-delete-bin-line" variant="text"
+                    @click="removeEditInstallment(idx)" />
                 </VCol>
               </VRow>
             </VCardText>
@@ -221,16 +203,19 @@
                   <VTextField v-model.number="p.amount" type="number" label="المبلغ" variant="outlined" />
                 </VCol>
                 <VCol cols="12" md="3">
-                  <VSelect v-model="p.paymentMethod" :items="paymentMethods" item-title="text" item-value="value" label="طريقة الدفع" variant="outlined" />
+                  <VSelect v-model="p.paymentMethod" :items="paymentMethods" item-title="text" item-value="value"
+                    label="طريقة الدفع" variant="outlined" />
                 </VCol>
                 <VCol cols="12" md="3">
                   <VTextField v-model="p.paidAt" type="datetime-local" label="تاريخ الدفع" variant="outlined" />
                 </VCol>
                 <VCol cols="12" md="2">
-                  <VTextField v-model.number="p.installmentNumber" type="number" label="# القسط (اختياري)" variant="outlined" />
+                  <VTextField v-model.number="p.installmentNumber" type="number" label="# القسط (اختياري)"
+                    variant="outlined" />
                 </VCol>
                 <VCol cols="12" md="1" class="d-flex align-center">
-                  <VBtn color="error" size="small" icon="ri-delete-bin-line" variant="text" @click="removeEditPayment(idx)" />
+                  <VBtn color="error" size="small" icon="ri-delete-bin-line" variant="text"
+                    @click="removeEditPayment(idx)" />
                 </VCol>
                 <VCol cols="12">
                   <VTextField v-model="p.notes" label="ملاحظات" variant="outlined" />
@@ -244,11 +229,13 @@
             <VCardTitle class="d-flex align-center">
               <VIcon icon="ri-price-tag-3-line" class="me-2" /> خصومات إضافية (اختياري)
               <VSpacer />
-              <VBtn size="small" variant="tonal" prepend-icon="ri-add-line" @click="addEditAdditionalDiscount">إضافة خصم</VBtn>
+              <VBtn size="small" variant="tonal" prepend-icon="ri-add-line" @click="addEditAdditionalDiscount">إضافة خصم
+              </VBtn>
             </VCardTitle>
             <VDivider />
             <VCardText>
-              <VAlert v-if="!editDialog.form.additionalDiscounts.length" type="info" variant="tonal">لا يوجد خصومات</VAlert>
+              <VAlert v-if="!editDialog.form.additionalDiscounts.length" type="info" variant="tonal">لا يوجد خصومات
+              </VAlert>
               <VRow v-for="(d, idx) in editDialog.form.additionalDiscounts" :key="idx" class="mb-1">
                 <VCol cols="12" md="4">
                   <VTextField v-model.number="d.amount" type="number" label="المبلغ" variant="outlined" />
@@ -257,7 +244,8 @@
                   <VTextField v-model="d.notes" label="ملاحظات" variant="outlined" />
                 </VCol>
                 <VCol cols="12" md="1" class="d-flex align-center">
-                  <VBtn color="error" size="small" icon="ri-delete-bin-line" variant="text" @click="removeEditAdditionalDiscount(idx)" />
+                  <VBtn color="error" size="small" icon="ri-delete-bin-line" variant="text"
+                    @click="removeEditAdditionalDiscount(idx)" />
                 </VCol>
               </VRow>
             </VCardText>
@@ -279,15 +267,18 @@
 
 <script>
 import TeacherApi from '@/api/teacher/teacher_api';
+import ConfirmDangerDialog from '@/components/ConfirmDangerDialog.vue';
 import ReportInvoices from '@/components/teacher/report-invoices.vue';
 import numberWithComma from '@/constant/number';
 
 export default {
   components: {
     ReportInvoices,
+    ConfirmDangerDialog,
   },
   data() {
     return {
+      keyName: 'teacher-manage-invoices',
       results: JSON.parse(localStorage.getItem('user')),
       breadcrumbItems: [
         { title: 'الرئيسية', disabled: false, to: '/teacher/index' },
@@ -297,7 +288,8 @@ export default {
       loading: false,
 
       // filters
-      studyYears: this.buildStudyYears(),
+      studyYears: [],
+      yearsLoading: false,
       filters: {
         studyYear: JSON.parse(localStorage.getItem('studyYear')) || '',
         status: '',
@@ -365,18 +357,48 @@ export default {
       ],
 
       saving: false,
-      deleteDialog: { open: false, loading: false, id: null },
-      restoreDialog: { open: false, loading: false, id: null },
+      deleteDialog: { open: false, loading: false, id: null, messages: [], title: null, confirmButtonText: null },
+      restoreDialog: { open: false, loading: false, id: null, messages: [], title: null, confirmButtonText: null, checkboxLabel: null },
       alert: { open: false, type: 'success', message: '' },
     }
   },
+  created() {
+    // restore cached state if present
+    const stored = JSON.parse(localStorage.getItem(this.keyName))
+    if (stored) {
+      if (stored.filters) this.filters = { ...this.filters, ...stored.filters }
+      if (stored.tableOptions) this.tableOptions = { ...this.tableOptions, ...stored.tableOptions }
+    }
+    this.loadAcademicYears()
+  },
   methods: {
+    // Reset filters/options, clear cache, and reload
+    reload() {
+      localStorage.removeItem(this.keyName)
+      this.filters = { studyYear: '', status: '', deleted: false }
+      this.tableOptions = { page: 1, limit: 10, search: null }
+      this.loadAcademicYears()
+    },
+
     numberWithComma,
-    buildStudyYears() {
-      const current = new Date().getFullYear()
-      const list = []
-      for (let y = current - 1; y <= current + 1; y++) list.push({ label: `${y}-${y + 1}`, value: `${y}-${y + 1}` })
-      return list
+    async loadAcademicYears() {
+      try {
+        this.yearsLoading = true
+        const res = await TeacherApi.getAcademicYears()
+        const data = res?.data?.data || {}
+        const years = Array.isArray(data.years) ? data.years : []
+        const active = data.active || null
+        this.studyYears = years.map(y => ({ label: y.year, value: y.year }))
+        if (!this.filters.studyYear) {
+          this.filters.studyYear = active?.year || ''
+        }
+        await this.fetchInvoices()
+      } catch (e) {
+        // fallback: if API fails, still try fetch with existing filter
+        await this.fetchInvoices()
+      } finally {
+        this.yearsLoading = false
+      }
     },
     goToProfile(item) {
       const id = item?.id
@@ -394,6 +416,8 @@ export default {
           limit: this.tableOptions.limit,
         }
         if (this.filters.deleted === true) params.deleted = true
+        // cache current state
+        localStorage.setItem(this.keyName, JSON.stringify({ filters: this.filters, tableOptions: this.tableOptions }))
         const { data } = await TeacherApi.listInvoices(params)
         const list = data?.data || []
         this.totalItems = list.length
@@ -491,10 +515,23 @@ export default {
     },
     openDeleteDialog(item) {
       this.deleteDialog.id = item?.id || null
+      this.deleteDialog.messages = [
+        'سيتم حذف الفاتورة حذفًا منطقيًا (Soft Delete).',
+        'يمكن استرجاعها لاحقًا من خلال عملية الاسترجاع.'
+      ]
+      this.deleteDialog.title = 'تأكيد الحذف'
+      this.deleteDialog.confirmButtonText = 'حذف الفاتورة'
       this.deleteDialog.open = !!this.deleteDialog.id
     },
     openRestoreDialog(item) {
       this.restoreDialog.id = item?.id || null
+      this.restoreDialog.messages = [
+        'سيتم استرجاع الفاتورة مع أقساطها وقيودها.',
+        'ستتمكن من تعديلها واستخدامها كما كانت.'
+      ]
+      this.restoreDialog.title = 'تأكيد الاسترجاع'
+      this.restoreDialog.confirmButtonText = 'استرجاع الفاتورة'
+      this.restoreDialog.checkboxLabel = 'أفهم التحذير وأؤكد الاسترجاع'
       this.restoreDialog.open = !!this.restoreDialog.id
     },
     async handleDelete() {

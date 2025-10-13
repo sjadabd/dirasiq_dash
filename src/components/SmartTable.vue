@@ -90,6 +90,11 @@
                   {{ item.payment_mode === 'installments' ? 'اقساط' : 'كاش' }}
                 </div>
               </template>
+              <template v-else-if="header.key === 'has_reservation'">
+                <div class="font-weight-medium">
+                  {{ item.has_reservation ? 'نعم' : 'لا' }}
+                </div>
+              </template>
               <template v-else-if="
                 header.key === 'is_active' || header.key === 'isActive'
               ">

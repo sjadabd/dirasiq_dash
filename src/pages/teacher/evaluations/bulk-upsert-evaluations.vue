@@ -2,14 +2,45 @@
   <div>
     <AppBreadcrumbs :items="breadcrumbs" />
 
+    <!-- Operations Card -->
+    <VCard class="my-4 operations-card" elevation="3" rounded="lg">
+      <VCardTitle class="d-flex align-center py-4 px-6">
+        <VIcon icon="mdi-cog-outline" color="primary" class="me-2" size="24" />
+        <h3 class="text-h5 font-weight-bold">العمليات</h3>
+      </VCardTitle>
+      <VDivider />
+      <VCardItem>
+        <VRow class="align-center justify-start pa-2">
+          <VBtn color="primary" :loading="saving" prepend-icon="ri-save-3-line" @click="saveAll">حفظ التقييمات</VBtn>
+        </VRow>
+      </VCardItem>
+    </VCard>
+
+    <!-- Filter Card -->
+    <VCard class="my-4 filter-card" elevation="3" rounded="lg">
+      <VCardTitle class="d-flex align-center py-4 px-6">
+        <VIcon icon="mdi mdi-filter-outline" color="primary" class="me-2" size="24" />
+        <h3 class="text-h5 font-weight-bold">تصفية</h3>
+      </VCardTitle>
+      <VDivider />
+      <VCardItem>
+        <VRow style="padding-block: 10px;">
+          <VCol cols="12" md="3">
+            <AppDateTimePicker v-model="form.date" type="date" label="تاريخ التقييم" density="comfortable" />
+          </VCol>
+          <VCol cols="12" md="3">
+            <VSelect v-model="form.course_id" :items="courseItems" item-title="text" item-value="value" label="الدورة"
+              density="comfortable" :loading="coursesLoading" />
+          </VCol>
+        </VRow>
+      </VCardItem>
+    </VCard>
+
     <VCard class="my-4">
       <VCardTitle class="d-flex align-center">
         <VIcon class="me-2">ri-award-line</VIcon>
         <span class="text-h6">إضافة تقييمات يومية (مجموعة)</span>
         <VSpacer />
-        <VTextField v-model="form.date" type="date" label="تاريخ التقييم" density="comfortable" style="max-width: 180px" class="me-2" />
-        <VSelect v-model="form.course_id" :items="courseItems" item-title="text" item-value="value" label="الدورة" density="comfortable" style="max-width: 260px" :loading="coursesLoading" />
-        <VBtn color="primary" class="ms-3" variant="tonal" prepend-icon="ri-refresh-line" :loading="loading" @click="loadStudents">تحديث الطلاب</VBtn>
       </VCardTitle>
       <VDivider />
       <VCardText>
@@ -27,8 +58,8 @@
               <th>واجب</th>
               <th>مشاركة</th>
               <th>اتباع التعليمات</th>
-              <th style="min-width: 200px">توجيه</th>
-              <th style="min-width: 200px">ملاحظات</th>
+              <th style="min-inline-size: 200px;">توجيه</th>
+              <th style="min-inline-size: 200px;">ملاحظات</th>
             </tr>
           </thead>
           <tbody>
@@ -36,22 +67,28 @@
               <td>{{ i + 1 }}</td>
               <td>{{ s.student_name }}</td>
               <td>
-                <VSelect :items="levelOptions" v-model="s.scientific_level" item-title="title" item-value="value" density="compact" hide-details />
+                <VSelect :items="levelOptions" v-model="s.scientific_level" item-title="title" item-value="value"
+                  density="compact" hide-details />
               </td>
               <td>
-                <VSelect :items="levelOptions" v-model="s.behavioral_level" item-title="title" item-value="value" density="compact" hide-details />
+                <VSelect :items="levelOptions" v-model="s.behavioral_level" item-title="title" item-value="value"
+                  density="compact" hide-details />
               </td>
               <td>
-                <VSelect :items="levelOptions" v-model="s.attendance_level" item-title="title" item-value="value" density="compact" hide-details />
+                <VSelect :items="levelOptions" v-model="s.attendance_level" item-title="title" item-value="value"
+                  density="compact" hide-details />
               </td>
               <td>
-                <VSelect :items="levelOptions" v-model="s.homework_preparation" item-title="title" item-value="value" density="compact" hide-details />
+                <VSelect :items="levelOptions" v-model="s.homework_preparation" item-title="title" item-value="value"
+                  density="compact" hide-details />
               </td>
               <td>
-                <VSelect :items="levelOptions" v-model="s.participation_level" item-title="title" item-value="value" density="compact" hide-details />
+                <VSelect :items="levelOptions" v-model="s.participation_level" item-title="title" item-value="value"
+                  density="compact" hide-details />
               </td>
               <td>
-                <VSelect :items="levelOptions" v-model="s.instruction_following" item-title="title" item-value="value" density="compact" hide-details />
+                <VSelect :items="levelOptions" v-model="s.instruction_following" item-title="title" item-value="value"
+                  density="compact" hide-details />
               </td>
               <td>
                 <VTextField v-model="s.guidance" density="compact" hide-details placeholder="توجيه (اختياري)" />
@@ -66,14 +103,10 @@
           </tbody>
         </VTable>
       </VCardText>
-      <VDivider />
-      <VCardActions>
-        <VSpacer />
-        <VBtn color="primary" :loading="saving" prepend-icon="ri-save-3-line" @click="saveAll">حفظ التقييمات</VBtn>
-      </VCardActions>
     </VCard>
 
-    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true" close-text="موافق" />
+    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true"
+      close-text="موافق" />
   </div>
 </template>
 

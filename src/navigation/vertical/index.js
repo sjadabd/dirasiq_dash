@@ -1,6 +1,7 @@
 export default [
   // super_admin
   {
+    type: 'super_admin',
     heading: 'لوحة التحكم',
   },
   {
@@ -31,7 +32,6 @@ export default [
 
   // teacher
   // ── الرئيسية ─────────────────────────────────────────────
-  { heading: 'الرئيسية' },
   {
     title: 'الصفحة الرئيسية',
     to: { name: 'teacher-dashboard' },
@@ -52,6 +52,18 @@ export default [
     to: { name: 'teacher-invoices-manage-invoices' },
     type: 'teacher',
     icon: { icon: 'ri-bill-line' }, // فواتير
+  },
+  {
+    title: 'المصاريف',
+    to: { name: 'teacher-expenses-manage-expenses' },
+    type: 'teacher',
+    icon: { icon: 'ri-money-dollar-circle-line' }, // مصاريف
+  },
+  {
+    title: 'التقارير المالية',
+    to: { name: 'teacher-reports-financial' },
+    type: 'teacher',
+    icon: { icon: 'ri-bar-chart-2-line' }, // مصاريف
   },
 
   // ── المحتوى الدراسي والحجوزات ────────────────────────────
@@ -88,12 +100,6 @@ export default [
     to: { name: 'teacher-evaluations-manage-evaluations' },
     type: 'teacher',
     icon: { icon: 'ri-award-line' },
-  },
-  {
-    title: 'إضافة تقييمات يومية',
-    to: { name: 'teacher-evaluations-bulk-upsert-evaluations' },
-    type: 'teacher',
-    icon: { icon: 'ri-calendar-todo-line' },
   },
 
   // ── التواصل والمهام ──────────────────────────────────────

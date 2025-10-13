@@ -16,11 +16,8 @@
       <VCardText>
         <VRow>
           <VCol cols="12" md="4">
-            <VTextField v-model="form.studentId" label="معرّف الطالب" variant="outlined" />
-          </VCol>
-          <VCol cols="12" md="4">
             <VSelect v-model="form.studyYear" :items="studyYears" item-title="label" item-value="value"
-              label="السنة الدراسية" variant="outlined" />
+              label="السنة الدراسية" variant="outlined" :loading="yearsLoading" />
           </VCol>
           <VCol cols="12" md="4">
             <VSelect v-model="form.paymentMode" :items="paymentModes" item-title="text" item-value="value"
@@ -31,16 +28,18 @@
               label="نوع الفاتورة" variant="outlined" />
           </VCol>
           <VCol cols="12" md="4">
-            <VTextField v-model.number="form.amountDue" type="number" label="المبلغ المستحق" variant="outlined" />
+            <VTextField :model-value="formatMoney(form.amountDue)" @update:model-value="val => onFormatMoney('amountDue', val)"
+              label="المبلغ المستحق" variant="outlined" />
           </VCol>
           <VCol cols="12" md="4">
-            <VTextField v-model="form.dueDate" type="date" label="تاريخ الاستحقاق" variant="outlined" />
+            <AppDateTimePicker v-model="form.dueDate" label="تاريخ الاستحقاق" variant="outlined" />
           </VCol>
           <VCol cols="12" md="4">
-            <VTextField v-model="form.invoiceDate" type="date" label="تاريخ الفاتورة" variant="outlined" />
+            <AppDateTimePicker v-model="form.invoiceDate" label="تاريخ الفاتورة" variant="outlined" />
           </VCol>
           <VCol cols="12" md="4">
-            <VTextField v-model.number="form.discountAmount" type="number" label="خصم عام" variant="outlined" />
+            <VTextField :model-value="formatMoney(form.discountAmount)" @update:model-value="val => onFormatMoney('discountAmount', val)"
+              label="خصم عام" variant="outlined" />
           </VCol>
           <VCol cols="12">
             <VTextField v-model="form.notes" label="ملاحظات" variant="outlined" />
@@ -82,10 +81,10 @@
                 <VTextField v-model.number="ins.installmentNumber" type="number" label="# القسط" variant="outlined" />
               </VCol>
               <VCol cols="12" md="2">
-                <VTextField v-model.number="ins.plannedAmount" type="number" label="المبلغ المخطط" variant="outlined" />
+                <VTextField :model-value="formatMoney(ins.plannedAmount)" @update:model-value="val => onFormatInstallmentAmount(idx, val)" label="المبلغ المخطط" variant="outlined" />
               </VCol>
               <VCol cols="12" md="2">
-                <VTextField v-model="ins.dueDate" type="date" label="تاريخ الاستحقاق" variant="outlined" />
+                <AppDateTimePicker v-model="ins.dueDate" label="تاريخ الاستحقاق" variant="outlined" />
               </VCol>
               <VCol cols="12" md="2">
                 <VSelect v-model="ins.paid" :items="[
@@ -94,8 +93,7 @@
                 ]" item-title="text" item-value="value" label="مدفوع؟" variant="outlined" />
               </VCol>
               <VCol cols="12" md="2">
-                <VTextField v-model="ins.paidDate" :disabled="!ins.paid" type="date" label="تاريخ التسديد"
-                  variant="outlined" />
+                <AppDateTimePicker v-model="ins.paidDate" :disabled="!ins.paid" label="تاريخ التسديد" variant="outlined" />
               </VCol>
               <VCol cols="12" md="1" class="d-flex align-center">
                 <VBtn color="error" size="small" icon="ri-delete-bin-line" variant="text"
@@ -136,7 +134,8 @@ export default {
 
       invoiceId: this.$route.params.invoiceId,
 
-      studyYears: this.buildStudyYears(),
+      studyYears: [],
+      yearsLoading: false,
       paymentModes: [
         { text: 'نقد', value: 'cash' },
         { text: 'أقساط', value: 'installments' },
@@ -156,7 +155,8 @@ export default {
         paymentMode: 'installments',
         invoiceType: 'course',
         amountDue: null,
-        dueDate: '',
+        dueDate: null,
+        invoiceDate: null,
         discountAmount: 0,
         notes: '',
         installments: [],
@@ -178,16 +178,47 @@ export default {
       this.form.dueDate = stateInv.due_date ? String(stateInv.due_date).slice(0, 10) : this.form.dueDate
       this.form.notes = stateInv.notes || this.form.notes
     }
+    this.loadAcademicYears()
   },
   mounted() {
     this.loadDetails()
   },
   methods: {
-    buildStudyYears() {
-      const current = new Date().getFullYear()
-      const list = []
-      for (let y = current - 1; y <= current + 1; y++) list.push({ label: `${y}-${y + 1}`, value: `${y}-${y + 1}` })
-      return list
+    async loadAcademicYears() {
+      try {
+        this.yearsLoading = true
+        const res = await TeacherApi.getAcademicYears()
+        const data = res?.data?.data || {}
+        const years = Array.isArray(data.years) ? data.years : []
+        const active = data.active || null
+        this.studyYears = years.map(y => ({ label: y.year, value: y.year }))
+        if (!this.form.studyYear) this.form.studyYear = active?.year || ''
+      } catch (e) {
+        // noop
+      } finally {
+        this.yearsLoading = false
+      }
+    },
+    formatMoney(val) {
+      if (val === '' || val === null || typeof val === 'undefined') return ''
+      const num = Number(val)
+      if (!isFinite(num)) return String(val)
+      return num.toLocaleString()
+    },
+    parseMoney(val) {
+      if (val === '' || val === null || typeof val === 'undefined') return null
+      const cleaned = String(val).replace(/[^0-9.-]/g, '')
+      const num = Number(cleaned)
+      return isFinite(num) ? num : null
+    },
+    onFormatMoney(field, val) {
+      const num = this.parseMoney(val)
+      this.form[field] = num
+    },
+    onFormatInstallmentAmount(idx, val) {
+      const num = this.parseMoney(val)
+      if (!this.form.installments[idx]) return
+      this.form.installments[idx].plannedAmount = num
     },
     showAlert(type, message) {
       Object.assign(this.alert, { open: true, type, message })
@@ -208,8 +239,8 @@ export default {
           this.form.paymentMode = inv.payment_mode || this.form.paymentMode
           this.form.invoiceType = inv.invoice_type || this.form.invoiceType
           this.form.amountDue = inv.amount_due != null ? Number(inv.amount_due) : this.form.amountDue
-          this.form.dueDate = inv.due_date ? String(inv.due_date).slice(0, 10) : this.form.dueDate
-          this.form.invoiceDate = inv.invoice_date ? String(inv.invoice_date).slice(0, 10) : this.form.invoiceDate
+          this.form.dueDate = inv.due_date ? String(inv.due_date).slice(0, 10) : null
+          this.form.invoiceDate = inv.invoice_date ? String(inv.invoice_date).slice(0, 10) : null
           this.form.notes = inv.notes || this.form.notes
 
           const paid = inv.amount_paid != null ? Number(inv.amount_paid) : 0
@@ -226,9 +257,9 @@ export default {
           .map(i => ({
             installmentNumber: i.installment_number,
             plannedAmount: i.planned_amount != null ? Number(i.planned_amount) : null,
-            dueDate: i.due_date ? String(i.due_date).slice(0, 10) : '',
+            dueDate: i.due_date ? String(i.due_date).slice(0, 10) : null,
             paid: i.is_paid === true,
-            paidDate: i.paid_date ? String(i.paid_date).slice(0, 10) : '',
+            paidDate: i.paid_date ? String(i.paid_date).slice(0, 10) : null,
             paidAmount: i.paid_amount != null ? Number(i.paid_amount) : null,
             notes: i.notes || '',
             _id: i.id,
@@ -291,7 +322,7 @@ export default {
       }
     },
     addInstallment() {
-      this.form.installments.push({ installmentNumber: this.form.installments.length + 1, plannedAmount: null, dueDate: '', initialPaidAmount: 0 })
+      this.form.installments.push({ installmentNumber: this.form.installments.length + 1, plannedAmount: null, dueDate: null, initialPaidAmount: 0 })
     },
     removeInstallment(idx) {
       this.form.installments.splice(idx, 1)

@@ -4,7 +4,8 @@
     <AppBreadcrumbs :items="breadcrumbItems" />
 
     <br />
-    <ReportReservation :report="report" />
+    <ReportCharts v-if="reportChartsData" :data="reportChartsData"
+      :studyYear="fetchedStudyYear || (report && report.studyYear)" />
 
     <VCard class="my-4 filter-card" elevation="3" rounded="lg">
       <VCardTitle class="d-flex align-center py-4 px-6">
@@ -16,7 +17,8 @@
         <VRow style="padding-block: 10px;">
           <VCol cols="12" md="4">
             <VSelect v-model="table.tableSettings.options.study_year" :items="studyYears" item-title="label"
-              item-value="value" label="السنة الدراسية" variant="outlined" @update:model-value="getDataAxios" />
+              item-value="value" label="السنة الدراسية" variant="outlined" :loading="yearsLoading"
+              @update:model-value="getDataAxios" />
           </VCol>
         </VRow>
       </VCardItem>
@@ -51,12 +53,12 @@
 
 <script>
 import TeacherApi from '@/api/teacher/teacher_api';
-import ReportReservation from '@/components/teacher/report-reservation.vue';
+import ReportCharts from '@/components/teacher/report-reservation.vue';
 import numberWithComma from '@/constant/number';
 
 export default {
   components: {
-    ReportReservation
+    ReportCharts
   },
   data() {
     return {
@@ -68,7 +70,8 @@ export default {
       ],
       loading: false,
       progress: 0,
-      studyYears: this.buildStudyYears(),
+      studyYears: [],
+      yearsLoading: false,
 
       table: {
         totalItems: 0,
@@ -79,7 +82,7 @@ export default {
           { title: '#', type: 'strong', sortable: false, key: 'num' },
           { title: 'اسم الطالب', type: 'strong', sortable: true, key: 'studentName' },
           { title: 'اسم الكورس', type: 'strong', sortable: true, key: 'courseName' },
-          { title: 'المبلغ', type: 'price', sortable: true, key: 'amount' },
+          { title: 'المبلغ', type: 'number', sortable: true, key: 'amount' },
           { title: 'الحالة', type: 'status', sortable: true, key: 'status' },
           { title: 'تاريخ الدفع', type: 'date', sortable: true, key: 'paidAt' },
           { title: 'تفاصيل', type: 'link', sortable: false, key: 'reportText' },
@@ -98,6 +101,9 @@ export default {
 
       // summary report from API
       report: null,
+      // mapped props for ReportCharts
+      fetchedStudyYear: null,
+      reportChartsData: null,
 
       alert: { open: false, message: null, type: 'success' },
     }
@@ -105,16 +111,30 @@ export default {
   created() {
     const stored = JSON.parse(localStorage.getItem(this.keyName))
     if (stored) this.table.tableSettings = stored
+    this.loadAcademicYears()
   },
   methods: {
     numberWithComma,
-    buildStudyYears() {
-      const current = new Date().getFullYear()
-      const list = []
-      for (let y = current - 1; y <= current + 1; y++) {
-        list.push({ label: `${y}-${y + 1}`, value: `${y}-${y + 1}` })
+    async loadAcademicYears() {
+      try {
+        this.yearsLoading = true
+        const res = await TeacherApi.getAcademicYears()
+        const data = res?.data?.data || {}
+        const years = Array.isArray(data.years) ? data.years : []
+        const active = data.active || null
+        this.studyYears = years.map(y => ({ label: y.year, value: y.year }))
+        // default to active if not set
+        if (!this.table?.tableSettings?.options?.study_year) {
+          this.table.tableSettings.options.study_year = active?.year || null
+        }
+        // initial load
+        this.getDataAxios()
+      } catch (e) {
+        // fallback: if API fails, keep existing value and try to load data
+        this.getDataAxios()
+      } finally {
+        this.yearsLoading = false
       }
-      return list
     },
     reload() {
       localStorage.removeItem(this.keyName)
@@ -146,6 +166,20 @@ export default {
         const payload = response?.data?.data || {}
         const items = payload.items || []
         this.report = payload.report || null
+        // map report to ReportCharts format
+        const counts = this.report?.counts || {}
+        const totals = this.report?.totals || {}
+        this.fetchedStudyYear = payload.studyYear || this.report?.studyYear || this.table.tableSettings.options.study_year
+        this.reportChartsData = {
+          totalAmount: Number(totals.totalAmount || 0),
+          totalPaid: Number(totals.totalPaidAmount || 0),
+          totalDiscount: Number(totals.discountAmount || 0),
+          totalRemaining: Number(totals.remainingAmount || 0),
+          totalCount: Number((counts.totalPaid || 0) + (counts.totalPending || 0)),
+          paidCount: Number(counts.totalPaid || 0),
+          remainingCount: Number(counts.totalPending || 0),
+          discountCount: 0,
+        }
         this.table.Data = items.map((it, idx) => ({
           num: (this.table.tableSettings.options.page - 1) * this.table.tableSettings.options.limit + idx + 1,
           studentName: it.studentName,

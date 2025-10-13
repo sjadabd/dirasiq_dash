@@ -89,12 +89,6 @@ export default [
     type: 'teacher',
     icon: { icon: 'ri-award-line' },
   },
-  {
-    title: 'إضافة تقييمات يومية',
-    to: { name: 'teacher-evaluations-bulk-upsert-evaluations' },
-    type: 'teacher',
-    icon: { icon: 'ri-calendar-todo-line' },
-  },
 
   // ── التواصل والمهام ──────────────────────────────────────
   { heading: 'التواصل والمهام' },

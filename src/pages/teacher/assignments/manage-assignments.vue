@@ -3,13 +3,28 @@
     <!-- Header -->
     <AppBreadcrumbs :items="breadcrumbItems" />
 
-    <!-- Toolbar -->
+        <!-- Operations Card -->
+    <VCard class="my-4 operations-card" elevation="3" rounded="lg">
+      <VCardTitle class="d-flex align-center py-4 px-6">
+        <VIcon icon="mdi-cog-outline" color="primary" class="me-2" size="24" />
+        <h3 class="text-h5 font-weight-bold">العمليات</h3>
+      </VCardTitle>
+      <VDivider />
+      <VCardItem>
+        <VRow class="align-center justify-start pa-2">
+          <VBtn color="primary" class="ma-2" prepend-icon="ri-add-line" rounded="pill" elevation="2" size="default" @click="openCreateDialog">
+            إضافة واجب جديد
+          </VBtn>
+        </VRow>
+      </VCardItem>
+    </VCard>
+
+        <!-- Filter Card -->
     <VCard class="my-4" elevation="3" rounded="lg">
       <VCardTitle class="d-flex align-center py-4 px-6">
-        <VIcon icon="ri-task-line" color="primary" class="me-2" size="24" />
-        <h3 class="text-h5 font-weight-bold">إدارة الواجبات</h3>
+        <VIcon icon="ri-notification-3-line" color="primary" class="me-2" size="24" />
+        <h3 class="text-h5 font-weight-bold">إشعارات المعلم</h3>
         <VSpacer />
-        <VBtn color="primary" prepend-icon="ri-add-line" @click="openCreateDialog">واجب جديد</VBtn>
       </VCardTitle>
       <VDivider />
       <VCardItem>
@@ -31,15 +46,17 @@
     <!-- Table -->
     <VCard class="my-4" elevation="3" rounded="lg">
       <VCardTitle class="py-4 px-6">
-        <VRow class="align-center">
+                <VRow class="align-center">
           <VCol cols="auto">
-            <VBtn color="primary" @click="reload()" icon="ri-refresh-line" variant="tonal" rounded="circle" size="small" />
+            <VBtn color="primary" @click="reload()" icon="ri-refresh-line" variant="tonal" rounded="circle" size="small" class="rotate-on-hover" />
           </VCol>
           <VCol>
-            <h3 class="text-h6 font-weight-bold text-center">قائمة الواجبات</h3>
+            <h3 class="text-h5 font-weight-bold text-center">قائمة الواجبات</h3>
           </VCol>
           <VCol cols="auto">
-            <VBtn color="primary" @click="openCreateDialog()" icon="ri-add-line" variant="tonal" rounded="circle" size="small" />
+            <VChip color="primary" variant="elevated" class="font-weight-medium">
+              {{ Number(table.totalItems).toLocaleString() }} عدد السجلات
+            </VChip>
           </VCol>
         </VRow>
       </VCardTitle>
@@ -78,10 +95,10 @@
           <VRow>
             <!-- التاريخ أولاً -->
             <VCol cols="12" md="6">
-              <VTextField v-model="form.assigned_date" type="date" label="تاريخ الإسناد" variant="outlined" />
+              <AppDateTimePicker v-model="form.assigned_date" type="date" label="تاريخ الإسناد" variant="outlined" />
             </VCol>
             <VCol cols="12" md="6">
-              <VTextField v-model="form.due_date" type="date" label="تاريخ التسليم" variant="outlined" />
+              <AppDateTimePicker v-model="form.due_date" type="date" label="تاريخ التسليم" variant="outlined" />
             </VCol>
 
             <!-- العنوان والوصف -->
@@ -158,7 +175,7 @@
             </VCol>
 
             <!-- ملفات موجودة مسبقًا (بالروابط) -->
-            <VCol cols="12">
+            <VCol cols="12" v-if="formDialog.mode !== 'create'">
               <div class="d-flex align-center mb-2">
                 <h4 class="text-subtitle-1 mb-0">ملفات موجودة مسبقًا</h4>
                 <VSpacer />

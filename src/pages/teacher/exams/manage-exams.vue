@@ -7,23 +7,15 @@
         <VIcon class="me-2">ri-article-line</VIcon>
         <span class="text-h6">الامتحانات والدرجات</span>
         <VSpacer />
-        <VSelect v-model="filters.type" :items="typeItems" item-title="title" item-value="value" label="نوع الامتحان" style="max-width: 200px" density="comfortable" clearable @update:modelValue="getExams" />
+        <VSelect v-model="filters.type" :items="typeItems" item-title="title" item-value="value" label="نوع الامتحان"
+          style="max-inline-size: 200px;" density="comfortable" clearable @update:modelValue="getExams" />
         <VBtn color="primary" class="ms-3" prepend-icon="ri-add-line" @click="openCreateDialog">امتحان جديد</VBtn>
       </VCardTitle>
       <VDivider />
       <VCardText>
-        <SmartTable
-          :headers="table.headers"
-          :items="table.items"
-          :actions="table.actions"
-          :loading="table.loading"
-          :totalItems="table.total"
-          :tableOptions="table.options"
-          @updateTableOptions="updateOptions"
-          @editItem="openEditDialog"
-          @deleteItem="confirmDelete"
-          @showItem="goToDetails"
-        />
+        <SmartTable :headers="table.headers" :items="table.items" :actions="table.actions" :loading="table.loading"
+          :totalItems="table.total" :tableOptions="table.options" @updateTableOptions="updateOptions"
+          @editItem="openEditDialog" @deleteItem="confirmDelete" @showItem="goToDetails" />
       </VCardText>
     </VCard>
 
@@ -34,25 +26,31 @@
           <VIcon class="me-2">ri-edit-2-line</VIcon>
           <span class="text-h6">{{ dialog.mode === 'create' ? 'إنشاء امتحان' : 'تعديل امتحان' }}</span>
           <VSpacer />
-          <VBtn icon variant="text" @click="dialog.open = false"><VIcon>ri-close-line</VIcon></VBtn>
+          <VBtn icon variant="text" @click="dialog.open = false">
+            <VIcon>ri-close-line</VIcon>
+          </VBtn>
         </VCardTitle>
         <VDivider />
         <VCardText>
           <VRow>
             <VCol cols="12" md="6">
-              <VSelect v-model="form.course_id" :items="courseItems" item-title="text" item-value="value" label="الدورة" :loading="coursesLoading" />
+              <VSelect v-model="form.course_id" :items="courseItems" item-title="text" item-value="value" label="الدورة"
+                :loading="coursesLoading" />
             </VCol>
             <VCol cols="12" md="6">
-              <VSelect v-model="form.subject_id" :items="subjectItems" item-title="text" item-value="value" label="المادة" :loading="subjectsLoading" />
+              <VSelect v-model="form.subject_id" :items="subjectItems" item-title="text" item-value="value"
+                label="المادة" :loading="subjectsLoading" />
             </VCol>
             <VCol cols="12" md="12">
-              <VSelect v-model="form.sessionIds" :items="sessionItems" item-title="text" item-value="value" label="الجلسات (اختياري متعدد)" chips multiple clearable :loading="sessionsLoading" />
+              <VSelect v-model="form.sessionIds" :items="sessionItems" item-title="text" item-value="value"
+                label="الجلسات (اختياري متعدد)" chips multiple clearable :loading="sessionsLoading" />
             </VCol>
             <VCol cols="12" md="6">
               <VTextField v-model="form.exam_date" type="datetime-local" label="تاريخ ووقت الامتحان" />
             </VCol>
             <VCol cols="12" md="6">
-              <VSelect v-model="form.exam_type" :items="typeItems" item-title="title" item-value="value" label="نوع الامتحان" />
+              <VSelect v-model="form.exam_type" :items="typeItems" item-title="title" item-value="value"
+                label="نوع الامتحان" />
             </VCol>
             <VCol cols="12" md="6">
               <VTextField v-model.number="form.max_score" type="number" label="الدرجة القصوى" />
@@ -75,10 +73,12 @@
     </VDialog>
 
     <!-- Confirm Delete -->
-    <ConfirmDangerDialog v-model="confirm.open" :title="confirm.title" :messages="confirm.messages" :confirmButtonText="confirm.buttonText" @confirm="doDelete" />
+    <ConfirmDangerDialog v-model="confirm.open" :title="confirm.title" :messages="confirm.messages"
+      :confirmButtonText="confirm.buttonText" @confirm="doDelete" />
 
     <!-- Alerts -->
-    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true" close-text="موافق" />
+    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true"
+      close-text="موافق" />
   </div>
 </template>
 
@@ -105,6 +105,7 @@ export default {
           { title: 'النوع', type: 'strong', sortable: true, key: 'exam_type_label' },
           { title: 'التاريخ', type: 'strong', sortable: true, key: 'exam_date' },
           { title: 'الدرجة القصوى', type: 'strong', sortable: false, key: 'max_score' },
+          { title: 'الجلسات', type: 'strong', sortable: false, key: 'sessions_label' },
           { title: 'إجراءات', type: 'strong', sortable: false, key: 'actions' },
         ],
         actions: ['تعديل', 'حذف'],
@@ -135,7 +136,6 @@ export default {
   },
   created() {
     this.loadCourseNames();
-    this.getExams();
   },
   methods: {
     showAlert(type, message) { Object.assign(this.alert, { type, message, open: true }); },
@@ -156,6 +156,9 @@ export default {
           num: (this.table.options.page - 1) * this.table.options.limit + (idx + 1),
           title: x.description || `امتحان ${this.examTypeLabel(x.exam_type)}`,
           exam_type_label: this.examTypeLabel(x.exam_type),
+          sessions_label: Array.isArray(x.sessions) && x.sessions.length
+            ? x.sessions.map(s => `${s.title || ''}${s.start_time && s.end_time ? ` (${s.start_time} - ${s.end_time})` : ''}`).join('، ')
+            : '—',
         }));
       } catch (e) {
         this.showAlert('error', e?.response?.data?.message || 'فشل جلب الامتحانات');
@@ -170,7 +173,7 @@ export default {
         id: row.id,
         course_id: row.course_id || row.course?.id || null,
         subject_id: row.subject_id || row.subject?.id || null,
-        sessionIds: row.session_id ? [row.session_id] : [],
+        sessionIds: Array.isArray(row.sessions) ? row.sessions.map(s => s.id) : [],
         exam_date: row.exam_date ? row.exam_date.substring(0, 16) : '',
         exam_type: row.exam_type || 'daily',
         max_score: row.max_score ?? 20,

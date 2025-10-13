@@ -27,7 +27,7 @@
           </VCol>
           <VCol cols="12" md="4">
             <VSelect v-model="form.studyYear" :items="studyYears" item-title="label" item-value="value"
-              label="السنة الدراسية" variant="outlined" />
+              label="السنة الدراسية" variant="outlined" :loading="yearsLoading" />
           </VCol>
           <VCol cols="12" md="4">
             <VSelect v-model="form.paymentMode" :items="paymentModes" item-title="text" item-value="value"
@@ -38,13 +38,15 @@
               label="نوع الفاتورة" variant="outlined" />
           </VCol>
           <VCol cols="12" md="4">
-            <VTextField v-model.number="form.amountDue" type="number" label="المبلغ المستحق" variant="outlined" />
+            <VTextField :model-value="formatMoney(form.amountDue)" @update:model-value="val => onFormatMoney('amountDue', val)"
+              label="المبلغ المستحق" variant="outlined" />
           </VCol>
           <VCol cols="12" md="4">
-            <VTextField v-model="form.dueDate" type="date" label="تاريخ الاستحقاق" variant="outlined" />
+            <AppDateTimePicker v-model="form.dueDate" label="تاريخ الاستحقاق" variant="outlined" />
           </VCol>
           <VCol cols="12" md="4">
-            <VTextField v-model.number="form.discountAmount" type="number" label="خصم عام" variant="outlined" />
+            <VTextField :model-value="formatMoney(form.discountAmount)" @update:model-value="val => onFormatMoney('discountAmount', val)"
+              label="خصم عام" variant="outlined" />
           </VCol>
           <VCol cols="12">
             <VTextField v-model="form.notes" label="ملاحظات" variant="outlined" />
@@ -66,10 +68,11 @@
                 <VTextField v-model.number="ins.installmentNumber" type="number" label="# القسط" variant="outlined" />
               </VCol>
               <VCol cols="12" md="3">
-                <VTextField v-model.number="ins.plannedAmount" type="number" label="المبلغ المخطط" variant="outlined" />
+                <VTextField :model-value="formatMoney(ins.plannedAmount)" @update:model-value="val => onFormatInstallmentAmount(idx, val)"
+                  label="المبلغ المخطط" variant="outlined" />
               </VCol>
               <VCol cols="12" md="2">
-                <VTextField v-model="ins.dueDate" type="date" label="تاريخ الاستحقاق" variant="outlined" />
+                <AppDateTimePicker v-model="ins.dueDate" label="تاريخ الاستحقاق" variant="outlined" />
               </VCol>
               <VCol cols="12" md="2">
                 <VSelect
@@ -85,7 +88,7 @@
                 />
               </VCol>
               <VCol cols="12" md="2">
-                <VTextField v-model="ins.paidDate" :disabled="!ins.paid" type="date" label="تاريخ التسديد" variant="outlined" />
+                <AppDateTimePicker v-model="ins.paidDate" :disabled="!ins.paid" label="تاريخ التسديد" variant="outlined" />
               </VCol>
               <VCol cols="12" md="1" class="d-flex align-center">
                 <VBtn color="error" size="small" icon="ri-delete-bin-line" variant="text"
@@ -123,7 +126,8 @@ export default {
       progress: 0,
       alert: { open: false, type: 'success', message: '' },
 
-      studyYears: this.buildStudyYears(),
+      studyYears: [],
+      yearsLoading: false,
       paymentModes: [
         { text: 'نقد', value: 'cash' },
         { text: 'أقساط', value: 'installments' },
@@ -160,15 +164,48 @@ export default {
       },
     }
   },
+  created() {
+    this.loadAcademicYears()
+  },
   mounted() {
     this.loadCourses()
   },
   methods: {
-    buildStudyYears() {
-      const current = new Date().getFullYear()
-      const list = []
-      for (let y = current - 1; y <= current + 1; y++) list.push({ label: `${y}-${y + 1}`, value: `${y}-${y + 1}` })
-      return list
+    formatMoney(val) {
+      if (val === '' || val === null || typeof val === 'undefined') return ''
+      const num = Number(val)
+      if (!isFinite(num)) return String(val)
+      return num.toLocaleString()
+    },
+    parseMoney(val) {
+      if (val === '' || val === null || typeof val === 'undefined') return null
+      const cleaned = String(val).replace(/[^0-9.-]/g, '')
+      const num = Number(cleaned)
+      return isFinite(num) ? num : null
+    },
+    onFormatMoney(field, val) {
+      const num = this.parseMoney(val)
+      this.form[field] = num
+    },
+    onFormatInstallmentAmount(idx, val) {
+      const num = this.parseMoney(val)
+      if (!this.form.installments[idx]) return
+      this.form.installments[idx].plannedAmount = num
+    },
+    async loadAcademicYears() {
+      try {
+        this.yearsLoading = true
+        const res = await TeacherApi.getAcademicYears()
+        const data = res?.data?.data || {}
+        const years = Array.isArray(data.years) ? data.years : []
+        const active = data.active || null
+        this.studyYears = years.map(y => ({ label: y.year, value: y.year }))
+        if (!this.form.studyYear) this.form.studyYear = active?.year || ''
+      } catch (e) {
+        // noop
+      } finally {
+        this.yearsLoading = false
+      }
     },
     addInstallment() {
       this.form.installments.push({

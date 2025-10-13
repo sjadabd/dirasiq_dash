@@ -51,33 +51,31 @@
               <!-- Price -->
               <VCol cols="12" md="6">
                 <VTextField
-                  v-model.number="formData.price"
+                  :model-value="formatMoney(formData.price)"
+                  @update:model-value="val => onFormatMoney('price', val)"
                   :rules="rules.price"
                   label="السعر (دينار عراقي)"
-                  type="number"
                   outlined
                 />
               </VCol>
 
               <!-- Start Date -->
               <VCol cols="12" md="6">
-                <VTextField
+                <AppDateTimePicker
                   v-model="formData.start_date"
                   :rules="rules.required"
                   label="تاريخ البداية"
-                  type="date"
-                  outlined
+                  variant="outlined"
                 />
               </VCol>
 
               <!-- End Date -->
               <VCol cols="12" md="6">
-                <VTextField
+                <AppDateTimePicker
                   v-model="formData.end_date"
                   :rules="rules.required"
                   label="تاريخ النهاية"
-                  type="date"
-                  outlined
+                  variant="outlined"
                 />
               </VCol>
 
@@ -107,13 +105,11 @@
               <!-- Reservation Amount (shown only if has_reservation) -->
               <VCol cols="12" md="6" v-if="formData.has_reservation">
                 <VTextField
-                  v-model.number="formData.reservation_amount"
+                  :model-value="formatMoney(formData.reservation_amount)"
+                  @update:model-value="val => onFormatMoney('reservation_amount', val)"
                   :rules="rules.reservation"
                   label="مبلغ العربون (دينار عراقي)"
-                  type="number"
                   outlined
-                  min="0.01"
-                  step="0.01"
                 />
               </VCol>
 
@@ -256,19 +252,27 @@ export default {
       },
     },
     rules() {
+      const parseMoneySafely = (v) => {
+        if (v === '' || v === null || typeof v === 'undefined') return null
+        const cleaned = String(v).replace(/[^0-9.-]/g, '')
+        const num = Number(cleaned)
+        return isFinite(num) ? num : null
+      }
       return {
         required: [(value) => !!value || "هذا الحقل مطلوب"],
         price: [
-          (value) => !!value || "هذا الحقل مطلوب",
-          (value) => value > 0 || "السعر يجب أن يكون أكبر من صفر",
+          (value) => parseMoneySafely(value) != null || "هذا الحقل مطلوب",
+          (value) => (parseMoneySafely(value) ?? 0) > 0 || "السعر يجب أن يكون أكبر من صفر",
         ],
         seats: [
           (value) => !!value || "هذا الحقل مطلوب",
-          (value) => value > 0 || "عدد المقاعد يجب أن يكون أكبر من صفر",
+          (value) => Number(value) > 0 || "عدد المقاعد يجب أن يكون أكبر من صفر",
         ],
         reservation: [
           (value) =>
-            !this.formData.has_reservation || (!!value && value > 0) ||
+            !this.formData.has_reservation || parseMoneySafely(value) != null || "هذا الحقل مطلوب",
+          (value) =>
+            !this.formData.has_reservation || (parseMoneySafely(value) ?? 0) > 0 ||
             "مبلغ العربون يجب أن يكون رقمًا أكبر من صفر",
         ],
       };
@@ -300,6 +304,22 @@ export default {
     this.fetchSubjects();
   },
   methods: {
+    formatMoney(val) {
+      if (val === '' || val === null || typeof val === 'undefined') return ''
+      const num = Number(val)
+      if (!isFinite(num)) return String(val)
+      return num.toLocaleString()
+    },
+    parseMoney(val) {
+      if (val === '' || val === null || typeof val === 'undefined') return null
+      const cleaned = String(val).replace(/[^0-9.-]/g, '')
+      const num = Number(cleaned)
+      return isFinite(num) ? num : null
+    },
+    onFormatMoney(field, val) {
+      const num = this.parseMoney(val)
+      this.formData[field] = num
+    },
     resetForm() {
       this.formData = {
         course_name: null,
@@ -412,11 +432,11 @@ export default {
           description: this.formData.description,
           start_date: this.formData.start_date,
           end_date: this.formData.end_date,
-          price: this.formData.price,
+          price: this.formData.price != null ? Number(this.formData.price) : null,
           seats_count: this.formData.seats_count,
           has_reservation: this.formData.has_reservation,
           reservation_amount: this.formData.has_reservation
-            ? this.formData.reservation_amount
+            ? (this.formData.reservation_amount != null ? Number(this.formData.reservation_amount) : null)
             : null,
         };
         const response = await TeacherApi.addCourse(courseData);

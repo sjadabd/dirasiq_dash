@@ -6,6 +6,12 @@ class TeacherApi {
     const response = await axiosInstance.post(`/auth/complete-profile`, userData);
     return response;
   }
+
+  // Academic years (Teacher)
+  async getAcademicYears() {
+    const response = await axiosInstance.get(`/teacher/academic-years`)
+    return response
+  }
   async getDashboard() {
     const response = await axiosInstance.get(`/teacher/dashboard`);
     return response;
@@ -15,6 +21,32 @@ class TeacherApi {
     return response;
   }
   // profile
+
+  // expenses
+  async getExpenses(params) {
+    const response = await axiosInstance.get(`/teacher/expenses`, { params })
+    return response
+  }
+  async addExpense(payload) {
+    const response = await axiosInstance.post(`/teacher/expenses`, payload)
+    return response
+  }
+  async updateExpense(id, payload) {
+    const response = await axiosInstance.patch(`/teacher/expenses/${id}`, payload)
+    return response
+  }
+  async deleteExpense(id) {
+    const response = await axiosInstance.delete(`/teacher/expenses/${id}`)
+    return response
+  }
+  // expenses
+
+  // reports
+  async getFinancialReport(params) {
+    const response = await axiosInstance.get(`/teacher/reports/financial`, { params })
+    return response
+  }
+  // reports
 
   // dashboard
   async getUpcomingToday() {
