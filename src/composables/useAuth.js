@@ -5,13 +5,22 @@ import { useRouter } from 'vue-router'
 const user = ref(null)
 const token = ref(null)
 const isAuthenticated = ref(false)
+function safeParse(jsonString, fallback = null) {
+  if (!jsonString) return fallback;
+  if (jsonString === "undefined" || jsonString === "null") return fallback;
+  try {
+    return JSON.parse(jsonString);
+  } catch {
+    return fallback;
+  }
+}
 
 export function useAuth() {
   const router = useRouter()
 
   // تحميل البيانات من localStorage عند بدء التطبيق
   const loadUserFromStorage = () => {
-    const userData = localStorage.getItem('user')
+    const userData = safeParse(localStorage.getItem('user'))
     const accessToken = localStorage.getItem('accessToken')
 
     if (userData && accessToken) {

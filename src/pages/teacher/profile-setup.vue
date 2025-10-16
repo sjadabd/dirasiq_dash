@@ -1,16 +1,13 @@
 <template>
-  <v-container
-    fluid
-    class="min-height-screen pa-8"
-    style="
-      background: linear-gradient(
-        135deg,
-        rgba(16, 185, 129, 5%) 0%,
-        rgba(255, 255, 255, 100%) 50%,
-        rgba(34, 197, 94, 5%) 100%
-      );
-    "
-  >
+  <v-container fluid class="min-height-screen pa-8" style="
+  background:
+    linear-gradient(
+      135deg,
+      rgba(16, 185, 129, 5%) 0%,
+      rgba(255, 255, 255, 100%) 50%,
+      rgba(34, 197, 94, 5%) 100%
+    );
+">
     <v-row justify="center">
       <v-col cols="12" md="10" lg="8">
         <!-- Header -->
@@ -27,25 +24,11 @@
 
         <v-form ref="form">
           <!-- Alerts -->
-          <v-alert
-            v-if="error"
-            type="error"
-            variant="tonal"
-            class="mb-6"
-            closable
-            @click:close="error = ''"
-          >
+          <v-alert v-if="error" type="error" variant="tonal" class="mb-6" closable @click:close="error = ''">
             {{ error }}
           </v-alert>
 
-          <v-alert
-            v-if="success"
-            type="success"
-            variant="tonal"
-            class="mb-6"
-            closable
-            @click:close="success = ''"
-          >
+          <v-alert v-if="success" type="success" variant="tonal" class="mb-6" closable @click:close="success = ''">
             {{ success }}
           </v-alert>
 
@@ -65,87 +48,40 @@
                     </v-avatar>
                     <div>
                       <div class="text-body-2 mb-2">صورة الملف الشخصي (اختياري)</div>
-                      <v-file-input
-                        accept="image/*"
-                        variant="outlined"
-                        density="comfortable"
-                        show-size
-                        prepend-icon="mdi-image"
-                        label="اختر صورة"
-                        @change="onAvatarSelected"
-                      />
-                      <div class="text-caption text-medium-emphasis mt-1">يدعم: PNG, JPG. الحجم الموصى به أقل من 2MB.</div>
+                      <v-file-input accept="image/*" variant="outlined" density="comfortable" show-size
+                        prepend-icon="mdi-image" label="اختر صورة" @change="onAvatarSelected" />
+                      <div class="text-caption text-medium-emphasis mt-1">يدعم: PNG, JPG. الحجم الموصى به أقل من 2MB.
+                      </div>
                     </div>
                   </div>
                 </v-col>
                 <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.name"
-                    label="اسم الكامل *"
-                    placeholder="أدخل اسم الكامل"
-                    variant="outlined"
-                    :rules="[rules.required]"
-                    required
-                  />
+                  <v-text-field v-model="formData.name" label="اسم الكامل *" placeholder="أدخل اسم الكامل"
+                    variant="outlined" :rules="[rules.required]" required />
                 </v-col>
                 <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.phone"
-                    label="رقم الهاتف *"
-                    placeholder="أدخل رقم الهاتف"
-                    variant="outlined"
-                    :rules="[rules.required]"
-                    required
-                  />
+                  <v-text-field v-model="formData.phone" label="رقم الهاتف *" placeholder="أدخل رقم الهاتف"
+                    variant="outlined" :rules="[rules.required]" required />
                 </v-col>
                 <v-col cols="12" md="6">
-                  <v-select
-                    v-model="formData.gender"
-                    label="الجنس *"
-                    :items="genderOptions"
-                    item-title="text"
-                    item-value="value"
-                    variant="outlined"
-                    :rules="[rules.required]"
-                    required
-                  />
+                  <v-select v-model="formData.gender" label="الجنس *" :items="genderOptions" item-title="text"
+                    item-value="value" variant="outlined" :rules="[rules.required]" required />
                 </v-col>
                 <v-col cols="12" md="6">
-                  <AppDateTimePicker
-                    id="invoiceStartDate"
-                    v-model="formData.birthDate"
-                    label="تاريخ الميلاد *"
-                    variant="outlined"
-                    :rules="[rules.required]"
-                    required
-                  />
+                  <AppDateTimePicker id="invoiceStartDate" v-model="formData.birthDate" label="تاريخ الميلاد *"
+                    variant="outlined" :rules="[rules.required]" required />
                 </v-col>
                 <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.experienceYears"
-                    label="سنوات الخبرة *"
-                    variant="outlined"
-                    :rules="[rules.required]"
-                    required
-                  />
+                  <v-text-field v-model="formData.experienceYears" label="سنوات الخبرة *" variant="outlined"
+                    :rules="[rules.required]" required />
                 </v-col>
                 <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.address"
-                    label="العنوان *"
-                    variant="outlined"
-                    :rules="[rules.required]"
-                    required
-                  />
+                  <v-text-field v-model="formData.address" label="العنوان *" variant="outlined"
+                    :rules="[rules.required]" required />
                 </v-col>
                 <v-col cols="12" md="12">
-                  <v-textarea
-                    v-model="formData.bio"
-                    label="نبذة عن نفسك *"
-                    variant="outlined"
-                    :rules="[rules.required]"
-                    required
-                  />
+                  <v-textarea v-model="formData.bio" label="نبذة عن نفسك *" variant="outlined" :rules="[rules.required]"
+                    required />
                 </v-col>
               </v-row>
             </v-card-text>
@@ -160,42 +96,22 @@
             <v-card-text>
               <v-row>
                 <v-col cols="12" md="6">
-                  <v-autocomplete
-                    v-model="formData.gradeIds"
-                    label="الصفوف التي تدرسها *"
-                    :items="grades"
-                    item-title="name"
-                    item-value="id"
-                    variant="outlined"
-                    :rules="[rules.required]"
-                    chips
-                    multiple
-                    required
-                  />
+                  <v-autocomplete v-model="formData.gradeIds" label="الصفوف التي تدرسها *" :items="grades"
+                    item-title="name" item-value="id" variant="outlined" :rules="[rules.required]" chips multiple
+                    required />
                 </v-col>
               </v-row>
             </v-card-text>
           </v-card>
 
           <!-- Location Selection -->
-          <MapPicker
-            :initial-lat="formData.latitude"
-            :initial-lng="formData.longitude"
-            @location-update="handleLocationUpdate"
-            class="mb-6"
-          />
+          <MapPicker :initial-lat="formData.latitude" :initial-lng="formData.longitude"
+            @location-update="handleLocationUpdate" class="mb-6" />
         </v-form>
         <!-- Submit Button -->
         <div class="text-center pt-6">
-          <v-btn
-            type="submit"
-            color="primary"
-            size="large"
-            :loading="isLoading"
-            :disabled="isLoading"
-            @click="handleSubmit"
-            class="px-12"
-          >
+          <v-btn type="submit" color="primary" size="large" :loading="isLoading" :disabled="isLoading"
+            @click="handleSubmit" class="px-12">
             <v-icon start>mdi-school</v-icon>
             حفظ بيانات
           </v-btn>
@@ -213,7 +129,9 @@ export default {
 
   data() {
     return {
-      user: JSON.parse(localStorage.getItem("user")),
+      user: localStorage.getItem("user")
+        ? JSON.parse(localStorage.getItem("user"))
+        : {},
       form: null,
       isLoading: false,
       error: "",
@@ -221,7 +139,9 @@ export default {
       formData: {
         name: "",
         phone: "",
-        studyYear: JSON.parse(localStorage.getItem("studyYear")),
+        studyYear: localStorage.getItem("studyYear")
+          ? JSON.parse(localStorage.getItem("studyYear"))
+          : null,
         bio: "",
         experienceYears: "",
         gradeIds: [],

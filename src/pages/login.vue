@@ -13,6 +13,7 @@ import { themeConfig } from "@themeConfig";
 import { useRouter } from "vue-router";
 
 // ✅ دالة محدثة لجلب playerId من OneSignal
+// ✅ نسخة محسّنة تمنع التهيئة المكررة وتعمل على public domain
 const getOneSignalPlayerId = async () => {
   return new Promise(async (resolve) => {
     try {
@@ -22,19 +23,23 @@ const getOneSignalPlayerId = async () => {
         return;
       }
 
-      console.log("🚀 Initializing OneSignal...");
+      // ✅ منع التهيئة المكررة
+      if (!window.OneSignalInitialized) {
+        console.log("🚀 Initializing OneSignal...");
+        await window.OneSignal.init({
+          appId: "b136e33d-56f0-4fc4-ad08-8c8a534ca447",
+          allowLocalhostAsSecureOrigin: true,
+          notifyButton: { enable: false },
+        });
+        window.OneSignalInitialized = true;
+      } else {
+        console.log("⚠️ OneSignal already initialized, skipping init()");
+      }
 
-      await window.OneSignal.init({
-        appId: "b136e33d-56f0-4fc4-ad08-8c8a534ca447",
-        safari_web_id: "", // لو كنت تستخدم سفاري أضف الـ ID
-        allowLocalhostAsSecureOrigin: true,
-        notifyButton: { enable: false },
-      });
-
-      // ننتظر أن يكون النظام جاهزًا
+      // ✅ طلب الإذن بالإشعارات
       await window.OneSignal.Notifications.requestPermission();
 
-      // ✅ تحقق أن هناك اشتراك Push نشط
+      // ✅ ننتظر اشتراك المستخدم في الإشعارات
       const subscription = await window.OneSignal.User.PushSubscription;
       if (!subscription) {
         console.warn("⚠️ PushSubscription object not available yet");
@@ -42,9 +47,10 @@ const getOneSignalPlayerId = async () => {
         return;
       }
 
+      // انتظار الـ playerId إن لم يُولَد بعد
       if (!subscription.id) {
         console.log("🕐 Waiting for OneSignal to generate playerId...");
-        await new Promise((r) => setTimeout(r, 1500));
+        await new Promise((r) => setTimeout(r, 2000));
       }
 
       const playerId = subscription.id || (await window.OneSignal.getUserId());
@@ -57,7 +63,6 @@ const getOneSignalPlayerId = async () => {
     }
   });
 };
-
 
 // إعداد الصور والثيم
 const authThemeImg = useGenerateImageVariant(
@@ -151,7 +156,15 @@ const handleEmailLogin = async () => {
 
       // ✅ ربط المستخدم في OneSignal بعد تسجيل الدخول
       try {
-        await window.OneSignal.login(userData.id);
+        if (window.OneSignalInitialized && userData?.id) {
+          try {
+            await window.OneSignal.login(userData.id);
+            console.log("✅ OneSignal linked with external_id:", userData.id);
+          } catch (e) {
+            console.warn("⚠️ Failed to link OneSignal user:", e);
+          }
+        }
+
         console.log("✅ OneSignal linked with external_id:", userData.id);
       } catch (e) {
         console.warn("⚠️ Failed to link OneSignal user:", e);
@@ -195,7 +208,15 @@ const handleGoogleLogin = async (response) => {
 
         // ✅ ربط المستخدم مع OneSignal
         try {
-          await window.OneSignal.login(userData.id);
+          if (window.OneSignalInitialized && userData?.id) {
+            try {
+              await window.OneSignal.login(userData.id);
+              console.log("✅ OneSignal linked with external_id:", userData.id);
+            } catch (e) {
+              console.warn("⚠️ Failed to link OneSignal user:", e);
+            }
+          }
+
           console.log("✅ OneSignal linked with external_id:", userData.id);
         } catch (e) {
           console.warn("⚠️ Failed to link OneSignal user:", e);
