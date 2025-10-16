@@ -29,7 +29,7 @@ const handleNavItemClick = (item) => {
   else if (item.value === "settings") {
     router.push("/teacher/settings");
   } else if (item.value === "billing") {
-    router.push("/teacher/billing");
+    router.push("/teacher/billing/pricing");
   } else if (item.value === "help") {
     router.push("/help");
   }
@@ -81,12 +81,12 @@ const userProfileList = [
     title: "الملف الشخصي",
     value: "profile",
   },
-  {
-    type: "navItem",
-    icon: "ri-settings-4-line",
-    title: "الإعدادات",
-    value: "settings",
-  },
+  // {
+  //   type: "navItem",
+  //   icon: "ri-settings-4-line",
+  //   title: "الإعدادات",
+  //   value: "settings",
+  // },
   {
     type: "navItem",
     icon: "ri-file-text-line",
@@ -94,25 +94,18 @@ const userProfileList = [
     value: "billing",
   },
   { type: "divider" },
-  {
-    type: "navItem",
-    icon: "ri-question-line",
-    title: "المساعدة",
-    value: "help",
-  },
-  { type: "divider" },
+  // {
+  //   type: "navItem",
+  //   icon: "ri-question-line",
+  //   title: "المساعدة",
+  //   value: "help",
+  // },
+  // { type: "divider" },
 ];
 </script>
 
 <template>
-  <VBadge
-    dot
-    bordered
-    location="bottom right"
-    offset-x="3"
-    offset-y="3"
-    color="success"
-  >
+  <VBadge dot bordered location="bottom right" offset-x="3" offset-y="3" color="success">
     <VAvatar class="cursor-pointer" size="38">
       <VImg :src="user?.avatar || user?.profileImage || avatar1" />
 
@@ -123,17 +116,9 @@ const userProfileList = [
           <VListItem>
             <template #prepend>
               <VListItemAction start>
-                <VBadge
-                  dot
-                  location="bottom right"
-                  offset-x="3"
-                  offset-y="3"
-                  color="success"
-                >
+                <VBadge dot location="bottom right" offset-x="3" offset-y="3" color="success">
                   <VAvatar color="primary" variant="tonal">
-                    <VImg
-                      :src="user?.avatar || user?.profileImage || avatar1"
-                    />
+                    <VImg :src="user?.avatar || user?.profileImage || avatar1" />
                   </VAvatar>
                 </VBadge>
               </VListItemAction>
@@ -147,23 +132,19 @@ const userProfileList = [
                 user?.userType === "student"
                   ? "طالب"
                   : user?.userType === "teacher"
-                  ? "معلم"
-                  : user?.userType === "admin"
-                  ? "إداري"
-                  : user?.userType === "super_admin"
-                  ? "مدير عام"
-                  : "مستخدم"
+                    ? "معلم"
+                    : user?.userType === "admin"
+                      ? "إداري"
+                      : user?.userType === "super_admin"
+                        ? "مدير عام"
+                        : "مستخدم"
               }}
             </VListItemSubtitle>
           </VListItem>
 
           <PerfectScrollbar :options="{ wheelPropagation: false }">
             <template v-for="item in userProfileList" :key="item.title">
-              <VListItem
-                v-if="item.type === 'navItem'"
-                :value="item.value"
-                @click="handleNavItemClick(item)"
-              >
+              <VListItem v-if="item.type === 'navItem'" :value="item.value" @click="handleNavItemClick(item)">
                 <template #prepend>
                   <VIcon :icon="item.icon" size="22" />
                 </template>
@@ -179,14 +160,8 @@ const userProfileList = [
             </template>
 
             <VListItem>
-              <VBtn
-                block
-                color="error"
-                append-icon="ri-logout-box-r-line"
-                :loading="isLoggingOut"
-                :disabled="isLoggingOut"
-                @click="logout"
-              >
+              <VBtn block color="error" append-icon="ri-logout-box-r-line" :loading="isLoggingOut"
+                :disabled="isLoggingOut" @click="logout">
                 {{ isLoggingOut ? "جاري تسجيل الخروج..." : "تسجيل الخروج" }}
               </VBtn>
             </VListItem>

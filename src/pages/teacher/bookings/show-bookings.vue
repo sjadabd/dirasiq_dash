@@ -1,11 +1,6 @@
 <template>
   <div>
     <!-- Settings page -->
-    <AppLoadingOverlay
-      :loading="loading"
-      :progress="progress"
-      :results="results"
-    />
     <AppBreadcrumbs :items="breadcrumbItems" />
     <!-- Settings page -->
 
@@ -37,27 +32,15 @@
     <!-- Filter Card -->
     <VCard class="my-4 filter-card" elevation="3" rounded="lg">
       <VCardTitle class="d-flex align-center py-4 px-6">
-        <VIcon
-          icon="mdi mdi-filter-outline"
-          color="primary"
-          class="me-2"
-          size="24"
-        />
+        <VIcon icon="mdi mdi-filter-outline" color="primary" class="me-2" size="24" />
         <h3 class="text-h5 font-weight-bold">تصفية</h3>
       </VCardTitle>
       <VDivider />
       <VCardItem>
-        <VRow style="padding-block: 10px">
+        <VRow style="padding-block: 10px;">
           <VCol cols="12" md="4">
-            <VSelect
-              v-model="table.tableSettings.options.status"
-              :items="courseIsStatus"
-              item-title="text"
-              item-value="value"
-              label="حالة الحجز"
-              variant="outlined"
-              @update:model-value="getDataAxios"
-            />
+            <VSelect v-model="table.tableSettings.options.status" :items="courseIsStatus" item-title="text"
+              item-value="value" label="حالة الحجز" variant="outlined" @update:model-value="getDataAxios" />
           </VCol>
         </VRow>
       </VCardItem>
@@ -69,25 +52,14 @@
       <VCardTitle class="py-4 px-6">
         <VRow class="align-center">
           <VCol cols="auto">
-            <VBtn
-              color="primary"
-              @click="reload()"
-              icon="ri-refresh-line"
-              variant="tonal"
-              rounded="circle"
-              size="small"
-              class="rotate-on-hover"
-            />
+            <VBtn color="primary" @click="reload()" icon="ri-refresh-line" variant="tonal" rounded="circle" size="small"
+              class="rotate-on-hover" />
           </VCol>
           <VCol>
             <h3 class="text-h5 font-weight-bold text-center">الحجوزات</h3>
           </VCol>
           <VCol cols="auto">
-            <VChip
-              color="primary"
-              variant="elevated"
-              class="font-weight-medium"
-            >
+            <VChip color="primary" variant="elevated" class="font-weight-medium">
               {{ numberWithComma(table.totalItems) }} عدد السجلات
             </VChip>
           </VCol>
@@ -95,22 +67,11 @@
       </VCardTitle>
       <VDivider />
       <VCardItem>
-        <SmartTable
-          :headers="table.headers"
-          :items="table.Data"
-          :actions="table.actions"
-          :loading="table.loading"
-          :totalItems="table.totalItems"
-          :tableOptions="table.tableSettings.options"
-          @updateTableOptions="updateTableOptions"
-          @preApproveItem="preApproveItem"
-          @consentItem="consentItem"
-          @rejectItem="rejectItem"
-          @updateResponseItem="updateResponseItem"
-          @enableItem="enableItem"
-          @deleteItem="deleteItem"
-          class="reservation-table"
-        />
+        <SmartTable :headers="table.headers" :items="table.Data" :actions="table.actions" :loading="table.loading"
+          :totalItems="table.totalItems" :tableOptions="table.tableSettings.options"
+          @updateTableOptions="updateTableOptions" @preApproveItem="preApproveItem" @consentItem="consentItem"
+          @rejectItem="rejectItem" @updateResponseItem="updateResponseItem" @enableItem="enableItem"
+          @deleteItem="deleteItem" class="reservation-table" />
       </VCardItem>
     </VCard>
     <!-- SmartTable -->
@@ -119,10 +80,7 @@
     <v-dialog v-model="preApproveDialog.open" max-width="500">
       <v-card title="الموافقة الاولية على حجز الطالب">
         <v-card-text>
-          <v-textarea
-            v-model="preApproveDialog.teacherResponse"
-            label="ملاحظة"
-          ></v-textarea>
+          <v-textarea v-model="preApproveDialog.teacherResponse" label="ملاحظة"></v-textarea>
         </v-card-text>
         <v-card-actions>
           <v-btn @click="preApproveDialog.open = false">الغاء</v-btn>
@@ -135,15 +93,8 @@
     <v-dialog v-model="rejectDialog.open" max-width="500">
       <v-card title="رفض حجز الطالب">
         <v-card-text>
-          <v-textarea
-            v-model="rejectDialog.rejectionReason"
-            label="سبب الرفض (مطلوب)"
-          ></v-textarea>
-          <v-textarea
-            class="mt-2"
-            v-model="rejectDialog.teacherResponse"
-            label="ملاحظة (اختياري)"
-          ></v-textarea>
+          <v-textarea v-model="rejectDialog.rejectionReason" label="سبب الرفض (مطلوب)"></v-textarea>
+          <v-textarea class="mt-2" v-model="rejectDialog.teacherResponse" label="ملاحظة (اختياري)"></v-textarea>
         </v-card-text>
         <v-card-actions>
           <v-btn @click="rejectDialog.open = false">الغاء</v-btn>
@@ -157,10 +108,7 @@
     <v-dialog v-model="updateResponseDialog.open" max-width="500">
       <v-card title="تحديث رد المعلم">
         <v-card-text>
-          <v-textarea
-            v-model="updateResponseDialog.teacherResponse"
-            label="رد المعلم"
-          ></v-textarea>
+          <v-textarea v-model="updateResponseDialog.teacherResponse" label="رد المعلم"></v-textarea>
         </v-card-text>
         <v-card-actions>
           <v-btn @click="updateResponseDialog.open = false">الغاء</v-btn>
@@ -174,19 +122,10 @@
     <v-dialog v-model="consentDialog.open" max-width="500">
       <v-card title="الموافقة على حجز الطالب">
         <v-card-text>
-          <v-textarea
-            v-model="consentDialog.teacherResponse"
-            label="ملاحظة"
-          ></v-textarea>
+          <v-textarea v-model="consentDialog.teacherResponse" label="ملاحظة"></v-textarea>
           <div v-if="hasReservationSelected" class="mt-4">
-            <VSwitch
-              v-model="consentDialog.reservationPaid"
-              inset
-              color="primary"
-              :true-value="true"
-              :false-value="false"
-              label="تم دفع العربون؟"
-            />
+            <VSwitch v-model="consentDialog.reservationPaid" inset color="primary" :true-value="true"
+              :false-value="false" label="تم دفع العربون؟" />
             <div class="text-caption text-medium-emphasis">
               إذا لم يتم دفع العربون بعد، اختر إلغاء التفعيل لإرسال رسالة طلب
               الدفع.
@@ -201,36 +140,17 @@
     </v-dialog>
 
     <!-- ConfirmDangerDialog -->
-    <ConfirmDangerDialog
-      v-if="enableDialog.open"
-      v-model="enableDialog.open"
-      :messages="enableDialog.messages"
-      :title="enableDialog.title"
-      :confirmButtonText="enableDialog.confirmButtonText"
-      :checkboxLabel="enableDialog.checkboxLabel"
-      @confirm="handleRestore"
-    />
+    <ConfirmDangerDialog v-if="enableDialog.open" v-model="enableDialog.open" :messages="enableDialog.messages"
+      :title="enableDialog.title" :confirmButtonText="enableDialog.confirmButtonText"
+      :checkboxLabel="enableDialog.checkboxLabel" @confirm="handleRestore" />
 
     <!-- Delete Confirm Dialog -->
-    <ConfirmDangerDialog
-      v-if="deleteDialog.open"
-      v-model="deleteDialog.open"
-      :messages="deleteDialog.messages"
-      :title="deleteDialog.title"
-      :confirmButtonText="deleteDialog.confirmButtonText"
-      @confirm="handleDelete"
-    />
+    <ConfirmDangerDialog v-if="deleteDialog.open" v-model="deleteDialog.open" :messages="deleteDialog.messages"
+      :title="deleteDialog.title" :confirmButtonText="deleteDialog.confirmButtonText" @confirm="handleDelete" />
 
     <!-- BaseAlert -->
-    <BaseAlert
-      v-if="alert.open"
-      v-model="alert.open"
-      :type="alert.type"
-      :message="alert.message"
-      :closable="true"
-      close-text="موافق"
-      @close="alert.open = false"
-    />
+    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true"
+      close-text="موافق" @close="alert.open = false" />
   </div>
 </template>
 

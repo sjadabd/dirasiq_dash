@@ -17,16 +17,12 @@
       <VCardItem>
         <VRow class="py-3" align="center">
           <VCol cols="12" md="4">
-            <VTextField
-              v-model="filters.date"
-              type="date"
-              label="تاريخ اليوم"
-              variant="outlined"
-              @update:model-value="loadAttendance"
-            />
+            <VTextField v-model="filters.date" type="date" label="تاريخ اليوم" variant="outlined"
+              @update:model-value="loadAttendance" />
           </VCol>
           <VCol cols="12" md="8" class="d-flex gap-2 justify-end">
-            <VBtn color="primary" variant="tonal" prepend-icon="ri-refresh-line" :loading="loading" @click="loadAttendance">
+            <VBtn color="primary" variant="tonal" prepend-icon="ri-refresh-line" :loading="loading"
+              @click="loadAttendance">
               تحديث
             </VBtn>
             <VBtn color="success" prepend-icon="ri-save-3-line" :loading="saving" @click="saveAttendance">
@@ -67,33 +63,40 @@
                 <th class="text-center">الحالة</th>
               </tr>
             </thead>
+
             <tbody>
               <tr v-for="(st, idx) in students" :key="st.student_id">
-                <td class="text-center">
+                <td class="text-center" :data-label="'#'">
                   <VChip size="small" color="primary" variant="flat">{{ idx + 1 }}</VChip>
                 </td>
-                <td class="text-center">{{ st.student_name }}</td>
-                <td class="text-center">{{ st.grade_name || '-' }}</td>
-                <td class="text-center">{{ st.study_year || '-' }}</td>
-                <td class="text-center" style="min-width: 180px;">
-                  <VSelect
-                    v-model="attendanceMap[st.student_id]"
-                    :items="statusItems"
-                    item-title="text"
-                    item-value="value"
-                    variant="outlined"
-                    density="comfortable"
-                  />
+
+                <td class="text-center" :data-label="'اسم الطالب'">
+                  {{ st.student_name }}
+                </td>
+
+                <td class="text-center" :data-label="'المرحلة'">
+                  {{ st.grade_name || '-' }}
+                </td>
+
+                <td class="text-center" :data-label="'السنة'">
+                  {{ st.study_year || '-' }}
+                </td>
+
+                <td class="text-center" :data-label="'الحالة'" style="min-inline-size: 180px;">
+                  <VSelect v-model="attendanceMap[st.student_id]" :items="statusItems" item-title="text"
+                    item-value="value" variant="outlined" density="comfortable" />
                 </td>
               </tr>
             </tbody>
           </VTable>
+
         </div>
       </VCardText>
     </VCard>
 
     <!-- Alerts -->
-    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true" close-text="موافق" @close="alert.open = false" />
+    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true"
+      close-text="موافق" @close="alert.open = false" />
   </div>
 </template>
 
@@ -196,3 +199,78 @@ export default {
   },
 };
 </script>
+
+
+<style scoped>
+/* ⚡ جعل جدول الطلاب Responsive في الموبايل */
+@media (max-width: 768px) {
+
+  .v-table table,
+  .v-table thead,
+  .v-table tbody,
+  .v-table th,
+  .v-table td,
+  .v-table tr {
+    display: block;
+    inline-size: 100%;
+  }
+
+  /* إخفاء رؤوس الأعمدة */
+  .v-table thead {
+    display: none;
+  }
+
+  /* كل صف يصبح بطاقة */
+  .v-table tr {
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 8%);
+    margin-block-end: 14px;
+  }
+
+  /* تنسيق الخلايا داخل البطاقة */
+  .v-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none !important;
+    border-block-end: 1px solid rgba(0, 0, 0, 5%) !important;
+    padding-block: 10px;
+    padding-inline: 6px;
+  }
+
+  /* إظهار عنوان العمود */
+  .v-table td::before {
+    flex: 1;
+    color: var(--v-theme-primary);
+    content: attr(data-label);
+    font-weight: 600;
+    text-align: start;
+  }
+
+  /* إزالة الحد السفلي عن آخر خلية */
+  .v-table td:last-child {
+    border-block-end: none !important;
+  }
+
+  /* تصغير حجم النص قليلاً */
+  .v-table td {
+    font-size: 13px;
+  }
+
+  /* ضبط حجم مكونات Vuetify داخل الخلية */
+  .v-table .v-chip {
+    block-size: 26px;
+    font-size: 12px;
+  }
+
+  .v-table .v-select {
+    inline-size: 100%;
+  }
+
+  .v-table .v-field {
+    block-size: 36px !important;
+  }
+}
+</style>

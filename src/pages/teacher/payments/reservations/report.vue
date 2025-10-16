@@ -1,6 +1,5 @@
 <template>
   <div>
-    <AppLoadingOverlay :loading="loading" :progress="progress" :results="results" />
     <AppBreadcrumbs :items="breadcrumbItems" />
 
     <VCard class="my-4 filter-card" elevation="3" rounded="lg">
@@ -10,17 +9,10 @@
       </VCardTitle>
       <VDivider />
       <VCardItem>
-        <VRow style="padding-block: 10px">
+        <VRow style="padding-block: 10px;">
           <VCol cols="12" md="4">
-            <VSelect
-              v-model="studyYear"
-              :items="studyYears"
-              item-title="label"
-              item-value="value"
-              label="السنة الدراسية"
-              variant="outlined"
-              @update:model-value="getDataAxios"
-            />
+            <VSelect v-model="studyYear" :items="studyYears" item-title="label" item-value="value"
+              label="السنة الدراسية" variant="outlined" @update:model-value="getDataAxios" />
           </VCol>
         </VRow>
       </VCardItem>
@@ -87,8 +79,8 @@
 </template>
 
 <script>
-import TeacherApi from '@/api/teacher/teacher_api'
-import numberWithComma from '@/constant/number'
+import TeacherApi from '@/api/teacher/teacher_api';
+import numberWithComma from '@/constant/number';
 
 export default {
   data() {

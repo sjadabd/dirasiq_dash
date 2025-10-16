@@ -2,14 +2,57 @@
   <div>
     <AppBreadcrumbs :items="breadcrumbs" />
 
+    <!-- Operations Card -->
+    <VCard class="my-4 operations-card" elevation="3" rounded="lg">
+      <VCardTitle class="d-flex align-center py-4 px-6">
+        <VIcon icon="mdi-cog-outline" color="primary" class="me-2" size="24" />
+        <h3 class="text-h5 font-weight-bold">العمليات</h3>
+      </VCardTitle>
+      <VDivider />
+      <VCardItem>
+        <VRow class="align-center justify-start pa-2">
+          <VBtn color="primary" class="ms-3" prepend-icon="ri-add-line" @click="openCreateDialog">
+            إضافة امتحان جديد
+          </VBtn>
+        </VRow>
+      </VCardItem>
+    </VCard>
+
+    <!-- Filter Card -->
+    <VCard class="my-4 filter-card" elevation="3" rounded="lg">
+      <VCardTitle class="d-flex align-center py-4 px-6">
+        <VIcon icon="mdi mdi-filter-outline" color="primary" class="me-2" size="24" />
+        <h3 class="text-h5 font-weight-bold">تصفية</h3>
+      </VCardTitle>
+      <VDivider />
+      <VCardItem>
+        <VRow style="padding-block: 10px;">
+          <VCol cols="12" md="3">
+            <VSelect v-model="filters.type" :items="typeItems" item-title="title" item-value="value"
+              label="نوع الامتحان" style="max-inline-size: 200px;" density="comfortable" clearable
+              @update:modelValue="getExams" />
+          </VCol>
+        </VRow>
+      </VCardItem>
+    </VCard>
+
     <VCard class="my-4">
-      <VCardTitle class="d-flex align-center">
-        <VIcon class="me-2">ri-article-line</VIcon>
-        <span class="text-h6">الامتحانات والدرجات</span>
-        <VSpacer />
-        <VSelect v-model="filters.type" :items="typeItems" item-title="title" item-value="value" label="نوع الامتحان"
-          style="max-inline-size: 200px;" density="comfortable" clearable @update:modelValue="getExams" />
-        <VBtn color="primary" class="ms-3" prepend-icon="ri-add-line" @click="openCreateDialog">امتحان جديد</VBtn>
+      <VCardTitle class="py-4 px-6">
+        <VRow class="align-center">
+          <VCol cols="auto">
+            <!-- <CHANGE> Fixed reload method call -->
+            <VBtn color="primary" @click="reload" icon="ri-refresh-line" variant="tonal" rounded="circle" size="small"
+              class="rotate-on-hover" :loading="reloading" />
+          </VCol>
+          <VCol>
+            <h3 class="text-h5 font-weight-bold text-center">الامتحانات والدرجات</h3>
+          </VCol>
+          <VCol cols="auto">
+            <VChip color="primary" variant="elevated" class="font-weight-medium">
+              {{ Number(table.total).toLocaleString() }} عدد السجلات
+            </VChip>
+          </VCol>
+        </VRow>
       </VCardTitle>
       <VDivider />
       <VCardText>
@@ -85,6 +128,10 @@
 <script>
 import TeacherApi from '@/api/teacher/teacher_api';
 
+// <CHANGE> Added cache configuration constants
+const CACHE_KEY = 'teacher_exams_cache';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
 export default {
   name: 'teacher-exams-manage',
   data() {
@@ -132,17 +179,127 @@ export default {
       // selects
       courseItems: [], subjectItems: [], sessionItems: [],
       coursesLoading: false, subjectsLoading: false, sessionsLoading: false,
+
+      // <CHANGE> Added cache-related state
+      reloading: false,
+      cacheStatus: { isValid: false, age: '' },
     };
   },
   created() {
     this.loadCourseNames();
+    this.loadFromCache();
   },
   methods: {
     showAlert(type, message) { Object.assign(this.alert, { type, message, open: true }); },
 
     examTypeLabel(v) { return v === 'monthly' ? 'شهري' : 'يومي'; },
 
+    // <CHANGE> Added cache management methods
+    getCacheKey() {
+      const filterKey = JSON.stringify(this.filters);
+      const optionsKey = JSON.stringify(this.table.options);
+      return `${CACHE_KEY}_${filterKey}_${optionsKey}`;
+    },
+
+    saveToCache(data) {
+      try {
+        const cacheData = {
+          data,
+          timestamp: Date.now(),
+          filters: this.filters,
+          options: this.table.options,
+        };
+        sessionStorage.setItem(this.getCacheKey(), JSON.stringify(cacheData));
+        this.updateCacheStatus();
+      } catch (e) {
+        console.error('Failed to save cache:', e);
+      }
+    },
+
+    loadFromCache() {
+      try {
+        const cached = sessionStorage.getItem(this.getCacheKey());
+        if (!cached) return false;
+
+        const cacheData = JSON.parse(cached);
+        const age = Date.now() - cacheData.timestamp;
+
+        if (age > CACHE_DURATION) {
+          sessionStorage.removeItem(this.getCacheKey());
+          return false;
+        }
+
+        // Restore data from cache
+        this.table.items = cacheData.data.items;
+        this.table.total = cacheData.data.total;
+        this.updateCacheStatus();
+        return true;
+      } catch (e) {
+        console.error('Failed to load cache:', e);
+        return false;
+      }
+    },
+
+    updateCacheStatus() {
+      try {
+        const cached = sessionStorage.getItem(this.getCacheKey());
+        if (!cached) {
+          this.cacheStatus = { isValid: false, age: '' };
+          return;
+        }
+
+        const cacheData = JSON.parse(cached);
+        const age = Date.now() - cacheData.timestamp;
+        const ageMinutes = Math.floor(age / 60000);
+        const ageSeconds = Math.floor((age % 60000) / 1000);
+
+        this.cacheStatus = {
+          isValid: age <= CACHE_DURATION,
+          age: ageMinutes > 0 ? `${ageMinutes} دقيقة` : `${ageSeconds} ثانية`,
+        };
+      } catch (e) {
+        this.cacheStatus = { isValid: false, age: '' };
+      }
+    },
+
+    clearCache() {
+      try {
+        // Clear all exam-related cache
+        const keys = Object.keys(sessionStorage);
+        keys.forEach(key => {
+          if (key.startsWith(CACHE_KEY)) {
+            sessionStorage.removeItem(key);
+          }
+        });
+        this.cacheStatus = { isValid: false, age: '' };
+        this.showAlert('success', 'تم مسح الكاش بنجاح');
+        this.getExams();
+      } catch (e) {
+        this.showAlert('error', 'فشل مسح الكاش');
+      }
+    },
+
+    // <CHANGE> Added reload method that was missing
+    async reload() {
+      this.reloading = true;
+      try {
+        // Clear cache for current filters/options
+        sessionStorage.removeItem(this.getCacheKey());
+        this.cacheStatus = { isValid: false, age: '' };
+        await this.getExams();
+      } catch (e) {
+        this.showAlert('error', 'فشل تحديث البيانات');
+      } finally {
+        this.reloading = false;
+      }
+    },
+
     async getExams() {
+      // Check cache first
+      if (this.loadFromCache()) {
+        return;
+      }
+
       try {
         this.table.loading = true;
         const params = { page: this.table.options.page, limit: this.table.options.limit };
@@ -160,11 +317,21 @@ export default {
             ? x.sessions.map(s => `${s.title || ''}${s.start_time && s.end_time ? ` (${s.start_time} - ${s.end_time})` : ''}`).join('، ')
             : '—',
         }));
+
+        // <CHANGE> Save to cache after successful fetch
+        this.saveToCache({
+          items: this.table.items,
+          total: this.table.total,
+        });
       } catch (e) {
         this.showAlert('error', e?.response?.data?.message || 'فشل جلب الامتحانات');
       } finally { this.table.loading = false; }
     },
-    updateOptions(opts) { this.table.options = opts; this.getExams(); },
+
+    updateOptions(opts) {
+      this.table.options = opts;
+      this.getExams();
+    },
 
     openCreateDialog() { this.dialog.mode = 'create'; this.resetForm(); this.dialog.open = true; },
     openEditDialog(row) {
@@ -205,7 +372,8 @@ export default {
         else await TeacherApi.createExam(payload);
         this.dialog.open = false;
         this.showAlert('success', 'تم حفظ الامتحان بنجاح');
-        this.getExams();
+        // <CHANGE> Clear cache after create/update
+        this.clearCache();
       } catch (e) { this.showAlert('error', e?.response?.data?.message || 'فشل حفظ الامتحان'); }
       finally { this.dialog.loading = false; }
     },
@@ -216,7 +384,8 @@ export default {
         if (!this.confirm.id) return;
         await TeacherApi.deleteExam(this.confirm.id);
         this.showAlert('success', 'تم حذف الامتحان');
-        this.getExams();
+        // <CHANGE> Clear cache after delete
+        this.clearCache();
       } catch (e) { this.showAlert('error', e?.response?.data?.message || 'فشل حذف الامتحان'); }
       finally { this.confirm = { ...this.confirm, open: false, id: null }; }
     },
@@ -242,3 +411,13 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.rotate-on-hover {
+  transition: transform 0.3s ease;
+}
+
+.rotate-on-hover:hover {
+  transform: rotate(180deg);
+}
+</style>

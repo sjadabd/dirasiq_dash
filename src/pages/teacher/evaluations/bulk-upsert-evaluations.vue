@@ -58,50 +58,62 @@
               <th>واجب</th>
               <th>مشاركة</th>
               <th>اتباع التعليمات</th>
-              <th style="min-inline-size: 200px;">توجيه</th>
-              <th style="min-inline-size: 200px;">ملاحظات</th>
+              <th>توجيه</th>
+              <th>ملاحظات</th>
             </tr>
           </thead>
+
           <tbody>
             <tr v-for="(s, i) in students" :key="s.student_id">
-              <td>{{ i + 1 }}</td>
-              <td>{{ s.student_name }}</td>
-              <td>
+              <td :data-label="'#'">{{ i + 1 }}</td>
+
+              <td :data-label="'الطالب'">{{ s.student_name }}</td>
+
+              <td :data-label="'علمي'">
                 <VSelect :items="levelOptions" v-model="s.scientific_level" item-title="title" item-value="value"
                   density="compact" hide-details />
               </td>
-              <td>
+
+              <td :data-label="'سلوكي'">
                 <VSelect :items="levelOptions" v-model="s.behavioral_level" item-title="title" item-value="value"
                   density="compact" hide-details />
               </td>
-              <td>
+
+              <td :data-label="'حضور'">
                 <VSelect :items="levelOptions" v-model="s.attendance_level" item-title="title" item-value="value"
                   density="compact" hide-details />
               </td>
-              <td>
+
+              <td :data-label="'واجب'">
                 <VSelect :items="levelOptions" v-model="s.homework_preparation" item-title="title" item-value="value"
                   density="compact" hide-details />
               </td>
-              <td>
+
+              <td :data-label="'مشاركة'">
                 <VSelect :items="levelOptions" v-model="s.participation_level" item-title="title" item-value="value"
                   density="compact" hide-details />
               </td>
-              <td>
+
+              <td :data-label="'اتباع التعليمات'">
                 <VSelect :items="levelOptions" v-model="s.instruction_following" item-title="title" item-value="value"
                   density="compact" hide-details />
               </td>
-              <td>
+
+              <td :data-label="'توجيه'">
                 <VTextField v-model="s.guidance" density="compact" hide-details placeholder="توجيه (اختياري)" />
               </td>
-              <td>
+
+              <td :data-label="'ملاحظات'">
                 <VTextField v-model="s.notes" density="compact" hide-details placeholder="ملاحظات (اختياري)" />
               </td>
             </tr>
+
             <tr v-if="!loading && !students.length">
               <td colspan="10" class="text-center text-medium-emphasis">لا يوجد طلاب لعرضهم</td>
             </tr>
           </tbody>
         </VTable>
+
       </VCardText>
     </VCard>
 
@@ -213,3 +225,78 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* ⚡ جعل جدول التقييم Responsive */
+@media (max-width: 900px) {
+
+  .v-table table,
+  .v-table thead,
+  .v-table tbody,
+  .v-table th,
+  .v-table td,
+  .v-table tr {
+    display: block;
+    inline-size: 100%;
+  }
+
+  /* إخفاء رأس الجدول */
+  .v-table thead {
+    display: none;
+  }
+
+  /* كل صف = بطاقة */
+  .v-table tr {
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 8%);
+    margin-block-end: 14px;
+  }
+
+  /* خلايا البطاقة */
+  .v-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none !important;
+    border-block-end: 1px solid rgba(0, 0, 0, 5%) !important;
+    padding-block: 10px;
+    padding-inline: 6px;
+  }
+
+  /* عنوان العمود */
+  .v-table td::before {
+    flex: 1;
+    color: var(--v-theme-primary);
+    content: attr(data-label);
+    font-weight: 600;
+    text-align: start;
+  }
+
+  /* آخر خلية بدون خط */
+  .v-table td:last-child {
+    border-block-end: none !important;
+  }
+
+  /* تصغير الخطوط */
+  .v-table td {
+    font-size: 13px;
+  }
+
+  /* جعل الـ VSelect و VTextField بعرض كامل في الموبايل */
+  .v-table .v-select,
+  .v-table .v-text-field {
+    inline-size: 100%;
+  }
+
+  .v-table .v-field {
+    block-size: 38px !important;
+  }
+
+  /* زيادة المسافة بين البطاقات */
+  .v-table tr+tr {
+    margin-block-start: 10px;
+  }
+}
+</style>

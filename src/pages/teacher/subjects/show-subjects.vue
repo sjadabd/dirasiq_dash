@@ -1,11 +1,6 @@
 <template>
   <div>
     <!-- Settings page -->
-    <AppLoadingOverlay
-      :loading="loading"
-      :progress="progress"
-      :results="results"
-    />
     <AppBreadcrumbs :items="breadcrumbItems" />
     <!-- Settings page -->
 
@@ -18,15 +13,8 @@
       <VDivider />
       <VCardItem>
         <VRow class="align-center justify-start pa-2">
-          <v-btn
-            color="primary"
-            class="ma-2"
-            prepend-icon="ri-add-line"
-            rounded="pill"
-            elevation="2"
-            size="default"
-            @click="Actions.open = true"
-          >
+          <v-btn color="primary" class="ma-2" prepend-icon="ri-add-line" rounded="pill" elevation="2" size="default"
+            @click="Actions.open = true">
             إضافة مادة جديدة
           </v-btn>
         </VRow>
@@ -37,27 +25,15 @@
     <!-- Filter Card -->
     <VCard class="my-4 filter-card" elevation="3" rounded="lg">
       <VCardTitle class="d-flex align-center py-4 px-6">
-        <VIcon
-          icon="mdi mdi-filter-outline"
-          color="primary"
-          class="me-2"
-          size="24"
-        />
+        <VIcon icon="mdi mdi-filter-outline" color="primary" class="me-2" size="24" />
         <h3 class="text-h5 font-weight-bold">تصفية</h3>
       </VCardTitle>
       <VDivider />
       <VCardItem>
-        <VRow style="padding-block: 10px">
+        <VRow style="padding-block: 10px;">
           <VCol cols="12" md="4">
-            <VSelect
-              v-model="table.tableSettings.options.is_deleted"
-              :items="courseIsDisabled"
-              item-title="text"
-              item-value="value"
-              label="حالة المادة"
-              variant="outlined"
-              @update:model-value="getDataAxios"
-            />
+            <VSelect v-model="table.tableSettings.options.is_deleted" :items="courseIsDisabled" item-title="text"
+              item-value="value" label="حالة المادة" variant="outlined" @update:model-value="getDataAxios" />
           </VCol>
         </VRow>
       </VCardItem>
@@ -69,15 +45,8 @@
       <VCardTitle class="py-4 px-6">
         <VRow class="align-center">
           <VCol cols="auto">
-            <VBtn
-              color="primary"
-              @click="reload()"
-              icon="ri-refresh-line"
-              variant="tonal"
-              rounded="circle"
-              size="small"
-              class="rotate-on-hover"
-            />
+            <VBtn color="primary" @click="reload()" icon="ri-refresh-line" variant="tonal" rounded="circle" size="small"
+              class="rotate-on-hover" />
           </VCol>
           <VCol>
             <h3 class="text-h5 font-weight-bold text-center">
@@ -85,11 +54,7 @@
             </h3>
           </VCol>
           <VCol cols="auto">
-            <VChip
-              color="primary"
-              variant="elevated"
-              class="font-weight-medium"
-            >
+            <VChip color="primary" variant="elevated" class="font-weight-medium">
               {{ numberWithComma(table.totalItems) }} عدد السجلات
             </VChip>
           </VCol>
@@ -97,75 +62,36 @@
       </VCardTitle>
       <VDivider />
       <VCardItem>
-        <SmartTable
-          :headers="table.headers"
-          :items="table.Data"
-          :actions="table.actions"
-          :loading="table.loading"
-          :totalItems="table.totalItems"
-          :tableOptions="table.tableSettings.options"
-          @updateTableOptions="updateTableOptions"
-          @deleteItem="deleteItem"
-          @editItem="editItem"
-          @enableItem="enableItem"
-          class="reservation-table"
-        />
+        <SmartTable :headers="table.headers" :items="table.Data" :actions="table.actions" :loading="table.loading"
+          :totalItems="table.totalItems" :tableOptions="table.tableSettings.options"
+          @updateTableOptions="updateTableOptions" @deleteItem="deleteItem" @editItem="editItem"
+          @enableItem="enableItem" class="reservation-table" />
       </VCardItem>
     </VCard>
     <!-- SmartTable -->
 
     <!-- Add subjects Dialog -->
-    <AddSubjects
-      v-if="Actions.open"
-      v-model="Actions.open"
-      @close="Actions.open = false"
-      @dataAdded="handleDataAdded"
-      @showAlert="showAlert"
-    />
+    <AddSubjects v-if="Actions.open" v-model="Actions.open" @close="Actions.open = false" @dataAdded="handleDataAdded"
+      @showAlert="showAlert" />
     <!-- Add grades Dialog -->
 
     <!-- Add Subjects Dialog -->
-    <EditSubjects
-      v-if="editGrades.open"
-      v-model="editGrades.open"
-      :data="editGrades.data"
-      @close="editGrades.open = false"
-      @dataAdded="handleDataAdded"
-      @showAlert="showAlert"
-    />
+    <EditSubjects v-if="editGrades.open" v-model="editGrades.open" :data="editGrades.data"
+      @close="editGrades.open = false" @dataAdded="handleDataAdded" @showAlert="showAlert" />
     <!-- Add Subjects Dialog -->
 
     <!-- ConfirmDangerDialog -->
-    <ConfirmDangerDialog
-      v-if="deleteDialog.open"
-      v-model="deleteDialog.open"
-      :messages="deleteDialog.messages"
-      :title="deleteDialog.title"
-      :confirmButtonText="deleteDialog.confirmButtonText"
-      @confirm="handleDelete"
-    />
+    <ConfirmDangerDialog v-if="deleteDialog.open" v-model="deleteDialog.open" :messages="deleteDialog.messages"
+      :title="deleteDialog.title" :confirmButtonText="deleteDialog.confirmButtonText" @confirm="handleDelete" />
 
     <!-- ConfirmDangerDialog -->
-    <ConfirmDangerDialog
-      v-if="enableDialog.open"
-      v-model="enableDialog.open"
-      :messages="enableDialog.messages"
-      :title="enableDialog.title"
-      :confirmButtonText="enableDialog.confirmButtonText"
-      :checkboxLabel="enableDialog.checkboxLabel"
-      @confirm="handleRestore"
-    />
+    <ConfirmDangerDialog v-if="enableDialog.open" v-model="enableDialog.open" :messages="enableDialog.messages"
+      :title="enableDialog.title" :confirmButtonText="enableDialog.confirmButtonText"
+      :checkboxLabel="enableDialog.checkboxLabel" @confirm="handleRestore" />
 
     <!-- BaseAlert -->
-    <BaseAlert
-      v-if="alert.open"
-      v-model="alert.open"
-      :type="alert.type"
-      :message="alert.message"
-      :closable="true"
-      close-text="موافق"
-      @close="alert.open = false"
-    />
+    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true"
+      close-text="موافق" @close="alert.open = false" />
   </div>
 </template>
 

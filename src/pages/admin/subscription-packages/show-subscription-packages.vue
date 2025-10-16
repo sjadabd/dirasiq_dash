@@ -1,11 +1,6 @@
 <template>
   <div>
     <!-- Settings page -->
-    <AppLoadingOverlay
-      :loading="loading"
-      :progress="progress"
-      :results="results"
-    />
     <AppBreadcrumbs :items="breadcrumbItems" />
     <!-- Settings page -->
 
@@ -18,15 +13,8 @@
       <VDivider />
       <VCardItem>
         <VRow class="align-center justify-start pa-2">
-          <v-btn
-            color="primary"
-            class="ma-2"
-            prepend-icon="ri-add-line"
-            rounded="pill"
-            elevation="2"
-            size="default"
-            @click="Actions.open = true"
-          >
+          <v-btn color="primary" class="ma-2" prepend-icon="ri-add-line" rounded="pill" elevation="2" size="default"
+            @click="Actions.open = true">
             إضافة باقة اشتراك جديدة
           </v-btn>
         </VRow>
@@ -37,49 +25,23 @@
     <!-- Filter Card -->
     <VCard class="my-4 filter-card" elevation="3" rounded="lg">
       <VCardTitle class="d-flex align-center py-4 px-6">
-        <VIcon
-          icon="mdi mdi-filter-outline"
-          color="primary"
-          class="me-2"
-          size="24"
-        />
+        <VIcon icon="mdi mdi-filter-outline" color="primary" class="me-2" size="24" />
         <h3 class="text-h5 font-weight-bold">تصفية</h3>
       </VCardTitle>
       <VDivider />
       <VCardItem>
-        <VRow style="padding-block: 10px">
+        <VRow style="padding-block: 10px;">
           <VCol cols="12" md="4">
-            <VSelect
-              v-model="table.tableSettings.options.isActive"
-              :items="courseIsDisabled"
-              item-title="text"
-              item-value="value"
-              label="حالة السنة"
-              variant="outlined"
-              @update:model-value="getDataAxios"
-            />
+            <VSelect v-model="table.tableSettings.options.isActive" :items="courseIsDisabled" item-title="text"
+              item-value="value" label="حالة السنة" variant="outlined" @update:model-value="getDataAxios" />
           </VCol>
           <VCol cols="12" md="4">
-            <VSelect
-              v-model="table.tableSettings.options.isFree"
-              :items="isFreeOptions"
-              item-title="text"
-              item-value="value"
-              label="نوع الباقة"
-              variant="outlined"
-              @update:model-value="getDataAxios"
-            />
+            <VSelect v-model="table.tableSettings.options.isFree" :items="isFreeOptions" item-title="text"
+              item-value="value" label="نوع الباقة" variant="outlined" @update:model-value="getDataAxios" />
           </VCol>
           <VCol cols="12" md="4">
-            <VSelect
-              v-model="table.tableSettings.options.deleted"
-              :items="deletedOptions"
-              item-title="text"
-              item-value="value"
-              label="حالة الباقة"
-              variant="outlined"
-              @update:model-value="getDataAxios"
-            />
+            <VSelect v-model="table.tableSettings.options.deleted" :items="deletedOptions" item-title="text"
+              item-value="value" label="حالة الباقة" variant="outlined" @update:model-value="getDataAxios" />
           </VCol>
         </VRow>
       </VCardItem>
@@ -91,25 +53,14 @@
       <VCardTitle class="py-4 px-6">
         <VRow class="align-center">
           <VCol cols="auto">
-            <VBtn
-              color="primary"
-              @click="reload()"
-              icon="ri-refresh-line"
-              variant="tonal"
-              rounded="circle"
-              size="small"
-              class="rotate-on-hover"
-            />
+            <VBtn color="primary" @click="reload()" icon="ri-refresh-line" variant="tonal" rounded="circle" size="small"
+              class="rotate-on-hover" />
           </VCol>
           <VCol>
             <h3 class="text-h5 font-weight-bold text-center">باقات الاشتراك</h3>
           </VCol>
           <VCol cols="auto">
-            <VChip
-              color="primary"
-              variant="elevated"
-              class="font-weight-medium"
-            >
+            <VChip color="primary" variant="elevated" class="font-weight-medium">
               {{ numberWithComma(table.totalItems) }} عدد السجلات
             </VChip>
           </VCol>
@@ -117,72 +68,37 @@
       </VCardTitle>
       <VDivider />
       <VCardItem>
-        <SmartTable
-          :headers="table.headers"
-          :items="table.Data"
-          :actions="table.actions"
-          :loading="table.loading"
-          :totalItems="table.totalItems"
-          :tableOptions="table.tableSettings.options"
-          @updateTableOptions="updateTableOptions"
-          @enableItem="enableItem"
-          @editItem="editItem"
-          @deactivateItem="deactivateItem"
-          class="reservation-table"
-        />
+        <SmartTable :headers="table.headers" :items="table.Data" :actions="table.actions" :loading="table.loading"
+          :totalItems="table.totalItems" :tableOptions="table.tableSettings.options"
+          @updateTableOptions="updateTableOptions" @enableItem="enableItem" @editItem="editItem"
+          @deactivateItem="deactivateItem" class="reservation-table" />
       </VCardItem>
     </VCard>
     <!-- SmartTable -->
 
     <!-- Add subscription-packages Dialog -->
-    <AddSubscriptionPackagesDialog
-      v-if="Actions.open"
-      v-model="Actions.open"
-      @close="Actions.open = false"
-      @dataAdded="handleDataAdded"
-      @showAlert="showAlert"
-    />
+    <AddSubscriptionPackagesDialog v-if="Actions.open" v-model="Actions.open" @close="Actions.open = false"
+      @dataAdded="handleDataAdded" @showAlert="showAlert" />
     <!-- Add subscription-packages Dialog -->
 
     <!-- Add grades Dialog -->
-    <EditSubscriptionPackagesDialog
-      v-if="editSubscriptionPackages.open"
-      v-model="editSubscriptionPackages.open"
-      :data="editSubscriptionPackages.data"
-      @close="editSubscriptionPackages.open = false"
-      @dataAdded="handleDataAdded"
-      @showAlert="showAlert"
-    />
+    <EditSubscriptionPackagesDialog v-if="editSubscriptionPackages.open" v-model="editSubscriptionPackages.open"
+      :data="editSubscriptionPackages.data" @close="editSubscriptionPackages.open = false" @dataAdded="handleDataAdded"
+      @showAlert="showAlert" />
     <!-- Add subscription-packages Dialog -->
 
     <!-- ConfirmDangerDialog -->
-    <ConfirmDangerDialog
-      v-model="enableDialog.open"
-      :messages="enableDialog.messages"
-      :title="enableDialog.title"
-      :confirmButtonText="enableDialog.confirmButtonText"
-      @confirm="handleEnable"
-    />
+    <ConfirmDangerDialog v-model="enableDialog.open" :messages="enableDialog.messages" :title="enableDialog.title"
+      :confirmButtonText="enableDialog.confirmButtonText" @confirm="handleEnable" />
 
     <!-- ConfirmDangerDialog -->
-    <ConfirmDangerDialog
-      v-model="deactivateDialog.open"
-      :messages="deactivateDialog.messages"
-      :title="deactivateDialog.title"
-      :confirmButtonText="deactivateDialog.confirmButtonText"
-      @confirm="handleDeactivate"
-    />
+    <ConfirmDangerDialog v-model="deactivateDialog.open" :messages="deactivateDialog.messages"
+      :title="deactivateDialog.title" :confirmButtonText="deactivateDialog.confirmButtonText"
+      @confirm="handleDeactivate" />
 
     <!-- BaseAlert -->
-    <BaseAlert
-      v-if="alert.open"
-      v-model="alert.open"
-      :type="alert.type"
-      :message="alert.message"
-      :closable="true"
-      close-text="موافق"
-      @close="alert.open = false"
-    />
+    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true"
+      close-text="موافق" @close="alert.open = false" />
   </div>
 </template>
 

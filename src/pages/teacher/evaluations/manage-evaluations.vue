@@ -1,9 +1,8 @@
 <template>
   <div>
-    <AppLoadingOverlay :loading="loading" :progress="progress" :results="results" />
     <AppBreadcrumbs :items="breadcrumbItems" />
 
-        <!-- Operations Card -->
+    <!-- Operations Card -->
     <VCard class="my-4 operations-card" elevation="3" rounded="lg">
       <VCardTitle class="d-flex align-center py-4 px-6">
         <VIcon icon="mdi-cog-outline" color="primary" class="me-2" size="24" />
@@ -12,11 +11,11 @@
       <VDivider />
       <VCardItem>
         <VRow class="align-center justify-start pa-2">
-        <VBtn color="primary" class="ms-3" prepend-icon="ri-add-line" @click="goToBulk">إضافة تقييمات </VBtn>
+          <VBtn color="primary" class="ms-3" prepend-icon="ri-add-line" @click="goToBulk">إضافة تقييمات </VBtn>
         </VRow>
       </VCardItem>
     </VCard>
-    
+
     <!-- Filter Card -->
     <VCard class="my-4 filter-card" elevation="3" rounded="lg">
       <VCardTitle class="d-flex align-center py-4 px-6">
@@ -25,25 +24,29 @@
       </VCardTitle>
       <VDivider />
       <VCardItem>
-        <VRow style="padding-block: 10px">
+        <VRow style="padding-block: 10px;">
           <VCol cols="12" md="3">
-            <VSelect v-model="filters.studyYear" @update:model-value="applyFilters" :items="studyYears" item-title="label" item-value="value" label="السنة الدراسية" variant="outlined" :loading="yearsLoading" />
+            <VSelect v-model="filters.studyYear" @update:model-value="applyFilters" :items="studyYears"
+              item-title="label" item-value="value" label="السنة الدراسية" variant="outlined" :loading="yearsLoading" />
           </VCol>
           <VCol cols="12" md="3">
-            <AppDateTimePicker v-model="filters.from" clearable @update:model-value="getData" label="من تاريخ" variant="outlined" />
+            <AppDateTimePicker v-model="filters.from" clearable @update:model-value="getData" label="من تاريخ"
+              variant="outlined" />
           </VCol>
           <VCol cols="12" md="3">
-            <AppDateTimePicker v-model="filters.to" clearable @update:model-value="getData" label="إلى تاريخ" variant="outlined" />
+            <AppDateTimePicker v-model="filters.to" clearable @update:model-value="getData" label="إلى تاريخ"
+              variant="outlined" />
           </VCol>
         </VRow>
       </VCardItem>
     </VCard>
 
     <VCard class="my-4">
-            <VCardTitle class="py-4 px-6">
+      <VCardTitle class="py-4 px-6">
         <VRow class="align-center">
           <VCol cols="auto">
-            <VBtn color="primary" @click="reload()" icon="ri-refresh-line" variant="tonal" rounded="circle" size="small" class="rotate-on-hover" />
+            <VBtn color="primary" @click="reload()" icon="ri-refresh-line" variant="tonal" rounded="circle" size="small"
+              class="rotate-on-hover" />
           </VCol>
           <VCol>
             <h3 class="text-h5 font-weight-bold text-center">تقييمات الطلاب</h3>

@@ -1,20 +1,30 @@
 <template>
   <div>
     <!-- Loading Overlay -->
-    <AppLoadingOverlay :loading="loading" :progress="progress" :results="results" />
-
     <!-- Breadcrumbs -->
     <AppBreadcrumbs :items="breadcrumbItems" />
 
     <!-- Operations Card -->
-    <VCard class="my-4" elevation="3" rounded="lg">
+    <VCard class="my-4 operations-card" elevation="3" rounded="lg">
       <VCardTitle class="d-flex align-center py-4 px-6">
-        <VIcon icon="ri-calendar-schedule-line" color="primary" class="me-2" size="24" />
-        <h3 class="text-h5 font-weight-bold">الجلسات الأسبوعية</h3>
-        <VSpacer />
-        <VBtn color="primary" prepend-icon="ri-add-line" rounded="pill" @click="openCreateDialog">إضافة جلسة</VBtn>
+        <VIcon icon="mdi-cog-outline" color="primary" class="me-2" size="24" />
+        <h3 class="text-h5 font-weight-bold">العمليات</h3>
       </VCardTitle>
+      <VDivider />
+      <VCardItem>
+        <VRow class="align-center justify-start pa-2">
+          <VBtn color="primary" class="ma-2" prepend-icon="ri-add-line" rounded="pill" elevation="2" size="default"
+            @click="openCreateDialog">
+            إضافة جلسة
+          </VBtn>
+          <!-- <VBtn color="secondary" class="ma-2" prepend-icon="ri-file-excel-line" rounded="pill" elevation="2"
+            size="default" @click="exportToExcel" :loading="exporting">
+            تصدير Excel
+          </VBtn> -->
+        </VRow>
+      </VCardItem>
     </VCard>
+
 
     <!-- Filter Card -->
     <VCard class="my-4" elevation="3" rounded="lg">
@@ -83,22 +93,12 @@
                 item-title="text" item-value="value" label="أيام الأسبوع" multiple chips variant="outlined" />
             </VCol>
             <VCol cols="12" md="3">
-              <AppDateTimePicker
-                v-model="sessionDialog.form.start_time"
-                label="بداية"
-                variant="outlined"
-                clearable
-                :config="{ enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true, minuteIncrement: 5 }"
-              />
+              <AppDateTimePicker v-model="sessionDialog.form.start_time" label="بداية" variant="outlined" clearable
+                :config="{ enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true, minuteIncrement: 5 }" />
             </VCol>
             <VCol cols="12" md="3">
-              <AppDateTimePicker
-                v-model="sessionDialog.form.end_time"
-                label="نهاية"
-                variant="outlined"
-                clearable
-                :config="{ enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true, minuteIncrement: 5 }"
-              />
+              <AppDateTimePicker v-model="sessionDialog.form.end_time" label="نهاية" variant="outlined" clearable
+                :config="{ enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true, minuteIncrement: 5 }" />
             </VCol>
             <VCol cols="12" md="6">
               <VSwitch v-model="sessionDialog.form.recurrence" inset color="primary" :true-value="true"

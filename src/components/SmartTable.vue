@@ -30,7 +30,7 @@
         <!-- Custom Row Styling -->
         <template v-slot:item="{ item, index }">
           <tr :class="getRowClass(item)">
-            <td v-for="header in headers" :key="header.key" class="text-center">
+            <td v-for="header in headers" :key="header.key" class="text-center" :data-label="header.title">
               <template v-if="header.key === 'num'">
                 <div class="text-center">
                   <VChip size="small" color="primary" variant="flat" class="font-weight-medium">
@@ -49,29 +49,50 @@
                 </div>
               </template>
               <template v-else-if="header.type === 'status'">
-                <VChip class="font-weight-medium" size="small" :color="getNestedValue(item, header.key) === 'paid' ? 'success' :
-                  getNestedValue(item, header.key) === 'partial' ? 'warning' :
-                    getNestedValue(item, header.key) === 'unpaid' ? 'secondary' :
-                      getNestedValue(item, header.key) === 'overdue' ? 'error' :
-                        getNestedValue(item, header.key) === 'pending' ? 'warning' :
-                          getNestedValue(item, header.key) === 'pre_approved' ? 'info' :
-                            getNestedValue(item, header.key) === 'confirmed' ? 'primary' :
-                              getNestedValue(item, header.key) === 'approved' ? 'success' :
-                                getNestedValue(item, header.key) === 'rejected' ? 'error' :
-                                  getNestedValue(item, header.key) === 'cancelled' ? 'secondary' :
-                                    'default'" variant="flat">
+                <VChip class="font-weight-medium" size="small" :color="getNestedValue(item, header.key) === 'paid'
+                  ? 'success'
+                  : getNestedValue(item, header.key) === 'partial'
+                    ? 'warning'
+                    : getNestedValue(item, header.key) === 'unpaid'
+                      ? 'secondary'
+                      : getNestedValue(item, header.key) === 'overdue'
+                        ? 'error'
+                        : getNestedValue(item, header.key) === 'pending'
+                          ? 'warning'
+                          : getNestedValue(item, header.key) === 'pre_approved'
+                            ? 'info'
+                            : getNestedValue(item, header.key) === 'confirmed'
+                              ? 'primary'
+                              : getNestedValue(item, header.key) === 'approved'
+                                ? 'success'
+                                : getNestedValue(item, header.key) === 'rejected'
+                                  ? 'error'
+                                  : getNestedValue(item, header.key) === 'cancelled'
+                                    ? 'secondary'
+                                    : 'default'
+                  " variant="flat">
                   {{
-                    getNestedValue(item, header.key) === 'paid' ? 'مدفوعة' :
-                      getNestedValue(item, header.key) === 'partial' ? 'جزئية' :
-                        getNestedValue(item, header.key) === 'unpaid' ? 'غير مدفوعة' :
-                          getNestedValue(item, header.key) === 'overdue' ? 'متأخرة' :
-                            getNestedValue(item, header.key) === 'pending' ? 'قيد الانتظار' :
-                              getNestedValue(item, header.key) === 'pre_approved' ? 'موافقة أولية' :
-                                getNestedValue(item, header.key) === 'confirmed' ? 'تأكيد الحجز' :
-                                  getNestedValue(item, header.key) === 'approved' ? 'مقبول' :
-                                    getNestedValue(item, header.key) === 'rejected' ? 'مرفوض' :
-                                      getNestedValue(item, header.key) === 'cancelled' ? 'ملغي' :
-                                        getNestedValue(item, header.key)
+                    getNestedValue(item, header.key) === "paid"
+                      ? "مدفوعة"
+                      : getNestedValue(item, header.key) === "partial"
+                        ? "جزئية"
+                        : getNestedValue(item, header.key) === "unpaid"
+                          ? "غير مدفوعة"
+                          : getNestedValue(item, header.key) === "overdue"
+                            ? "متأخرة"
+                            : getNestedValue(item, header.key) === "pending"
+                              ? "قيد الانتظار"
+                              : getNestedValue(item, header.key) === "pre_approved"
+                                ? "موافقة أولية"
+                                : getNestedValue(item, header.key) === "confirmed"
+                                  ? "تأكيد الحجز"
+                                  : getNestedValue(item, header.key) === "approved"
+                                    ? "مقبول"
+                                    : getNestedValue(item, header.key) === "rejected"
+                                      ? "مرفوض"
+                                      : getNestedValue(item, header.key) === "cancelled"
+                                        ? "ملغي"
+                                        : getNestedValue(item, header.key)
                   }}
                 </VChip>
               </template>
@@ -82,17 +103,17 @@
               </template>
               <template v-else-if="header.type === 'session_title'">
                 <div class="font-weight-medium">
-                  {{ item.grade_name + ' - ' + item.session_title }}
+                  {{ item.grade_name + " - " + item.session_title }}
                 </div>
               </template>
               <template v-else-if="header.key === 'payment_mode'">
                 <div class="font-weight-medium">
-                  {{ item.payment_mode === 'installments' ? 'اقساط' : 'كاش' }}
+                  {{ item.payment_mode === "installments" ? "اقساط" : "كاش" }}
                 </div>
               </template>
               <template v-else-if="header.key === 'has_reservation'">
                 <div class="font-weight-medium">
-                  {{ item.has_reservation ? 'نعم' : 'لا' }}
+                  {{ item.has_reservation ? "نعم" : "لا" }}
                 </div>
               </template>
               <template v-else-if="
@@ -167,14 +188,21 @@
                 <div class="d-flex flex-wrap justify-center ga-1"
                   v-if="!('status' in item) || item.status !== 'confirmed'">
                   <!-- عرض الحضور / عرض الطلاب -->
-                  <VTooltip v-if="actions.includes('عرض الحضور') || actions.includes('عرض الطلاب')" location="top">
+                  <VTooltip v-if="
+                    actions.includes('عرض الحضور') ||
+                    actions.includes('عرض الطلاب')
+                  " location="top">
                     <template #activator="{ props }">
                       <VBtn icon style="padding-inline: 0;" variant="plain" v-bind="props"
                         @click="showAttendeesItem(item)" size="small">
                         <VIcon size="18">ri-team-line</VIcon>
                       </VBtn>
                     </template>
-                    <span>{{ actions.includes('عرض الطلاب') ? 'عرض الطلاب' : 'عرض الحضور' }}</span>
+                    <span>{{
+                      actions.includes("عرض الطلاب")
+                        ? "عرض الطلاب"
+                        : "عرض الحضور"
+                    }}</span>
                   </VTooltip>
                   <!-- اضافة طلاب -->
                   <VTooltip v-if="actions.includes('إضافة طلاب')" location="top">
@@ -269,7 +297,10 @@
                     <span>اعادة تفعيل</span>
                   </VTooltip>
                   <!-- اعادة تفعيل (حجوزات) -->
-                  <VTooltip v-if="actions.includes('اعادة تفعيل') && item.status === 'rejected'" location="top">
+                  <VTooltip v-if="
+                    actions.includes('اعادة تفعيل') &&
+                    item.status === 'rejected'
+                  " location="top">
                     <template #activator="{ props }">
                       <VBtn icon v-bind="props" variant="plain" color="success" size="small" @click="enableItem(item)">
                         <VIcon size="18">ri-refresh-line</VIcon>
@@ -278,9 +309,15 @@
                     <span>اعادة تفعيل</span>
                   </VTooltip>
                   <!-- حذف -->
-                  <VTooltip v-if="actions.includes('حذف') && (('status' in item) ? true : (((!('is_active' in item) &&
-                    !('isActive' in item)) || item.is_active || item.isActive) && (!('is_deleted' in item) ||
-                      !item.is_deleted)))" location="top">
+                  <VTooltip v-if="
+                    actions.includes('حذف') &&
+                    ('status' in item
+                      ? true
+                      : ((!('is_active' in item) && !('isActive' in item)) ||
+                        item.is_active ||
+                        item.isActive) &&
+                      (!('is_deleted' in item) || !item.is_deleted))
+                  " location="top">
                     <template #activator="{ props }">
                       <VBtn icon v-bind="props" variant="plain" @click="deleteItem(item)" color="error" size="small">
                         <VIcon size="18">ri-delete-bin-line</VIcon>
@@ -316,7 +353,8 @@
                   <!-- رفض -->
                   <VTooltip v-if="
                     actions.includes('رفض') &&
-                    (item.status === 'pending' || item.status === 'pre_approved')
+                    (item.status === 'pending' ||
+                      item.status === 'pre_approved')
                   " location="top">
                     <template #activator="{ props }">
                       <VBtn icon v-bind="props" variant="plain" @click="rejectItem(item)" color="error" size="small">
@@ -792,22 +830,80 @@ body .v-btn--icon.v-btn--density-default {
   padding-block: 10px;
 }
 
-/* Row styling based on isActive status */
-.active-row {
-  background-color: rgba(76, 175, 80, 10%) !important;
-  border-inline-start: 4px solid #4caf50 !important;
-}
+/* ⚡ تحسين تجاوب الجدول على الشاشات الصغيرة */
+@media (max-width: 768px) {
 
-.active-row:hover {
-  background-color: rgba(76, 175, 80, 20%) !important;
-}
+  /* نسمح بالتمرير الأفقي إذا الجدول عريض */
+  .table-card {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+  }
 
-.inactive-row {
-  background-color: rgba(244, 67, 54, 10%) !important;
-  border-inline-start: 4px solid #f44336 !important;
-}
+  /* نجعل الجدول يأخذ عرضًا مكدسًا (كل صف يصبح بطاقة) */
+  .v-table__wrapper table,
+  .v-table__wrapper thead,
+  .v-table__wrapper tbody,
+  .v-table__wrapper th,
+  .v-table__wrapper td,
+  .v-table__wrapper tr {
+    display: block;
+    inline-size: 100%;
+  }
 
-.inactive-row:hover {
-  background-color: rgba(244, 67, 54, 20%) !important;
+  /* إخفاء رؤوس الأعمدة */
+  .v-table__wrapper thead {
+    display: none;
+  }
+
+  /* تحويل كل صف إلى بطاقة */
+  .v-table__wrapper tr {
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 6%);
+    margin-block-end: 12px;
+    padding-block: 8px;
+    padding-inline: 10px;
+  }
+
+  /* تنسيق الخلايا داخل البطاقة */
+  .v-table__wrapper td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none !important;
+    border-block-end: 1px solid rgba(0, 0, 0, 5%) !important;
+    padding-block: 10px;
+    padding-inline: 8px;
+  }
+
+  /* اسم العمود على اليسار */
+  .v-table__wrapper td::before {
+    flex: 1;
+    color: var(--v-theme-primary);
+    content: attr(data-label);
+    font-weight: 600;
+    text-align: start;
+  }
+
+  .v-table__wrapper td:last-child {
+    border-block-end: none !important;
+  }
+
+  /* تصغير الخط قليلاً */
+  .v-table__wrapper td,
+  .cell-content {
+    font-size: 13px;
+  }
+
+  /* تحسين البحث والصفحات */
+  .pagination-container {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .items-per-page-select {
+    max-inline-size: 100px;
+  }
 }
 </style>

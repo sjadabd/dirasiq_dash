@@ -1,6 +1,5 @@
 <template>
   <div>
-    <AppLoadingOverlay :loading="loading" :progress="progress" :results="results" />
     <AppBreadcrumbs :items="breadcrumbItems" />
 
     <!-- Summary -->
@@ -57,16 +56,47 @@
       <VDivider />
       <VCardText>
         <VRow>
-          <VCol cols="12" md="2"><VAlert variant="tonal" type="info">عدد الأقساط: {{ totals.count }}</VAlert></VCol>
-          <VCol cols="12" md="2"><VAlert variant="tonal" type="success">مدفوعة: {{ totals.paidCount }}</VAlert></VCol>
-          <VCol cols="12" md="2"><VAlert variant="tonal" type="warning">قيد السداد: {{ totals.pendingCount }}</VAlert></VCol>
-          <VCol cols="12" md="2"><VAlert variant="tonal" type="warning">جزئية: {{ totals.partialCount }}</VAlert></VCol>
-          <VCol cols="12" md="2"><VAlert variant="tonal" type="error">متأخرة: {{ totals.overdueCount }}</VAlert></VCol>
+          <VCol cols="12" md="2">
+            <VAlert variant="tonal" type="info">عدد الأقساط: {{ totals.count }}</VAlert>
+          </VCol>
+          <VCol cols="12" md="2">
+            <VAlert variant="tonal" type="success">مدفوعة: {{ totals.paidCount }}</VAlert>
+          </VCol>
+          <VCol cols="12" md="2">
+            <VAlert variant="tonal" type="warning">قيد السداد: {{ totals.pendingCount }}</VAlert>
+          </VCol>
+          <VCol cols="12" md="2">
+            <VAlert variant="tonal" type="warning">جزئية: {{ totals.partialCount }}</VAlert>
+          </VCol>
+          <VCol cols="12" md="2">
+            <VAlert variant="tonal" type="error">متأخرة: {{ totals.overdueCount }}</VAlert>
+          </VCol>
         </VRow>
         <VRow class="mt-2">
-          <VCol cols="12" md="4"><VCard variant="tonal"><VCardText><div class="text-caption">مجموع المخطط</div><div class="text-h6">{{ numberWithComma(totals.plannedTotal) }}</div></VCardText></VCard></VCol>
-          <VCol cols="12" md="4"><VCard variant="tonal"><VCardText><div class="text-caption">مجموع المدفوع</div><div class="text-h6">{{ numberWithComma(totals.paidTotal) }}</div></VCardText></VCard></VCol>
-          <VCol cols="12" md="4"><VCard variant="tonal"><VCardText><div class="text-caption">مجموع المتبقي</div><div class="text-h6">{{ numberWithComma(totals.remainingTotal) }}</div></VCardText></VCard></VCol>
+          <VCol cols="12" md="4">
+            <VCard variant="tonal">
+              <VCardText>
+                <div class="text-caption">مجموع المخطط</div>
+                <div class="text-h6">{{ numberWithComma(totals.plannedTotal) }}</div>
+              </VCardText>
+            </VCard>
+          </VCol>
+          <VCol cols="12" md="4">
+            <VCard variant="tonal">
+              <VCardText>
+                <div class="text-caption">مجموع المدفوع</div>
+                <div class="text-h6">{{ numberWithComma(totals.paidTotal) }}</div>
+              </VCardText>
+            </VCard>
+          </VCol>
+          <VCol cols="12" md="4">
+            <VCard variant="tonal">
+              <VCardText>
+                <div class="text-caption">مجموع المتبقي</div>
+                <div class="text-h6">{{ numberWithComma(totals.remainingTotal) }}</div>
+              </VCardText>
+            </VCard>
+          </VCol>
         </VRow>
       </VCardText>
     </VCard>
@@ -94,25 +124,19 @@
           </thead>
           <tbody>
             <tr v-for="(ins, idx) in installments" :key="idx">
-              <td>{{ ins.installment_number }}</td>
-              <td>{{ numberWithComma(ins.planned_amount) }}</td>
-              <td>{{ numberWithComma(ins.paid_amount) }}</td>
-              <td>{{ numberWithComma(ins.remaining_amount) }}</td>
-              <td>{{ formatDate(ins.due_date) }}</td>
-              <td>
+              <td :data-label="'#'">{{ ins.installment_number }}</td>
+              <td :data-label="'المخطط'">{{ numberWithComma(ins.planned_amount) }}</td>
+              <td :data-label="'المدفوع'">{{ numberWithComma(ins.paid_amount) }}</td>
+              <td :data-label="'المتبقي'">{{ numberWithComma(ins.remaining_amount) }}</td>
+              <td :data-label="'تاريخ الاستحقاق'">{{ formatDate(ins.due_date) }}</td>
+              <td :data-label="'الحالة'">
                 <VChip :color="installmentStatusColor(ins.installment_status)" size="small" variant="flat">
                   {{ toArabicInstallmentStatus(ins.installment_status) }}
                 </VChip>
               </td>
-              <td>
-                <VBtn
-                  v-if="ins.installment_status !== 'paid' && Number(ins.remaining_amount) > 0"
-                  size="small"
-                  color="primary"
-                  variant="tonal"
-                  :loading="saving"
-                  @click="payInstallment(ins)"
-                >
+              <td :data-label="'العمليات'">
+                <VBtn v-if="ins.installment_status !== 'paid' && Number(ins.remaining_amount) > 0" size="small"
+                  color="primary" variant="tonal" :loading="saving" @click="payInstallment(ins)">
                   تسديد
                 </VBtn>
               </td>
@@ -128,7 +152,8 @@
         <v-card-text>
           <VRow>
             <VCol cols="12">
-              <VTextField v-model.number="payDialog.form.amount" type="number" label="المبلغ" variant="outlined" :disabled="true" />
+              <VTextField v-model.number="payDialog.form.amount" type="number" label="المبلغ" variant="outlined"
+                :disabled="true" />
             </VCol>
             <VCol cols="12">
               <VSelect v-model="payDialog.form.paymentMethod" :items="paymentMethods" item-title="text"
@@ -189,8 +214,8 @@
 </template>
 
 <script>
-import TeacherApi from '@/api/teacher/teacher_api'
-import numberWithComma from '@/constant/number'
+import TeacherApi from '@/api/teacher/teacher_api';
+import numberWithComma from '@/constant/number';
 
 export default {
   data() {
@@ -461,3 +486,71 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+/* ⚡ تصميم الجدول ليصبح Responsive في الشاشات الصغيرة */
+@media (max-width: 768px) {
+
+  .v-table table,
+  .v-table thead,
+  .v-table tbody,
+  .v-table th,
+  .v-table td,
+  .v-table tr {
+    display: block;
+    inline-size: 100%;
+  }
+
+  /* إخفاء رؤوس الجدول */
+  .v-table thead {
+    display: none;
+  }
+
+  /* تحويل الصف إلى بطاقة */
+  .v-table tr {
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 8%);
+    margin-block-end: 12px;
+    padding-block: 8px;
+    padding-inline: 10px;
+  }
+
+  /* تنسيق الخلايا داخل البطاقة */
+  .v-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none !important;
+    border-block-end: 1px solid rgba(0, 0, 0, 5%) !important;
+    padding-block: 10px;
+    padding-inline: 8px;
+  }
+
+  /* عرض اسم العمود من data-label */
+  .v-table td::before {
+    flex: 1;
+    color: var(--v-theme-primary);
+    content: attr(data-label);
+    font-weight: 600;
+    text-align: start;
+  }
+
+  /* إزالة الخط السفلي عن آخر عنصر */
+  .v-table td:last-child {
+    border-block-end: none !important;
+  }
+
+  /* تصغير الخط قليلاً */
+  .v-table td {
+    font-size: 13px;
+  }
+
+  /* الأزرار داخل الموبايل */
+  .v-table td .v-btn {
+    block-size: 28px;
+    font-size: 12px;
+    padding-inline: 10px;
+  }
+}
+</style>

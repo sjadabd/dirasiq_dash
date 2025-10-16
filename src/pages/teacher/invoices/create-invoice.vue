@@ -1,6 +1,5 @@
 <template>
   <div>
-    <AppLoadingOverlay :loading="loading" :progress="progress" :results="results" />
     <AppBreadcrumbs :items="breadcrumbItems" />
 
     <VCard class="my-4" elevation="3" rounded="lg">
@@ -38,15 +37,15 @@
               label="نوع الفاتورة" variant="outlined" />
           </VCol>
           <VCol cols="12" md="4">
-            <VTextField :model-value="formatMoney(form.amountDue)" @update:model-value="val => onFormatMoney('amountDue', val)"
-              label="المبلغ المستحق" variant="outlined" />
+            <VTextField :model-value="formatMoney(form.amountDue)"
+              @update:model-value="val => onFormatMoney('amountDue', val)" label="المبلغ المستحق" variant="outlined" />
           </VCol>
           <VCol cols="12" md="4">
             <AppDateTimePicker v-model="form.dueDate" label="تاريخ الاستحقاق" variant="outlined" />
           </VCol>
           <VCol cols="12" md="4">
-            <VTextField :model-value="formatMoney(form.discountAmount)" @update:model-value="val => onFormatMoney('discountAmount', val)"
-              label="خصم عام" variant="outlined" />
+            <VTextField :model-value="formatMoney(form.discountAmount)"
+              @update:model-value="val => onFormatMoney('discountAmount', val)" label="خصم عام" variant="outlined" />
           </VCol>
           <VCol cols="12">
             <VTextField v-model="form.notes" label="ملاحظات" variant="outlined" />
@@ -68,27 +67,22 @@
                 <VTextField v-model.number="ins.installmentNumber" type="number" label="# القسط" variant="outlined" />
               </VCol>
               <VCol cols="12" md="3">
-                <VTextField :model-value="formatMoney(ins.plannedAmount)" @update:model-value="val => onFormatInstallmentAmount(idx, val)"
-                  label="المبلغ المخطط" variant="outlined" />
+                <VTextField :model-value="formatMoney(ins.plannedAmount)"
+                  @update:model-value="val => onFormatInstallmentAmount(idx, val)" label="المبلغ المخطط"
+                  variant="outlined" />
               </VCol>
               <VCol cols="12" md="2">
                 <AppDateTimePicker v-model="ins.dueDate" label="تاريخ الاستحقاق" variant="outlined" />
               </VCol>
               <VCol cols="12" md="2">
-                <VSelect
-                  v-model="ins.paid"
-                  :items="[
-                    { text: 'غير مدفوع', value: false },
-                    { text: 'مدفوع', value: true }
-                  ]"
-                  item-title="text"
-                  item-value="value"
-                  label="مدفوع؟"
-                  variant="outlined"
-                />
+                <VSelect v-model="ins.paid" :items="[
+                  { text: 'غير مدفوع', value: false },
+                  { text: 'مدفوع', value: true }
+                ]" item-title="text" item-value="value" label="مدفوع؟" variant="outlined" />
               </VCol>
               <VCol cols="12" md="2">
-                <AppDateTimePicker v-model="ins.paidDate" :disabled="!ins.paid" label="تاريخ التسديد" variant="outlined" />
+                <AppDateTimePicker v-model="ins.paidDate" :disabled="!ins.paid" label="تاريخ التسديد"
+                  variant="outlined" />
               </VCol>
               <VCol cols="12" md="1" class="d-flex align-center">
                 <VBtn color="error" size="small" icon="ri-delete-bin-line" variant="text"

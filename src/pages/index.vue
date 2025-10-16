@@ -842,7 +842,7 @@ export default {
         const res = await teacher_api.getActivePackages();
 
         // ✅ دعم Axios أو Fetch
-        const payload = res.data?.data ? res.data : res;
+        const payload = res.data?.data.data ? res.data.data : res;
 
         const items = Array.isArray(payload?.data) ? payload.data : [];
 

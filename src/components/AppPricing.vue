@@ -1,262 +1,203 @@
 <script setup>
-import tree1 from '@images/misc/pricing-tree-1.png'
-import tree2 from '@images/misc/pricing-tree-2.png'
-import tree3 from '@images/misc/pricing-tree-3.png'
+import teacher_api from '@/api/teacher/teacher_api';
+import { onMounted, ref } from 'vue';
 
+// Props
 const props = defineProps({
-  title: {
-    type: String,
-    required: false,
-  },
-  cols: {
-    type: [
-      Number,
-      String,
-    ],
-    required: false,
-  },
-  sm: {
-    type: [
-      Number,
-      String,
-    ],
-    required: false,
-  },
-  md: {
-    type: [
-      String,
-      Number,
-    ],
-    required: false,
-  },
-  lg: {
-    type: [
-      String,
-      Number,
-    ],
-    required: false,
-  },
-  xl: {
-    type: [
-      String,
-      Number,
-    ],
-    required: false,
-  },
-})
+  title: { type: String, default: 'خطط التسعير' },
+  cols: { type: [Number, String], default: 12 },
+  sm: { type: [Number, String], default: 6 },
+  md: { type: [Number, String], default: 4 },
+  lg: { type: [Number, String], default: 4 },
+  xl: { type: [Number, String], default: 4 },
+});
 
-const annualMonthlyPlanPriceToggler = ref(true)
+// State
+const pricingPlans = ref([]);
+const loading = ref(false);
+const snackbar = ref({
+  show: false,
+  message: '',
+  color: 'error',
+});
 
-const pricingPlans = [
-  {
-    name: 'Basic',
-    tagLine: 'A simple start for everyone',
-    logo: tree1,
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    isPopular: false,
-    current: true,
-    features: [
-      '100 responses a month',
-      'Unlimited forms and surveys',
-      'Unlimited fields',
-      'Basic form creation tools',
-      'Up to 2 subdomains',
-    ],
-  },
-  {
-    name: 'Standard',
-    tagLine: 'For small to medium businesses',
-    logo: tree2,
-    monthlyPrice: 42,
-    yearlyPrice: 460,
-    isPopular: true,
-    current: false,
-    features: [
-      'Unlimited responses',
-      'Unlimited forms and surveys',
-      'Instagram profile page',
-      'Google Docs integration',
-      'Custom “Thank you” page',
-    ],
-  },
-  {
-    name: 'Enterprise',
-    tagLine: 'Solution for big organizations',
-    logo: tree3,
-    monthlyPrice: 84,
-    yearlyPrice: 690,
-    isPopular: false,
-    current: false,
-    features: [
-      'PayPal payments',
-      'Logic Jumps',
-      'File upload with 5GB storage',
-      'Custom domain support',
-      'Stripe integration',
-    ],
-  },
-]
+// 🔹 جلب بيانات الباقات من API
+async function fetchPricingPlans() {
+  loading.value = true;
+  try {
+    // جلب البيانات من API
+    const res = await teacher_api.getActivePackages();
+
+    // دعم Axios أو Fetch
+    const payload = res.data?.data?.data || res.data?.data || res;
+    const items = Array.isArray(payload?.data) ? payload.data : payload;
+
+    // التأكد أن لدينا مصفوفة صحيحة
+    if (!Array.isArray(items)) throw new Error('Invalid response data');
+
+    // 🔸 تحويل البيانات إلى الشكل المستخدم في واجهة المستخدم
+    const mapped = items.map((p) => {
+      const isFree = p.isFree || p.price === 0;
+      const formattedPrice = isFree ? 0 : p.price;
+
+      return {
+        id: p.id,
+        name: p.name,
+        tagLine: p.description || (isFree ? 'مجاناً للمعلمين الجدد' : 'ميزات متقدمة'),
+        logo: isFree ? '/images/gift-icon.png' : '/images/star-icon.png',
+        monthlyPrice: formattedPrice,
+        yearlyPrice: formattedPrice * 12,
+        isPopular: false,
+        current: Boolean(p.current), // ✅ الباقة الحالية الحقيقية من السيرفر
+        features: [
+          `حتى ${p.maxStudents} طالب`,
+          p.description || (isFree ? 'مجاناً للمعلمين الجدد' : 'ميزات متقدمة'),
+          p.durationDays === 30 ? 'اشتراك شهري' : `اشتراك ${p.durationDays} يوم`,
+          'دعم فني مخصص',
+        ],
+      };
+    });
+
+    // ✅ تحديد الباقة "الاحترافية" كباقة مميزة (الأكثر شعبية)
+    const professionalIndex = mapped.findIndex(
+      (pl) =>
+        pl.name?.trim() === 'الباقة الاحترافية' ||
+        pl.name?.toLowerCase().includes('professional')
+    );
+
+    if (professionalIndex !== -1) {
+      mapped.forEach((pl) => (pl.isPopular = false));
+      mapped[professionalIndex].isPopular = true;
+    } else {
+      // fallback: أول باقة مدفوعة
+      const paidIndex = mapped.findIndex((pl) => pl.monthlyPrice !== 0);
+      if (paidIndex !== -1) mapped[paidIndex].isPopular = true;
+    }
+
+    // ✅ حفظ النتائج في الحالة
+    pricingPlans.value = mapped;
+  } catch (err) {
+    snackbar.value = {
+      show: true,
+      message: 'تعذر تحميل الباقات. يرجى المحاولة لاحقًا',
+      color: 'error',
+    };
+    console.warn('⚠️ Failed to fetch pricing plans:', err);
+  } finally {
+    loading.value = false;
+  }
+}
+
+// Fetch data on component mount
+onMounted(() => {
+  fetchPricingPlans();
+});
 </script>
 
+
 <template>
-  <!-- 👉 Title and subtitle -->
-  <div class="text-center mb-6">
-    <slot name="heading">
-      <h3 class="text-h3 pricing-title pb-2">
-        {{ props.title ? props.title : 'Pricing Plans' }}
-      </h3>
-    </slot>
-    <slot name="subtitle">
-      <p class="mb-0">
-        All plans include 40+ advanced tools and features to boost your product.
-        <br>
-        Choose the best plan to fit your needs.
-      </p>
-    </slot>
-  </div>
-
-  <!-- 👉 Annual and monthly price toggler -->
-  <div class="d-flex align-center justify-center mx-auto pt-sm-9 pb-sm-8 py-4">
-    <VLabel
-      for="pricing-plan-toggle"
-      class="me-2 font-weight-medium"
-    >
-      Monthly
-    </VLabel>
-
-    <div class="position-relative">
-      <div class="pricing-save-chip position-absolute d-sm-block d-none">
-        <VIcon
-          start
-          icon="ri-corner-left-down-fill"
-          size="24"
-          class="text-disabled flip-in-rtl mt-1"
-        />
-        <VChip
-          size="small"
-          color="primary"
-          class="mt-n2"
-        >
-          Save up to 10%
-        </VChip>
-      </div>
-
-      <VSwitch
-        id="pricing-plan-toggle"
-        v-model="annualMonthlyPlanPriceToggler"
-      >
-        <template #label>
-          <div class="text-body-1 font-weight-medium">
-            Annually
-          </div>
-        </template>
-      </VSwitch>
+  <div>
+    <div class="text-center mb-6">
+      <slot name="heading">
+        <h3 class="text-h3 pricing-title pb-2">
+          {{ props.title }}
+        </h3>
+      </slot>
+      <slot name="subtitle">
+        <p class="mb-0">
+          تتضمن جميع الباقات أكثر من عدد طلاب. <br> اختر الباقة الأنسب لاحتياجاتك.
+        </p>
+      </slot>
     </div>
-  </div>
 
-  <!-- SECTION pricing plans -->
-  <VRow>
-    <VCol
-      v-for="plan in pricingPlans"
-      :key="plan.logo"
-      v-bind="props"
-    >
-      <!-- 👉  Card -->
-      <VCard
-        flat
-        border
-        :class="plan.isPopular ? 'border-primary border-opacity-100' : ''"
-      >
-        <VCardText
-          class="text-end pt-4"
-          style="block-size: 3.75rem;"
-        >
-          <!-- 👉 Popular -->
-          <VChip
-            v-show="plan.isPopular"
-            color="primary"
-            size="small"
-          >
-            Popular
-          </VChip>
-        </VCardText>
+    <div v-if="loading" class="text-center py-10">
+      <VProgressCircular indeterminate color="primary" size="64" />
+      <p class="mt-4 text-body-1">جاري تحميل الباقات...</p>
+    </div>
 
-        <!-- 👉 Plan logo -->
-        <VCardText class="text-center">
-          <VImg
-            :height="120"
-            :src="plan.logo"
-            class="mx-auto mb-5"
-          />
+    <VRow v-else-if="pricingPlans.length > 0">
+      <VCol v-for="plan in pricingPlans" :key="plan.id" :cols="props.cols" :sm="props.sm" :md="props.md" :lg="props.lg"
+        :xl="props.xl">
+        <VCard flat border :class="plan.isPopular ? 'border-primary border-opacity-100' : ''" class="h-100">
+          <VCardText class="text-end pt-4" style="block-size: 3.75rem;">
+            <VChip v-show="plan.isPopular" color="primary" size="small">
+              الأكثر شعبية
+            </VChip>
+          </VCardText>
 
-          <!-- 👉 Plan name -->
-          <h4 class="text-h4 mb-1">
-            {{ plan.name }}
-          </h4>
-          <p class="mb-0 text-body-1">
-            {{ plan.tagLine }}
-          </p>
-        </VCardText>
+          <VCardText class="text-center">
+            <VIcon :icon="plan.monthlyPrice === 0 ? 'mdi-gift' : 'mdi-star'"
+              :color="plan.monthlyPrice === 0 ? 'success' : 'primary'" size="80" class="mb-5" />
 
-        <!-- 👉 Plan price  -->
-        <VCardText class="position-relative text-center">
-          <div>
-            <div class="d-flex justify-center align-center">
-              <span class="text-body-1 font-weight-medium align-self-start">$</span>
-              <h1 class="text-h1 font-weight-medium text-primary">
-                {{ annualMonthlyPlanPriceToggler ? Math.floor(Number(plan.yearlyPrice) / 12) : plan.monthlyPrice }}
-              </h1>
-              <span class="text-body-1 font-weight-medium align-self-end">/month</span>
+            <h4 class="text-h4 mb-1">
+              {{ plan.name }}
+            </h4>
+            <p class="mb-0 text-body-1">
+              {{ plan.tagLine }}
+            </p>
+          </VCardText>
+
+          <VCardText class="position-relative text-center">
+            <div>
+              <div class="d-flex justify-center align-center">
+                <h1 class="text-h1 font-weight-medium text-primary">
+                  {{ plan.monthlyPrice === 0 ? 'مجاناً' : new Intl.NumberFormat('ar-IQ').format(plan.monthlyPrice) }}
+                </h1>
+                <span v-if="plan.monthlyPrice !== 0" class="text-body-1 font-weight-medium align-self-end ms-2">
+                  دينار/شهر
+                </span>
+              </div>
+
+              <div v-if="plan.monthlyPrice !== 0" class="text-caption mt-2">
+                {{ new Intl.NumberFormat('ar-IQ').format(plan.yearlyPrice) }} دينار/سنة
+              </div>
             </div>
+          </VCardText>
 
-            <!-- 👉 Annual Price -->
-            <div
-              v-show="annualMonthlyPlanPriceToggler"
-              class="text-caption"
-            >
-              {{ plan.yearlyPrice === 0 ? 'free' : `USD ${plan.yearlyPrice}/Year` }}
-            </div>
-          </div>
-        </VCardText>
+          <VCardText class="pt-2">
+            <VList class="card-list pb-5">
+              <VListItem v-for="(feature, index) in plan.features" :key="index">
+                <template #prepend>
+                  <VIcon :size="14" icon="mdi-check-circle" color="success" class="me-2" />
+                </template>
 
-        <!-- 👉 Plan features -->
-        <VCardText class="pt-2">
-          <VList class="card-list pb-5">
-            <VListItem
-              v-for="feature in plan.features"
-              :key="feature"
-            >
-              <template #prepend />
-
-              <VListItemTitle class="text-body-1 d-flex align-center">
-                <VIcon
-                  :size="14"
-                  icon="ri-circle-line"
-                  class="me-2"
-                />
-                <div class="text-truncate">
+                <VListItemTitle class="text-body-1">
                   {{ feature }}
-                </div>
-              </VListItemTitle>
-            </VListItem>
-          </VList>
+                </VListItemTitle>
+              </VListItem>
+            </VList>
 
-          <!-- 👉 Plan actions -->
-          <VBtn
-            :active="false"
-            block
-            :color="plan.current ? 'success' : 'primary'"
-            :variant="plan.isPopular ? 'elevated' : 'outlined'"
-            :to="{ name: 'front-pages-payment' }"
-          >
-            {{ plan.yearlyPrice === 0 ? 'Your Current Plan' : 'Upgrade' }}
-          </VBtn>
-        </VCardText>
-      </VCard>
-    </VCol>
-  </VRow>
-  <!-- !SECTION  -->
+            <VBtn block :color="plan.current ? 'success' : 'primary'"
+              :variant="plan.isPopular ? 'elevated' : 'outlined'" size="large">
+              {{ plan.current ? 'باقتك الحالية' : (plan.monthlyPrice === 0 ? 'ابدأ مجاناً' : 'اشترك الآن') }}
+            </VBtn>
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
+
+    <VCard v-else flat border class="text-center py-10">
+      <VCardText>
+        <VIcon icon="mdi-package-variant" size="64" color="grey" class="mb-4" />
+        <h4 class="text-h5 mb-2">لا توجد باقات متاحة</h4>
+        <p class="text-body-2 text-medium-emphasis">
+          لم يتم العثور على أي باقات في الوقت الحالي
+        </p>
+        <VBtn color="primary" variant="outlined" class="mt-4" @click="fetchPricingPlans">
+          إعادة المحاولة
+        </VBtn>
+      </VCardText>
+    </VCard>
+
+    <VSnackbar v-model="snackbar.show" :color="snackbar.color" location="top" :timeout="5000">
+      {{ snackbar.message }}
+      <template #actions>
+        <VBtn variant="text" @click="snackbar.show = false">
+          إغلاق
+        </VBtn>
+      </template>
+    </VSnackbar>
+  </div>
 </template>
 
 <style lang="scss" scoped>
@@ -264,9 +205,15 @@ const pricingPlans = [
   --v-card-list-gap: 1rem;
 }
 
-.pricing-save-chip {
-  display: flex;
-  inset-block-start: -2.625rem;
-  inset-inline-end: -6.5rem;
+.pricing-title {
+  font-weight: 700;
+}
+
+.h-100 {
+  block-size: 100%;
+}
+
+.v-list-item-title {
+  white-space: pre-line !important;
 }
 </style>

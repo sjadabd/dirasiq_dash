@@ -1,12 +1,10 @@
 <template>
   <div>
     <!-- Loading Overlay -->
-    <AppLoadingOverlay :loading="loading" :progress="progress" :results="results" />
-
     <!-- Breadcrumbs -->
     <AppBreadcrumbs :items="breadcrumbItems" />
 
-        <!-- Operations Card -->
+    <!-- Operations Card -->
     <VCard class="my-4 operations-card" elevation="3" rounded="lg">
       <VCardTitle class="d-flex align-center py-4 px-6">
         <VIcon icon="mdi-cog-outline" color="primary" class="me-2" size="24" />
@@ -15,7 +13,8 @@
       <VDivider />
       <VCardItem>
         <VRow class="align-center justify-start pa-2">
-          <VBtn color="primary" class="ma-2" prepend-icon="ri-add-line" rounded="pill" elevation="2" size="default" @click="openCreateDialog">
+          <VBtn color="primary" class="ma-2" prepend-icon="ri-add-line" rounded="pill" elevation="2" size="default"
+            @click="openCreateDialog">
             إشعار جديد
           </VBtn>
         </VRow>
@@ -47,9 +46,10 @@
     <!-- Table Card -->
     <VCard class="my-4" elevation="3" rounded="lg">
       <VCardTitle class="py-4 px-6">
-                <VRow class="align-center">
+        <VRow class="align-center">
           <VCol cols="auto">
-            <VBtn color="primary" @click="reload()" icon="ri-refresh-line" variant="tonal" rounded="circle" size="small" class="rotate-on-hover" />
+            <VBtn color="primary" @click="reload()" icon="ri-refresh-line" variant="tonal" rounded="circle" size="small"
+              class="rotate-on-hover" />
           </VCol>
           <VCol>
             <h3 class="text-h5 font-weight-bold text-center">قائمة الإشعارات</h3>

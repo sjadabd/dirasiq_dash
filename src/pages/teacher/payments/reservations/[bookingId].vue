@@ -1,6 +1,5 @@
 <template>
   <div>
-    <AppLoadingOverlay :loading="loading" :progress="progress" :results="results" />
     <AppBreadcrumbs :items="breadcrumbItems" />
 
     <VCard class="my-4" elevation="3" rounded="lg">
@@ -46,8 +45,8 @@
 </template>
 
 <script>
-import TeacherApi from '@/api/teacher/teacher_api'
-import numberWithComma from '@/constant/number'
+import TeacherApi from '@/api/teacher/teacher_api';
+import numberWithComma from '@/constant/number';
 
 export default {
   data() {

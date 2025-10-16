@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" href="./src/assets/images/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>منصة تعليم</title>
+    <title>Mulhim IQ</title>
     <link rel="stylesheet" type="text/css" href="/loader.css" />
 
     <!-- Cairo Font from Google Fonts -->
@@ -14,24 +14,49 @@
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script
+      src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+      defer
+    ></script>
 
-    <!-- Global Cairo Font CSS -->
     <style>
-      * {
+      @import url("https://fonts.googleapis.com/css2?family=Aref+Ruqaa+Ink:wght@700&family=Cairo:wght@500&display=swap");
+
+      body,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      span,
+      strong,
+      div,
+      i,
+      tr,
+      td,
+      dd {
         font-family: "Cairo", sans-serif !important;
       }
 
-      body {
-        font-family: "Cairo", sans-serif !important;
+      .layout-wrapper.layout-navbar-sticky.horizontal-nav-sticky
+        .layout-navbar-and-nav-container {
+        z-index: 99;
       }
 
-      html {
-        font-family: "Cairo", sans-serif !important;
+      .v-pagination__list {
+        display: inline-flex;
+        list-style-type: none;
+        justify-content: center;
+        width: 100%;
       }
 
-      .v-selection-control__input input {
-        opacity: 1 !important;
+      .v-table__wrapper {
+        overflow: hidden;
+      }
+
+      .layout-nav-type-vertical .layout-vertical-nav {
+        box-shadow: 5px 5px 15px 0px black;
       }
     </style>
 

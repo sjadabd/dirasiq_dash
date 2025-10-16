@@ -1,6 +1,5 @@
 <template>
   <div>
-    <AppLoadingOverlay :loading="loading" :progress="progress" :results="results" />
     <AppBreadcrumbs :items="breadcrumbItems" />
 
     <!-- Operations Card -->
@@ -177,8 +176,8 @@
 </template>
 
 <script>
-import TeacherApi from '@/api/teacher/teacher_api'
-import VueApexCharts from 'vue3-apexcharts'
+import TeacherApi from '@/api/teacher/teacher_api';
+import VueApexCharts from 'vue3-apexcharts';
 
 export default {
   components: {

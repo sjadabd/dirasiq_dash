@@ -24,7 +24,8 @@
                 <div class="text-body-2 mb-1"><strong>نوع الامتحان:</strong> {{ examTypeLabel(exam?.exam_type) }}</div>
                 <div class="text-body-2 mb-1"><strong>التاريخ:</strong> {{ formatDateTime(exam?.exam_date) }}</div>
                 <div class="text-body-2 mb-1"><strong>الدرجة القصوى:</strong> {{ exam?.max_score }}</div>
-                <div class="text-body-2 mb-1" v-if="exam?.description"><strong>الوصف:</strong> {{ exam.description }}</div>
+                <div class="text-body-2 mb-1" v-if="exam?.description"><strong>الوصف:</strong> {{ exam.description }}
+                </div>
                 <div class="text-body-2 mb-1" v-if="exam?.notes"><strong>ملاحظات:</strong> {{ exam.notes }}</div>
               </VCardText>
             </VCard>
@@ -33,23 +34,30 @@
       </VCardText>
     </VCard>
 
+    <!-- Filter Card -->
+    <VCard class="my-4 filter-card" elevation="3" rounded="lg">
+      <VCardTitle class="d-flex align-center py-4 px-6">
+        <VIcon icon="mdi mdi-filter-outline" color="primary" class="me-2" size="24" />
+        <h3 class="text-h5 font-weight-bold">تصفية</h3>
+      </VCardTitle>
+      <VDivider />
+      <VCardItem>
+        <VRow style="padding-block: 10px;">
+          <VCol cols="12" md="3">
+            <VSelect v-model="selectedSessionId" :items="sessionItems" item-title="text" item-value="value"
+              label="اختر الجلسة" density="comfortable" hide-details style="max-inline-size: 260px;"
+              :loading="sessionsLoading" />
+          </VCol>
+        </VRow>
+      </VCardItem>
+    </VCard>
+
     <!-- Students and grading -->
     <VCard>
       <VCardTitle class="d-flex align-center">
         <VIcon class="me-2">ri-team-line</VIcon>
         <span class="text-h6">طلاب الامتحان وتسجيل الدرجات</span>
         <VSpacer />
-        <VSelect
-          v-model="selectedSessionId"
-          :items="sessionItems"
-          item-title="text"
-          item-value="value"
-          label="اختر الجلسة"
-          density="comfortable"
-          hide-details
-          style="max-width: 260px"
-          :loading="sessionsLoading"
-        />
         <VChip size="small" variant="flat" style="color: white;">{{ students.length }} طالب</VChip>
       </VCardTitle>
       <VDivider />
@@ -59,30 +67,43 @@
             <tr>
               <th>#</th>
               <th>الطالب</th>
-              <th style="width: 180px;">الدرجة</th>
-              <th style="width: 160px;">إجراء</th>
+              <th style="inline-size: 180px;">الدرجة</th>
+              <th style="inline-size: 160px;">إجراء</th>
             </tr>
           </thead>
+
           <tbody>
             <tr v-for="(s, i) in students" :key="s.id">
-              <td>{{ i + 1 }}</td>
-              <td>{{ s.name }}</td>
-              <td>
-                <VTextField v-model.number="s.score" type="number" :max="exam?.max_score || 100" :min="0" density="compact" hide-details />
+              <td :data-label="'#'">{{ i + 1 }}</td>
+
+              <td :data-label="'الطالب'">
+                {{ s.name }}
               </td>
-              <td>
-                <VBtn color="primary" size="small" :loading="s.saving" @click="saveGrade(s)">حفظ</VBtn>
+
+              <td :data-label="'الدرجة'">
+                <VTextField v-model.number="s.score" type="number" :max="exam?.max_score || 100" :min="0"
+                  density="compact" hide-details />
+              </td>
+
+              <td :data-label="'إجراء'">
+                <VBtn color="primary" size="small" :loading="s.saving" @click="saveGrade(s)">
+                  حفظ
+                </VBtn>
               </td>
             </tr>
+
             <tr v-if="!studentsLoading && !students.length">
-              <td colspan="4" class="text-center text-medium-emphasis">لا يوجد طلاب</td>
+              <td colspan="4" class="text-center text-medium-emphasis">
+                لا يوجد طلاب
+              </td>
             </tr>
           </tbody>
         </VTable>
       </VCardText>
     </VCard>
 
-    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true" close-text="موافق" />
+    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true"
+      close-text="موافق" />
   </div>
 </template>
 
@@ -178,3 +199,85 @@ export default {
   },
 };
 </script>
+
+
+<style scoped>
+/* ⚡ جعل جدول الدرجات Responsive */
+@media (max-width: 768px) {
+
+  .v-table table,
+  .v-table thead,
+  .v-table tbody,
+  .v-table th,
+  .v-table td,
+  .v-table tr {
+    display: block;
+    inline-size: 100%;
+  }
+
+  /* إخفاء رأس الجدول */
+  .v-table thead {
+    display: none;
+  }
+
+  /* كل صف يصبح بطاقة */
+  .v-table tr {
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 8%);
+    margin-block-end: 12px;
+  }
+
+  /* خلايا البطاقة */
+  .v-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none !important;
+    border-block-end: 1px solid rgba(0, 0, 0, 5%) !important;
+    padding-block: 8px;
+    padding-inline: 6px;
+  }
+
+  /* عنوان العمود */
+  .v-table td::before {
+    flex: 1;
+    color: var(--v-theme-primary);
+    content: attr(data-label);
+    font-weight: 600;
+    text-align: start;
+  }
+
+  /* إزالة الحد السفلي عن آخر خلية */
+  .v-table td:last-child {
+    border-block-end: none !important;
+  }
+
+  /* ضبط حجم الخط */
+  .v-table td {
+    font-size: 13px;
+  }
+
+  /* جعل الـ TextField بعرض كامل */
+  .v-table .v-text-field {
+    inline-size: 100%;
+  }
+
+  .v-table .v-field {
+    block-size: 38px !important;
+  }
+
+  /* زر حفظ صغير ومتناسق */
+  .v-table .v-btn {
+    block-size: 30px;
+    font-size: 12px;
+    padding-inline: 10px;
+  }
+
+  /* تباعد بين الصفوف */
+  .v-table tr+tr {
+    margin-block-start: 10px;
+  }
+}
+</style>

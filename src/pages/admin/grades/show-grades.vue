@@ -1,11 +1,6 @@
 <template>
   <div>
     <!-- Settings page -->
-    <AppLoadingOverlay
-      :loading="loading"
-      :progress="progress"
-      :results="results"
-    />
     <AppBreadcrumbs :items="breadcrumbItems" />
     <!-- Settings page -->
 
@@ -18,15 +13,8 @@
       <VDivider />
       <VCardItem>
         <VRow class="align-center justify-start pa-2">
-          <v-btn
-            color="primary"
-            class="ma-2"
-            prepend-icon="ri-add-line"
-            rounded="pill"
-            elevation="2"
-            size="default"
-            @click="Actions.open = true"
-          >
+          <v-btn color="primary" class="ma-2" prepend-icon="ri-add-line" rounded="pill" elevation="2" size="default"
+            @click="Actions.open = true">
             إضافة مرحلة دراسية جديدة
           </v-btn>
         </VRow>
@@ -39,15 +27,8 @@
       <VCardTitle class="py-4 px-6">
         <VRow class="align-center">
           <VCol cols="auto">
-            <VBtn
-              color="primary"
-              @click="reload()"
-              icon="ri-refresh-line"
-              variant="tonal"
-              rounded="circle"
-              size="small"
-              class="rotate-on-hover"
-            />
+            <VBtn color="primary" @click="reload()" icon="ri-refresh-line" variant="tonal" rounded="circle" size="small"
+              class="rotate-on-hover" />
           </VCol>
           <VCol>
             <h3 class="text-h5 font-weight-bold text-center">
@@ -55,11 +36,7 @@
             </h3>
           </VCol>
           <VCol cols="auto">
-            <VChip
-              color="primary"
-              variant="elevated"
-              class="font-weight-medium"
-            >
+            <VChip color="primary" variant="elevated" class="font-weight-medium">
               {{ numberWithComma(table.totalItems) }} عدد السجلات
             </VChip>
           </VCol>
@@ -67,62 +44,31 @@
       </VCardTitle>
       <VDivider />
       <VCardItem>
-        <SmartTable
-          :headers="table.headers"
-          :items="table.Data"
-          :actions="table.actions"
-          :loading="table.loading"
-          :totalItems="table.totalItems"
-          :tableOptions="table.tableSettings.options"
-          @updateTableOptions="updateTableOptions"
-          @deleteItem="deleteItem"
-          @editItem="editItem"
-          class="reservation-table"
-        />
+        <SmartTable :headers="table.headers" :items="table.Data" :actions="table.actions" :loading="table.loading"
+          :totalItems="table.totalItems" :tableOptions="table.tableSettings.options"
+          @updateTableOptions="updateTableOptions" @deleteItem="deleteItem" @editItem="editItem"
+          class="reservation-table" />
       </VCardItem>
     </VCard>
     <!-- SmartTable -->
 
     <!-- Add grades Dialog -->
-    <AddGradesDialog
-      v-if="Actions.open"
-      v-model="Actions.open"
-      @close="Actions.open = false"
-      @dataAdded="handleDataAdded"
-      @showAlert="showAlert"
-    />
+    <AddGradesDialog v-if="Actions.open" v-model="Actions.open" @close="Actions.open = false"
+      @dataAdded="handleDataAdded" @showAlert="showAlert" />
     <!-- Add grades Dialog -->
 
     <!-- Add grades Dialog -->
-    <EditGradesDialog
-      v-if="editGrades.open"
-      v-model="editGrades.open"
-      :data="editGrades.data"
-      @close="editGrades.open = false"
-      @dataAdded="handleDataAdded"
-      @showAlert="showAlert"
-    />
+    <EditGradesDialog v-if="editGrades.open" v-model="editGrades.open" :data="editGrades.data"
+      @close="editGrades.open = false" @dataAdded="handleDataAdded" @showAlert="showAlert" />
     <!-- Add grades Dialog -->
 
     <!-- ConfirmDangerDialog -->
-    <ConfirmDangerDialog
-      v-model="enableDialog.open"
-      :messages="enableDialog.messages"
-      :title="enableDialog.title"
-      :confirmButtonText="enableDialog.confirmButtonText"
-      @confirm="handleDelete"
-    />
+    <ConfirmDangerDialog v-model="enableDialog.open" :messages="enableDialog.messages" :title="enableDialog.title"
+      :confirmButtonText="enableDialog.confirmButtonText" @confirm="handleDelete" />
 
     <!-- BaseAlert -->
-    <BaseAlert
-      v-if="alert.open"
-      v-model="alert.open"
-      :type="alert.type"
-      :message="alert.message"
-      :closable="true"
-      close-text="موافق"
-      @close="alert.open = false"
-    />
+    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true"
+      close-text="موافق" @close="alert.open = false" />
   </div>
 </template>
 
