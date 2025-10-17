@@ -1,0 +1,1 @@
+import{a as s}from"./axios-D6DdSkOE.js";class e{async loginInGoogele(o){const t={googleData:o,userType:"teacher"};return await s.post("/auth/google-auth",t)}async login(o){return await s.post("/auth/login",o)}async logout(){return await s.post("/auth/logout")}}const u=new e;export{u as A};
