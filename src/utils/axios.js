@@ -3,6 +3,7 @@ import axios from "axios";
 
 const axiosInstance = axios.create({
   baseURL: "https://api.mulhimiq.com/api",
+  // baseURL: "http://localhost:3000/api",
   timeout: 100000,
 });
 
