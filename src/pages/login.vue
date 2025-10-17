@@ -152,6 +152,7 @@ const handleEmailLogin = async () => {
       } = response.data.data;
 
       localStorage.setItem("isProfileComplete", isProfileComplete);
+      localStorage.setItem('content_url', res.data.content_url)
       login(userData, accessToken);
 
       // ✅ ربط المستخدم في OneSignal بعد تسجيل الدخول
@@ -204,6 +205,7 @@ const handleGoogleLogin = async (response) => {
         } = res.data.data;
 
         localStorage.setItem("isProfileComplete", isProfileComplete);
+        localStorage.setItem('content_url', res.data.content_url)
         login(userData, accessToken);
 
         // ✅ ربط المستخدم مع OneSignal
@@ -269,9 +271,11 @@ onMounted(async () => {
   google.accounts.id.initialize({
     client_id: clientId,
     callback: handleGoogleLogin,
-    ux_mode: "popup", // ✅ هذا السطر مهم جداً
+    ux_mode: "popup",
     auto_select: false,
+    use_fedcm_for_prompt: false,
   });
+
 
 
   const buttonElement = document.getElementById("google-signin-button");

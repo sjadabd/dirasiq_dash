@@ -13,7 +13,7 @@
         <!-- Header -->
         <div class="text-center mb-8">
           <v-avatar size="96" class="mb-4" variant="elevated">
-            <img v-if="avatarPreviewSrc" :src="avatarPreviewSrc" alt="Teacher Avatar" />
+            <img v-if="avatarPreviewSrc" style="    inline-size: 100px;" :src="avatarPreviewSrc" alt="Teacher Avatar" />
             <v-icon v-else size="48" color="primary">mdi-account</v-icon>
           </v-avatar>
           <h1 class="text-h3 font-weight-bold mb-2">إعداد ملف الشخصي</h1>
@@ -43,7 +43,8 @@
                 <v-col cols="12">
                   <div class="d-flex align-center flex-wrap ga-4">
                     <v-avatar size="72">
-                      <img v-if="avatarPreviewSrc" :src="avatarPreviewSrc" alt="Teacher Avatar" />
+                      <img v-if="avatarPreviewSrc" style="    inline-size: 100px;" :src="avatarPreviewSrc"
+                        alt="Teacher Avatar" />
                       <v-icon v-else size="36">mdi-account</v-icon>
                     </v-avatar>
                     <div>
@@ -188,8 +189,23 @@ export default {
     }
     // Prefill existing avatar for teacher if present
     if (this.user?.profileImagePath) {
-      this.avatarPreviewSrc = this.user.profileImagePath;
+      const contentUrl = localStorage.getItem('content_url') || '';
+      const img = this.user.profileImagePath.trim();
+
+      // ✅ إذا كانت Base64 (تبدأ بـ data:image/)
+      if (img.startsWith('data:image/')) {
+        this.avatarPreviewSrc = img;
+      }
+      // ✅ إذا كانت رابط مطلق (تبدأ بـ http)
+      else if (img.startsWith('http')) {
+        this.avatarPreviewSrc = img;
+      }
+      // ✅ إذا كانت مسار نسبي من السيرفر
+      else {
+        this.avatarPreviewSrc = `${contentUrl}${img.startsWith('/') ? '' : '/'}${img}`;
+      }
     }
+
   },
   methods: {
     // تحديث الموقع من كومبوننت الخريطة
