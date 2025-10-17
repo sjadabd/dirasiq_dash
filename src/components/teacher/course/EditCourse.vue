@@ -162,7 +162,7 @@
                     >
                       <VCard class="position-relative">
                         <VImg
-                          :src="'http://localhost:3000' + image"
+                          :src="'https://api.mulhimiq.com' + image"
                           height="120"
                           cover
                           class="rounded"

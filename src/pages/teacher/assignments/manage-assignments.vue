@@ -556,13 +556,13 @@ export default {
       if (/^https?:\/\//i.test(url)) return url;
       try {
         const cfg = JSON.parse(localStorage.getItem('results') || '{}');
-        const base = cfg?.content_url || 'http://localhost:3000';
+        const base = cfg?.content_url || 'https://api.mulhimiq.com';
         // Use URL to properly join and percent-encode unicode characters
         const full = new URL(url, base);
         return full.href;
       } catch {
         // Fallback simple join
-        const base = 'http://localhost:3000';
+        const base = 'https://api.mulhimiq.com';
         return (base.replace(/\/$/, '')) + (String(url).startsWith('/') ? '' : '/') + String(url);
       }
     },

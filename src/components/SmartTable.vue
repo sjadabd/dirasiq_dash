@@ -176,7 +176,7 @@
 
               <!-- image -->
               <template v-else-if="header.type === 'image'">
-                <img v-if="item[header.key]" :src="'http://localhost:3000' + item[header.key]" style="
+                <img v-if="item[header.key]" :src="'https://api.mulhimiq.com' + item[header.key]" style="
                     border: solid 1px rebeccapurple;
                     cursor: pointer;
                     inline-size: 60px;

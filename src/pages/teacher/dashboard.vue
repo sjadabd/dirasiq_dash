@@ -135,7 +135,7 @@ const updateProfile = () => {
               </VCol>
               <VCol cols="12" md="4" class="text-center">
                 <VAvatar size="80" color="primary">
-                  <VImg v-if="user?.profileImagePath" :src="`http://localhost:3000${user.profileImagePath}`"
+                  <VImg v-if="user?.profileImagePath" :src="`https://api.mulhimiq.com${user.profileImagePath}`"
                     alt="User Avatar" cover />
                   <VIcon v-else size="40">mdi-account</VIcon>
                 </VAvatar>

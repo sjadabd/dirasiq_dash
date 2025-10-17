@@ -15,7 +15,7 @@
 ### 1. إنشاء ملف .env
 ```env
 VITE_GOOGLE_CLIENT_ID=your_google_client_id_here
-VITE_API_BASE_URL=http://localhost:3000/api
+VITE_API_BASE_URL=https://api.mulhimiq.com/api
 ```
 
 ### 2. الحصول على Google Client ID
