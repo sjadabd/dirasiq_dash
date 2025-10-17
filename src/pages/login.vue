@@ -269,8 +269,10 @@ onMounted(async () => {
   google.accounts.id.initialize({
     client_id: clientId,
     callback: handleGoogleLogin,
+    ux_mode: "popup", // ✅ هذا السطر مهم جداً
     auto_select: false,
   });
+
 
   const buttonElement = document.getElementById("google-signin-button");
   if (buttonElement) {
