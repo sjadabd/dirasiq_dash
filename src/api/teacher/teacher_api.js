@@ -238,6 +238,14 @@ class TeacherApi {
     const response = await axiosInstance.get(url);
     return response;
   }
+  async getUnreadNotifications(limit = 20) {
+    const response = await axiosInstance.get(`/teacher/notifications/unread`, { params: { limit } });
+    return response;
+  }
+  async markNotificationRead(id) {
+    const response = await axiosInstance.put(`/notifications/${encodeURIComponent(id)}/read`);
+    return response;
+  }
   async createNotification(payload) {
     // payload should include: type, subType, title, message, courseId, subjectId, link, recipients{mode, studentIds}, attachments{pdfBase64, imagesBase64}, priority
     const response = await axiosInstance.post(`/teacher/notifications`, payload);

@@ -28,18 +28,60 @@
           </v-col>
 
           <v-col cols="auto">
-            <!-- 🔹 زر ديناميكي حسب حالة تسجيل الدخول -->
-            <v-btn v-if="!isLoggedIn" color="support" style="background-color: #1c324c !important;" variant="elevated"
-              @click="openStartDialog">
-              <v-icon start>mdi-rocket-launch</v-icon>
-              ابدأ الآن
-            </v-btn>
+            <div class="d-flex align-center gap-2">
+              <v-menu v-if="isLoggedIn" v-model="notificationsMenu" location="bottom" :close-on-content-click="false">
+                <template #activator="{ props }">
+                  <v-btn icon variant="text" v-bind="props">
+                    <v-badge color="error" :content="unreadCount" overlap v-if="unreadCount">
+                      <v-icon>mdi-bell</v-icon>
+                    </v-badge>
+                    <template v-else>
+                      <v-icon>mdi-bell</v-icon>
+                    </template>
+                  </v-btn>
+                </template>
+                <v-card min-width="360">
+                  <v-card-title class="d-flex align-center">
+                    <v-icon start class="me-2">mdi-bell</v-icon>
+                    <span class="text-subtitle-1">الإشعارات</span>
+                    <v-spacer />
+                    <v-btn size="small" variant="text" @click="refreshNotifications">تحديث</v-btn>
+                  </v-card-title>
+                  <v-divider />
+                  <v-list v-if="notificationsList.length" density="compact">
+                    <v-list-item v-for="n in notificationsList" :key="n.id" @click="openNotification(n)"
+                                   :title="n.title" :subtitle="formatDate(n.sentAt)" class="notification-item">
+                      <template #prepend>
+                        <v-avatar size="36" :color="n.is_read ? 'grey' : 'primary'">
+                          <v-img v-if="n.image" :src="n.image" cover />
+                          <v-icon v-else color="white" size="18">mdi-bell</v-icon>
+                        </v-avatar>
+                      </template>
+                    </v-list-item>
+                  </v-list>
+                  <div v-else class="text-center pa-6 text-medium-emphasis">لا توجد إشعارات</div>
+                  <v-divider v-if="notificationsHasMore" />
+                  <div v-if="notificationsHasMore" class="d-flex justify-center pa-2">
+                    <v-btn size="small" :loading="notificationsLoading" variant="text" @click="loadMoreNotifications">عرض المزيد</v-btn>
+                  </div>
+                  <v-card-actions class="justify-end">
+                    <v-btn variant="text" @click="notificationsMenu = false">إغلاق</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-menu>
 
-            <v-btn v-else color="success" variant="elevated" block to="/teacher/dashboard">
-              <v-icon start>mdi-view-dashboard</v-icon>
-              لوحة التحكم
-            </v-btn>
+              <!-- 🔹 زر ديناميكي حسب حالة تسجيل الدخول -->
+              <v-btn v-if="!isLoggedIn" color="support" style="background-color: #1c324c !important;" variant="elevated"
+                @click="openStartDialog">
+                <v-icon start>mdi-rocket-launch</v-icon>
+                ابدأ الآن
+              </v-btn>
 
+              <v-btn v-else color="success" variant="elevated" to="/teacher/dashboard">
+                <v-icon start>mdi-view-dashboard</v-icon>
+                لوحة التحكم
+              </v-btn>
+            </div>
           </v-col>
         </v-row>
       </v-container>
@@ -185,10 +227,13 @@
                         لوحة التحكم
                       </v-toolbar-title>
                       <v-spacer />
-                      <v-btn icon variant="text">
-                        <v-badge color="error" content="3" overlap>
+                      <v-btn icon variant="text" @click="notificationsMenu = true">
+                        <v-badge v-if="unreadCount" color="error" :content="unreadCount" overlap>
                           <v-icon>mdi-bell</v-icon>
                         </v-badge>
+                        <template v-else>
+                          <v-icon>mdi-bell</v-icon>
+                        </template>
                       </v-btn>
                       <v-btn icon variant="text" @click="toggleDashboardTheme">
                         <v-icon>{{ dashboardDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
@@ -530,6 +575,40 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="notificationDialog" max-width="700">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon start color="primary" class="me-2">mdi-bell</v-icon>
+          <span class="text-h6 font-weight-bold">{{ selectedNotification?.title }}</span>
+          <v-spacer />
+          <v-btn icon variant="text" @click="notificationDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        <v-divider />
+        <v-img v-if="selectedNotification?.image" :src="selectedNotification.image" height="260" cover />
+        <v-card-text>
+          <div class="text-body-2 text-medium-emphasis mb-2" v-if="selectedNotification?.sentAt">
+            <v-icon size="16" class="me-1">mdi-calendar</v-icon>
+            {{ formatDate(selectedNotification.sentAt) }}
+          </div>
+          <div style="white-space: pre-line;" class="mb-3">
+            {{ selectedNotification?.message }}
+          </div>
+          <div class="text-caption text-medium-emphasis" v-if="selectedNotification?.type">
+            <v-icon size="14" class="me-1">mdi-tag</v-icon>
+            {{ selectedNotification.type }}
+          </div>
+        </v-card-text>
+        <v-card-actions class="justify-end">
+          <v-btn v-if="selectedNotification?.url" :href="selectedNotification.url" target="_blank" variant="tonal">
+            فتح الرابط
+          </v-btn>
+          <v-btn variant="text" @click="notificationDialog = false">إغلاق</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000" location="top">
       {{ snackbar.message }}
       <template #actions>
@@ -559,6 +638,15 @@ export default {
       // Dialogs
       startDialog: false,
       studentDialog: false,
+      notificationsMenu: false,
+      notificationDialog: false,
+      notificationsList: [],
+      notificationsPage: 1,
+      notificationsLimit: 10,
+      notificationsHasMore: false,
+      notificationsLoading: false,
+      unreadCount: 0,
+      selectedNotification: null,
       newsDialog: false,
       selectedNews: null,
 
@@ -800,6 +888,7 @@ export default {
     // Load pricing plans from backend
     this.fetchPricingPlans()
     this.getPublicNews()
+    if (this.isLoggedIn) this.refreshNotifications()
   },
 
   methods: {
@@ -917,6 +1006,62 @@ export default {
     openNews(item) {
       this.selectedNews = item;
       this.newsDialog = true;
+    },
+
+    async fetchNotifications(page = 1, append = false) {
+      try {
+        this.notificationsLoading = true
+        const res = await teacher_api.getNotifications({ page, limit: this.notificationsLimit })
+        const payload = res.data?.data ? res.data : res
+        const items = Array.isArray(payload.data) ? payload.data : []
+        const baseUrl = payload.content_url || ''
+        const mapped = items.map((n) => ({
+          id: n.id,
+          title: n.title,
+          message: n.message,
+          type: n.type,
+          is_read: !!n.is_read,
+          sentAt: n.sent_at || n.created_at,
+          image: n.data?.imageUrl ? (baseUrl ? `${baseUrl}${n.data.imageUrl}` : n.data.imageUrl) : null,
+          url: n.data?.url || null,
+          raw: n,
+        }))
+        this.notificationsList = append ? [...this.notificationsList, ...mapped] : mapped
+        this.unreadCount = this.notificationsList.filter(n => !n.is_read).length
+        const pagination = payload.pagination || {}
+        const totalPages = pagination.totalPages || (mapped.length < this.notificationsLimit ? page : page + 1)
+        this.notificationsHasMore = page < totalPages && mapped.length > 0
+        this.notificationsPage = page
+      } catch (err) {
+        this.snackbar = { show: true, message: 'تعذر تحميل الإشعارات', color: 'error' }
+        console.warn('Failed to fetch notifications:', err)
+      } finally {
+        this.notificationsLoading = false
+      }
+    },
+
+    refreshNotifications() {
+      this.notificationsPage = 1
+      this.fetchNotifications(1, false)
+    },
+
+    loadMoreNotifications() {
+      const next = this.notificationsPage + 1
+      this.fetchNotifications(next, true)
+    },
+
+    async openNotification(n) {
+      this.selectedNotification = n
+      this.notificationDialog = true
+      this.notificationsMenu = false
+    },
+
+    formatDate(d) {
+      try {
+        return new Date(d).toLocaleString('en-IQ')
+      } catch {
+        return d
+      }
     },
 
     selectPlan(plan) {
