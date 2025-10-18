@@ -107,13 +107,8 @@
                     show-arrows="hover" height="auto" class="hero-carousel">
                     <v-carousel-item v-for="(screen, index) in appScreenshots" :key="index">
                       <div class="d-flex justify-center align-center pa-4">
-                        <div class="phone-mockup">
-                          <div class="phone-frame">
-                            <div class="phone-notch"></div>
-                            <div class="phone-screen">
-                              <v-img :src="screen.image" :alt="screen.title" cover class="phone-screen-image" />
-                            </div>
-                          </div>
+                        <div style="max-inline-size: 800px; inline-size: 100%; cursor: pointer;" @click="openNews(screen)">
+                          <v-img :src="screen.image" :alt="screen.title" cover aspect-ratio="16/9" class="elevation-4 rounded-lg" />
                           <div class="text-center mt-4">
                             <h3 class="text-h5 font-weight-bold text-white mb-2">
                               {{ screen.title }}
@@ -508,6 +503,33 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="newsDialog" max-width="900">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon start color="primary" class="me-2">mdi-newspaper</v-icon>
+          <span class="text-h6 font-weight-bold">{{ selectedNews?.title }}</span>
+          <v-spacer />
+          <v-btn icon variant="text" @click="newsDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        <v-divider />
+        <v-img v-if="selectedNews?.image" :src="selectedNews.image" :alt="selectedNews.title" height="320" cover />
+        <v-card-text>
+          <div class="text-body-2 text-medium-emphasis mb-2" v-if="selectedNews?.raw?.publishedAt">
+            <v-icon size="16" class="me-1">mdi-calendar</v-icon>
+            {{ new Date(selectedNews.raw.publishedAt).toLocaleString('en-IQ') }}
+          </div>
+          <div style="white-space: pre-line;">
+            {{ selectedNews?.description }}
+          </div>
+        </v-card-text>
+        <v-card-actions class="justify-end">
+          <v-btn variant="text" @click="newsDialog = false">إغلاق</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000" location="top">
       {{ snackbar.message }}
       <template #actions>
@@ -521,10 +543,6 @@
 
 <script>
 import teacher_api from '@/api/teacher/teacher_api';
-import app1 from '@/assets/app/1.jpg';
-import app2 from '@/assets/app/2.jpg';
-import app3 from '@/assets/app/3.jpg';
-import app4 from '@/assets/app/4.jpg';
 import logo from '@/assets/images/logo.png';
 
 export default {
@@ -534,39 +552,15 @@ export default {
   data() {
     return {
       carouselModel: 0,
-      appScreenshots: [
-        {
-          title: 'واجهة الطالب الرئيسية',
-          description: 'تصفح كورساتك ومتابعة تقدمك بسهولة',
-          image: app1
-        },
-        {
-          title: 'جدول الحصص',
-          description: 'تابع مواعيد دروسك القادمة',
-          image: app2
-        },
-        {
-          title: 'الواجبات والاختبارات',
-          description: 'أكمل واجباتك واختباراتك من هاتفك',
-          image: app3
-        },
-        {
-          title: 'الإشعارات والرسائل',
-          description: 'ابقَ على تواصل مع معلميك',
-          image: app4
-        },
-        {
-          title: 'التقارير والإحصائيات',
-          description: 'راقب أدائك وتقدمك الدراسي',
-          image: app2
-        }
-      ],
+      appScreenshots: [],
       // حالة الدخول
       isLoggedIn: false,
 
       // Dialogs
       startDialog: false,
       studentDialog: false,
+      newsDialog: false,
+      selectedNews: null,
 
       // Dashboard theme
       dashboardDark: false,
@@ -852,7 +846,7 @@ export default {
           const isFree = p.isFree || p.price === 0;
           const formattedPrice = isFree
             ? "0"
-            : new Intl.NumberFormat("ar-IQ").format(p.price);
+            : new Intl.NumberFormat("en-IQ").format(p.price);
 
           return {
             id: p.id,
@@ -898,48 +892,17 @@ export default {
       try {
         // ✅ جلب البيانات من API
         const res = await teacher_api.getPublicNews();
+        const payload = res.data?.data ? res.data : res;
+        const items = Array.isArray(payload.data) ? payload.data : [];
+        const baseUrl = payload.content_url || '';
 
-        // ✅ دعم Axios أو Fetch
-        const payload = res.data?.data.data ? res.data.data : res;
-
-        const items = Array.isArray(payload?.data) ? payload.data : [];
-
-        // 🧩 تحويل البيانات إلى شكل واجهة المستخدم
-        const mapped = items.map((p) => {
-          const isFree = p.isFree || p.price === 0;
-          const formattedPrice = isFree
-            ? "0"
-            : new Intl.NumberFormat("ar-IQ").format(p.price);
-
-          return {
-            id: p.id,
-            name: p.name,
-            price: `${formattedPrice} دينار`,
-            period: p.durationDays === 30 ? "/ شهرياً" : `/ ${p.durationDays} يوماً`,
-            icon: isFree ? "mdi-gift" : "mdi-star",
-            iconColor: isFree ? "support" : "white",
-            buttonColor: isFree ? "support" : "accent",
-            buttonText: isFree ? "ابدأ مجاناً" : "اشترك الآن",
-            featured: false,
-            features: [
-              `حتى ${p.maxStudents} طالب`,
-              p.description || (isFree ? "مجاناً للمعلمين الجدد" : "ميزات متقدمة"),
-              p.durationDays === 30 ? "اشتراك شهري" : `اشتراك ${p.durationDays} يوم`,
-              "دعم فني مخصص",
-            ],
-          };
-        });
-
-        // 🌟 تحديد أول باقة مدفوعة كباقة مميزة
-        const paidIndex = mapped.findIndex((pl) => pl.price !== "0 دينار");
-        if (paidIndex !== -1) mapped[paidIndex].featured = true;
-
-        // ✅ حفظ النتائج في الحالة
-        if (mapped.length) {
-          this.pricingPlans = mapped;
-        } else {
-          throw new Error("لم يتم العثور على باقات.");
-        }
+        this.appScreenshots = items.map((n) => ({
+          id: n.id,
+          title: n.title,
+          description: n.details,
+          image: baseUrl ? `${baseUrl}${n.imageUrl}` : n.imageUrl,
+          raw: n,
+        }));
       } catch (err) {
         // ⚠️ عرض رسالة خطأ جميلة للمستخدم
         this.snackbar = {
@@ -949,6 +912,11 @@ export default {
         };
         console.warn("⚠️ Failed to fetch pricing plans:", err);
       }
+    },
+
+    openNews(item) {
+      this.selectedNews = item;
+      this.newsDialog = true;
     },
 
     selectPlan(plan) {
