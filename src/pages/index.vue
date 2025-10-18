@@ -805,6 +805,7 @@ export default {
     this.isLoggedIn = !!(token && user)
     // Load pricing plans from backend
     this.fetchPricingPlans()
+    this.getPublicNews()
   },
 
   methods: {
@@ -840,6 +841,63 @@ export default {
       try {
         // ✅ جلب البيانات من API
         const res = await teacher_api.getActivePackages();
+
+        // ✅ دعم Axios أو Fetch
+        const payload = res.data?.data.data ? res.data.data : res;
+
+        const items = Array.isArray(payload?.data) ? payload.data : [];
+
+        // 🧩 تحويل البيانات إلى شكل واجهة المستخدم
+        const mapped = items.map((p) => {
+          const isFree = p.isFree || p.price === 0;
+          const formattedPrice = isFree
+            ? "0"
+            : new Intl.NumberFormat("ar-IQ").format(p.price);
+
+          return {
+            id: p.id,
+            name: p.name,
+            price: `${formattedPrice} دينار`,
+            period: p.durationDays === 30 ? "/ شهرياً" : `/ ${p.durationDays} يوماً`,
+            icon: isFree ? "mdi-gift" : "mdi-star",
+            iconColor: isFree ? "support" : "white",
+            buttonColor: isFree ? "support" : "accent",
+            buttonText: isFree ? "ابدأ مجاناً" : "اشترك الآن",
+            featured: false,
+            features: [
+              `حتى ${p.maxStudents} طالب`,
+              p.description || (isFree ? "مجاناً للمعلمين الجدد" : "ميزات متقدمة"),
+              p.durationDays === 30 ? "اشتراك شهري" : `اشتراك ${p.durationDays} يوم`,
+              "دعم فني مخصص",
+            ],
+          };
+        });
+
+        // 🌟 تحديد أول باقة مدفوعة كباقة مميزة
+        const paidIndex = mapped.findIndex((pl) => pl.price !== "0 دينار");
+        if (paidIndex !== -1) mapped[paidIndex].featured = true;
+
+        // ✅ حفظ النتائج في الحالة
+        if (mapped.length) {
+          this.pricingPlans = mapped;
+        } else {
+          throw new Error("لم يتم العثور على باقات.");
+        }
+      } catch (err) {
+        // ⚠️ عرض رسالة خطأ جميلة للمستخدم
+        this.snackbar = {
+          show: true,
+          message: "تعذر تحميل الباقات. يرجى المحاولة لاحقًا",
+          color: "error",
+        };
+        console.warn("⚠️ Failed to fetch pricing plans:", err);
+      }
+    },
+
+    async getPublicNews() {
+      try {
+        // ✅ جلب البيانات من API
+        const res = await teacher_api.getPublicNews();
 
         // ✅ دعم Axios أو Fetch
         const payload = res.data?.data.data ? res.data.data : res;

@@ -20,6 +20,10 @@ class TeacherApi {
     const response = await axiosInstance.get(`/teacher/subscription-packages/active`);
     return response;
   }
+  async getPublicNews() {
+    const response = await axiosInstance.get(`/public/news`);
+    return response;
+  }
   // profile
 
   // expenses
