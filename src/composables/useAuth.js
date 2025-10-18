@@ -20,18 +20,38 @@ export function useAuth() {
 
   // تحميل البيانات من localStorage عند بدء التطبيق
   const loadUserFromStorage = () => {
-    const userData = safeParse(localStorage.getItem('user'))
-    const accessToken = localStorage.getItem('accessToken')
+    let storedUser = localStorage.getItem('user');
+    const accessToken = localStorage.getItem('accessToken');
 
-    if (userData && accessToken) {
-      user.value = JSON.parse(userData)
-      token.value = accessToken
-      isAuthenticated.value = true
-      return true
+    // لا يوجد مستخدم أو توكن = خروج
+    if (!storedUser || !accessToken) return false;
+
+    let parsedUser = null;
+
+    try {
+      // 🧠 حاول أولاً تحويل النص إلى JSON
+      parsedUser = JSON.parse(storedUser);
+    } catch {
+      // 🚨 لو فشل التحويل (يعني كانت [object Object])
+      // نحاول تحويله إلى كائن باستخدام safeParse
+      parsedUser = safeParse(storedUser);
+
+      // ولو بقي غير صالح، نعمل محاولة إضافية:
+      if (typeof storedUser === 'object') parsedUser = storedUser;
     }
 
-    return false
-  }
+    // ✅ تحقق أن النتيجة النهائية كائن صالح
+    if (parsedUser && typeof parsedUser === 'object') {
+      user.value = parsedUser;
+      token.value = accessToken;
+      isAuthenticated.value = true;
+      return true;
+    }
+
+    // ❌ في حالة فشل التحميل
+    return false;
+  };
+
 
   // تحميل البيانات تلقائياً عند استدعاء useAuth
   if (!isAuthenticated.value) {
