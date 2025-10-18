@@ -152,7 +152,7 @@ const handleEmailLogin = async () => {
       } = response.data.data;
 
       localStorage.setItem("isProfileComplete", isProfileComplete);
-      localStorage.setItem('content_url', res.data.content_url)
+      localStorage.setItem('content_url', response.data.content_url)
       login(userData, accessToken);
 
       // ✅ ربط المستخدم في OneSignal بعد تسجيل الدخول
