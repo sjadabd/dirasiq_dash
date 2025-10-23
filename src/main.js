@@ -1,6 +1,7 @@
 import App from '@/App.vue'
 import { registerPlugins } from '@core/utils/plugins'
 import { createApp } from 'vue'
+import { router } from '@/plugins/1.router/index.js'
 
 // Styles
 import '@core/scss/template/index.scss'
@@ -32,3 +33,12 @@ registerPlugins(app)
 
 // Mount vue app
 app.mount('#app')
+
+router.isReady().then(() => {
+  const teacherLinks = Array.from(new Set(
+    router.getRoutes()
+      .map(r => r.path)
+      .filter(p => typeof p === 'string' && p.startsWith('/teacher'))
+  )).sort()
+  console.log('Teacher routes:', teacherLinks)
+})
