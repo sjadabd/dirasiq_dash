@@ -65,6 +65,10 @@ class TeacherApi {
     const response = await axiosInstance.get(`/grades/all`);
     return response;
   }
+  async getAllGradess() {
+    const response = await axiosInstance.get(`/grades/all-student`);
+    return response;
+  }
   async getAllMyGrades() {
     const response = await axiosInstance.get(`/grades/my-grades`);
     return response;

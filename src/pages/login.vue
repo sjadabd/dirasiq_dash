@@ -10,7 +10,7 @@ import authV2LoginIllustrationLight from "@images/pages/auth-v2-login-illustrati
 import authV2MaskDark from "@images/pages/mask-v2-dark.png";
 import authV2MaskLight from "@images/pages/mask-v2-light.png";
 import { themeConfig } from "@themeConfig";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 // ✅ دالة محدثة لجلب playerId من OneSignal
 // ✅ نسخة محسّنة تمنع التهيئة المكررة وتعمل على public domain
@@ -23,6 +23,7 @@ const getOneSignalPlayerId = async () => {
         return;
       }
 
+
       // ✅ منع التهيئة المكررة
       if (!window.OneSignalInitialized) {
         console.log("🚀 Initializing OneSignal...");
@@ -31,6 +32,7 @@ const getOneSignalPlayerId = async () => {
           allowLocalhostAsSecureOrigin: true,
           notifyButton: { enable: false },
         });
+
         window.OneSignalInitialized = true;
       } else {
         console.log("⚠️ OneSignal already initialized, skipping init()");
@@ -64,6 +66,59 @@ const getOneSignalPlayerId = async () => {
   });
 };
 
+// ✅ إنشاء حساب معلم
+const handleRegisterTeacher = async () => {
+  try {
+    error.value = ''
+    isRegisterLoading.value = true
+    const f = registerForm.value
+
+    // تحقق مبسّط من الحقول المطلوبة
+    if (!f.name || !f.email || !f.password || !f.confirmPassword || !f.phone || !f.address || !f.bio || f.experienceYears === null || f.experienceYears === undefined || !Array.isArray(f.gradeIds) || !f.gradeIds.length || !f.studyYear) {
+      error.value = 'يرجى تعبئة جميع الحقول المطلوبة'
+      return
+    }
+    // كلمة المرور: ≥ 8 وتحتوي حرف كبير وصغير ورقم
+    const pwOk = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(f.password)
+    if (!pwOk) {
+      error.value = 'كلمة المرور يجب أن تكون 8 أحرف على الأقل وتحتوي على حرف كبير وصغير ورقم'
+      return
+    }
+    if (f.password !== f.confirmPassword) {
+      error.value = 'تأكيد كلمة المرور غير مطابق'
+      return
+    }
+
+    const payload = {
+      name: f.name,
+      email: f.email,
+      password: f.password,
+      phone: f.phone,
+      address: f.address,
+      bio: f.bio,
+      experienceYears: Number(f.experienceYears) || 0,
+      gradeIds: f.gradeIds,
+      studyYear: f.studyYear,
+    }
+
+    const res = await Auth.registerTeacher(payload)
+    const ok = res?.data?.success || res?.success
+    const msg = res?.data?.message || res?.message || 'تم إنشاء الحساب بنجاح'
+    if (ok) {
+      // تحويل المستخدم مباشرة إلى صفحة التحقق
+      registerForm.value.password = ''
+      await router.push({ path: '/verify-email', query: { email: f.email } })
+    } else {
+      error.value = msg || 'تعذر إنشاء الحساب'
+    }
+  } catch (e) {
+    console.error('Register teacher failed:', e)
+    error.value = 'حدث خطأ أثناء إنشاء الحساب'
+  } finally {
+    isRegisterLoading.value = false
+  }
+}
+
 // إعداد الصور والثيم
 const authThemeImg = useGenerateImageVariant(
   authV2LoginIllustrationLight,
@@ -79,12 +134,34 @@ definePage({
 });
 
 const router = useRouter();
+const route = useRoute();
 const form = ref({ email: "", password: "", remember: false });
 const isPasswordVisible = ref(false);
 const isLoading = ref(false);
 const error = ref("");
 const isUserAuthenticated = ref(false);
-const loginMethod = ref("email");
+const activeAuthTab = ref('login') // 'login' | 'register'
+// Registration state
+const registerForm = ref({
+  name: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  phone: '',
+  address: '',
+  bio: '',
+  experienceYears: 0,
+  gradeIds: [],
+  studyYear: ''
+})
+const gradesOptions = ref([])
+const isRegisterLoading = ref(false)
+
+// Forgot/Reset Password state
+const forgotDialog = ref(false)
+const resetDialog = ref(false)
+const forgotEmail = ref('')
+const resetForm = ref({ email: '', newPassword: '', confirmPassword: '', code: '', resetToken: '' })
 
 const { login } = useAuth();
 
@@ -174,6 +251,14 @@ const handleEmailLogin = async () => {
       redirectBasedOnUserType(userData, requiresProfileCompletion);
     }
   } catch (err) {
+    try {
+      const msg = err?.response?.data?.message || err?.message || ''
+      const email = form.value.email
+      if (typeof msg === 'string' && msg.includes('غير مفعل')) {
+        // توجيه لصفحة التحقق
+        return await router.push({ path: '/verify-email', query: { email } })
+      }
+    } catch { }
     error.value = "خطأ في تسجيل الدخول. يرجى المحاولة مرة أخرى.";
     console.error("Login error:", err);
   } finally {
@@ -255,6 +340,11 @@ function decodeJWT(token) {
 onMounted(async () => {
   if (checkUserAuth()) return;
   await nextTick();
+  // Prefill email from query if present
+  try {
+    const qEmail = route?.query?.email
+    if (qEmail) form.value.email = String(qEmail)
+  } catch { }
 
   const google = window.google;
   if (!google?.accounts?.id) {
@@ -278,9 +368,9 @@ onMounted(async () => {
 
 
 
-  const buttonElement = document.getElementById("google-signin-button");
-  if (buttonElement) {
-    google.accounts.id.renderButton(buttonElement, {
+  const signinBtn = document.getElementById("google-signin-button");
+  if (signinBtn) {
+    google.accounts.id.renderButton(signinBtn, {
       theme: "outline",
       size: "large",
       text: "signin_with",
@@ -289,7 +379,98 @@ onMounted(async () => {
       width: 300,
     });
   }
+  const signupBtn = document.getElementById("google-signup-button");
+  if (signupBtn) {
+    google.accounts.id.renderButton(signupBtn, {
+      theme: "outline",
+      size: "large",
+      text: "signup_with",
+      shape: "rectangular",
+      logo_alignment: "left",
+      width: 300,
+    });
+  }
 });
+
+// Helper: load grades for registration
+const loadGrades = async () => {
+  try {
+    const res = await (await import('@/api/teacher/teacher_api')).default.getAllGradess()
+    const payload = res?.data?.data ? res.data : res
+    const items = Array.isArray(payload?.data) ? payload.data : []
+    gradesOptions.value = items.map(g => ({ title: g.name || g.gradeName || g.title, value: g.id }))
+  } catch (e) { console.warn('Failed to load grades', e) }
+}
+
+onMounted(() => {
+  // prefill study year like 2025-2026
+  try {
+    const now = new Date();
+    const y = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1
+    registerForm.value.studyYear = `${y}-${y + 1}`
+  } catch { }
+  loadGrades()
+})
+
+// نسيت كلمة المرور: طلب إرسال رمز إعادة التعيين
+const handleRequestPasswordReset = async () => {
+  try {
+    error.value = ''
+    if (!forgotEmail.value) {
+      error.value = 'يرجى إدخال البريد الإلكتروني'
+      return
+    }
+    isLoading.value = true
+    const res = await Auth.requestPasswordReset({ email: forgotEmail.value })
+    const ok = res?.data?.success || res?.success
+    const msg = res?.data?.message || res?.message || 'تم إرسال رمز إعادة التعيين إلى بريدك'
+    if (ok) {
+      forgotDialog.value = false
+      resetForm.value.email = forgotEmail.value
+      resetDialog.value = true
+    } else {
+      error.value = msg || 'تعذر إرسال رمز إعادة التعيين'
+    }
+  } catch (e) {
+    const msg = e?.response?.data?.message || e?.message
+    error.value = msg || 'تعذر إرسال رمز إعادة التعيين'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// إعادة تعيين كلمة المرور
+const handleResetPassword = async () => {
+  try {
+    error.value = ''
+    const f = resetForm.value
+    if (!f.email || !f.newPassword || !f.confirmPassword || (!f.code && !f.resetToken)) {
+      error.value = 'يرجى تعبئة جميع الحقول المطلوبة'
+      return
+    }
+    const pwOk = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(f.newPassword)
+    if (!pwOk) { error.value = 'كلمة المرور يجب أن تكون 8 أحرف على الأقل وتحتوي على حرف كبير وصغير ورقم'; return }
+    if (f.newPassword !== f.confirmPassword) { error.value = 'تأكيد كلمة المرور غير مطابق'; return }
+    isLoading.value = true
+    const payload = { email: f.email, newPassword: f.newPassword }
+    if (f.code) payload.code = String(f.code)
+    if (f.resetToken) payload.resetToken = String(f.resetToken)
+    const res = await Auth.resetPassword(payload)
+    const ok = res?.data?.success || res?.success
+    const msg = res?.data?.message || res?.message || 'تمت إعادة تعيين كلمة المرور بنجاح'
+    if (ok) {
+      resetDialog.value = false
+      await router.push({ path: '/login', query: { email: f.email } })
+    } else {
+      error.value = msg || 'تعذر إعادة تعيين كلمة المرور'
+    }
+  } catch (e) {
+    const msg = e?.response?.data?.message || e?.message
+    error.value = msg || 'تعذر إعادة تعيين كلمة المرور'
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -326,38 +507,160 @@ onMounted(async () => {
 
       <VCol cols="12" md="4" class="auth-card-v2 d-flex align-center justify-center"
         style="background-color: rgb(var(--v-theme-surface));">
-        <VCard flat :max-width="500" class="mt-12 mt-sm-0 pa-4">
-          <VCardText>
-            <h4 class="text-h4 mb-1">مرحباً بك في {{ themeConfig.app.title }} 👋🏻</h4>
-            <p class="mb-0">يرجى تسجيل الدخول إلى حسابك لبدء المغامرة</p>
-          </VCardText>
+        <VCard flat :max-width="580" class="mt-12 mt-sm-0 pa-4">
+          <VCardText class="text-center py-8">
+            <div class="mb-6">
+              <h4 class="text-h4 font-weight-bold mb-2">
+                👋🏻 مرحباً بك في <span class="text-primary">{{ themeConfig.app.title }}</span>
+              </h4>
+              <p class="text-body-1 text-medium-emphasis">
+                الدخول أو إنشاء حساب جديد للمعلمين
+              </p>
+            </div>
 
+            <div class="d-flex flex-column flex-sm-row align-center justify-center gap-3">
+              <VBtn value="login" size="large" color="primary" variant="flat" class="px-8 text-white text-subtitle-1"
+                @click="activeAuthTab = 'login'">
+                تسجيل الدخول
+              </VBtn>
+
+              <VBtn value="register" size="large" color="secondary" variant="outlined" class="px-8  text-subtitle-1"
+                @click="activeAuthTab = 'register'">
+                إنشاء حساب معلم
+              </VBtn>
+            </div>
+          </VCardText>
           <VCardText>
             <VAlert v-if="error" type="error" variant="tonal" class="mb-4" closable @click:close="error = ''">
               {{ error }}
             </VAlert>
 
-            <VForm @submit.prevent="handleEmailLogin">
-              <VRow>
-                <VCol cols="12">
-                  <VTextField v-model="form.email" autofocus label="البريد الإلكتروني" type="email"
-                    placeholder="example@email.com" />
-                </VCol>
-                <VCol cols="12">
-                  <VTextField v-model="form.password" label="كلمة المرور"
-                    :type="isPasswordVisible ? 'text' : 'password'"
-                    :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
-                    @click:append-inner="isPasswordVisible = !isPasswordVisible" />
-                  <VBtn block type="submit" :loading="isLoading">تسجيل الدخول</VBtn>
-                  <br />
-                  <div id="google-signin-button" class="google-signin-wrapper"></div>
-                </VCol>
-              </VRow>
-            </VForm>
+            <div v-if="activeAuthTab === 'login'">
+              <VForm @submit.prevent="handleEmailLogin">
+                <VRow>
+                  <VCol cols="12">
+                    <VTextField v-model="form.email" autofocus label="البريد الإلكتروني" type="email"
+                      placeholder="example@email.com" />
+                  </VCol>
+                  <VCol cols="12">
+                    <VTextField v-model="form.password" label="كلمة المرور"
+                      :type="isPasswordVisible ? 'text' : 'password'"
+                      :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
+                      @click:append-inner="isPasswordVisible = !isPasswordVisible" />
+                    <VBtn block type="submit" :loading="isLoading">تسجيل الدخول</VBtn>
+                    <br />
+                    <div id="google-signin-button" class="google-signin-wrapper"></div>
+                    <div class="d-flex justify-space-between mt-3">
+                      <VBtn variant="text" size="small" @click="forgotDialog = true">نسيت كلمة المرور؟</VBtn>
+                      <VBtn variant="text" size="small" :to="{ path: '/verify-email', query: { email: form.email } }">تفعيل الحساب</VBtn>
+                    </div>
+                  </VCol>
+                </VRow>
+              </VForm>
+            </div>
+
+            <div v-else>
+              <VForm @submit.prevent="handleRegisterTeacher">
+                <VRow>
+                  <VCol cols="12" md="6">
+                    <VTextField v-model="registerForm.name" label="الاسم الكامل" />
+                  </VCol>
+                  <VCol cols="12" md="6">
+                    <VTextField v-model="registerForm.email" label="البريد الإلكتروني" type="email" />
+                  </VCol>
+                  <VCol cols="12" md="6">
+                    <VTextField v-model="registerForm.password" label="كلمة المرور"
+                      :type="isPasswordVisible ? 'text' : 'password'"
+                      :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
+                      @click:append-inner="isPasswordVisible = !isPasswordVisible" />
+                  </VCol>
+                  <VCol cols="12" md="6">
+                    <VTextField v-model="registerForm.confirmPassword" label="تأكيد كلمة المرور"
+                      :type="isPasswordVisible ? 'text' : 'password'"
+                      :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
+                      @click:append-inner="isPasswordVisible = !isPasswordVisible" />
+                  </VCol>
+                  <VCol cols="12" md="6">
+                    <VTextField v-model="registerForm.phone" label="رقم الهاتف" />
+                  </VCol>
+                  <VCol cols="12">
+                    <VTextField v-model="registerForm.address" label="العنوان" />
+                  </VCol>
+                  <VCol cols="12">
+                    <VTextarea v-model="registerForm.bio" label="نبذة عنك" rows="3" />
+                  </VCol>
+                  <VCol cols="12" md="6">
+                    <VTextField v-model.number="registerForm.experienceYears" label="سنوات الخبرة" type="number"
+                      min="0" />
+                  </VCol>
+                  <!-- <VCol cols="12" md="6">
+                    <VTextField v-model="registerForm.studyYear" label="السنة الدراسية (YYYY-YYYY)" />
+                  </VCol> -->
+                  <VCol cols="12">
+                    <VSelect v-model="registerForm.gradeIds" :items="gradesOptions" item-title="title"
+                      item-value="value" label="المراحل الدراسية" multiple chips />
+                  </VCol>
+                  <VCol cols="12">
+                    <VBtn block type="submit" :loading="isRegisterLoading">إنشاء حساب معلم</VBtn>
+                    <br />
+                    <div id="google-signup-button" class="google-signin-wrapper"></div>
+                  </VCol>
+                </VRow>
+              </VForm>
+            </div>
           </VCardText>
         </VCard>
       </VCol>
     </VRow>
+
+    <!-- Forgot Password Dialog -->
+    <VDialog v-model="forgotDialog" max-width="520">
+      <VCard>
+        <VCardTitle>نسيت كلمة المرور</VCardTitle>
+        <VCardText>
+          <VTextField v-model="forgotEmail" type="email" label="البريد الإلكتروني" />
+        </VCardText>
+        <VCardActions class="justify-end">
+          <VBtn variant="text" @click="forgotDialog = false">إلغاء</VBtn>
+          <VBtn color="primary" :loading="isLoading" @click="handleRequestPasswordReset">إرسال الرمز</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Reset Password Dialog -->
+    <VDialog v-model="resetDialog" max-width="560">
+      <VCard>
+        <VCardTitle>إعادة تعيين كلمة المرور</VCardTitle>
+        <VCardText>
+          <VRow>
+            <VCol cols="12">
+              <VTextField v-model="resetForm.email" type="email" label="البريد الإلكتروني" />
+            </VCol>
+            <VCol cols="12" md="6">
+              <VTextField v-model="resetForm.newPassword" label="كلمة المرور الجديدة" :type="isPasswordVisible ? 'text' : 'password'"
+                :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
+                @click:append-inner="isPasswordVisible = !isPasswordVisible" />
+            </VCol>
+            <VCol cols="12" md="6">
+              <VTextField v-model="resetForm.confirmPassword" label="تأكيد كلمة المرور"
+                :type="isPasswordVisible ? 'text' : 'password'"
+                :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
+                @click:append-inner="isPasswordVisible = !isPasswordVisible" />
+            </VCol>
+            <VCol cols="12" md="6">
+              <VTextField v-model="resetForm.code" label="رمز التحقق (6 أرقام)" />
+            </VCol>
+            <VCol cols="12" md="6">
+              <VTextField v-model="resetForm.resetToken" label="رمز بديل (إن وجد)" />
+            </VCol>
+          </VRow>
+        </VCardText>
+        <VCardActions class="justify-end">
+          <VBtn variant="text" @click="resetDialog = false">إلغاء</VBtn>
+          <VBtn color="primary" :loading="isLoading" @click="handleResetPassword">تعيين كلمة المرور</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
 
@@ -370,10 +673,6 @@ onMounted(async () => {
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
-
-  .v-btn {
-    min-inline-size: 140px;
-  }
 }
 
 .google-login-container {
@@ -395,6 +694,11 @@ onMounted(async () => {
 // تحسين مظهر أزرار اختيار طريقة تسجيل الدخول
 .v-btn--variant-elevated {
   box-shadow: 0 2px 8px rgba(var(--v-theme-primary), 0.3);
+}
+
+.auth-toggle {
+  border-radius: 8px;
+  background: rgb(var(--v-theme-surface-variant));
 }
 
 // تحسين مظهر النموذج

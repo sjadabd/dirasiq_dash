@@ -417,7 +417,7 @@ export default {
         }
 
         this.table.Data = response.data.data;
-        this.table.totalItems = response.data.count;
+        this.table.totalItems = response.data.pagination.total;
       } catch (error) {
         this.showAlert(
           "error",

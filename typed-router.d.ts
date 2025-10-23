@@ -25,6 +25,7 @@ declare module 'vue-router/auto-routes' {
     'admin-study-years-show-study-years': RouteRecordInfo<'admin-study-years-show-study-years', '/admin/study-years/show-study-years', Record<never, never>, Record<never, never>>,
     'admin-subscription-packages-show-subscription-packages': RouteRecordInfo<'admin-subscription-packages-show-subscription-packages', '/admin/subscription-packages/show-subscription-packages', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
+    'privacy-policy': RouteRecordInfo<'privacy-policy', '/privacy-policy', Record<never, never>, Record<never, never>>,
     'second-page': RouteRecordInfo<'second-page', '/second-page', Record<never, never>, Record<never, never>>,
     'student-dashboard': RouteRecordInfo<'student-dashboard', '/student/dashboard', Record<never, never>, Record<never, never>>,
     'student-profile-setup': RouteRecordInfo<'student-profile-setup', '/student/profile-setup', Record<never, never>, Record<never, never>>,
@@ -52,5 +53,7 @@ declare module 'vue-router/auto-routes' {
     'teacher-sessions-attendance-id': RouteRecordInfo<'teacher-sessions-attendance-id', '/teacher/sessions/attendance/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'teacher-sessions-manage-sessions': RouteRecordInfo<'teacher-sessions-manage-sessions', '/teacher/sessions/manage-sessions', Record<never, never>, Record<never, never>>,
     'teacher-subjects-show-subjects': RouteRecordInfo<'teacher-subjects-show-subjects', '/teacher/subjects/show-subjects', Record<never, never>, Record<never, never>>,
+    'terms-and-conditions': RouteRecordInfo<'terms-and-conditions', '/terms-and-conditions', Record<never, never>, Record<never, never>>,
+    'verify-email': RouteRecordInfo<'verify-email', '/verify-email', Record<never, never>, Record<never, never>>,
   }
 }

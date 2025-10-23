@@ -24,7 +24,57 @@
               <v-btn variant="text" @click="scrollToSection('how-it-works')">للطلاب</v-btn>
               <v-btn variant="text" @click="scrollToSection('pricing')">باقات الأشتراك</v-btn>
               <v-btn variant="text" @click="scrollToSection('footer')">تواصل معنا</v-btn>
+              <v-divider vertical class="mx-2" inset />
+              <v-btn variant="text" :to="{ path: '/privacy-policy' }">سياسة الخصوصية</v-btn>
+              <v-btn variant="text" :to="{ path: '/terms-and-conditions' }">شروط الاستخدام</v-btn>
+                            <!-- 🔹 زر ديناميكي حسب حالة تسجيل الدخول -->
+              <v-btn v-if="!isLoggedIn" color="support" style="background-color: #1c324c !important;" variant="elevated"
+                @click="openStartDialog">
+                <v-icon start>mdi-rocket-launch</v-icon>
+                ابدأ الآن
+              </v-btn>
+
+              <v-btn v-else color="success" variant="elevated" to="/teacher/dashboard">
+                <v-icon start>mdi-view-dashboard</v-icon>
+                لوحة التحكم
+              </v-btn>
+
             </div>
+          </v-col>
+
+          <!-- Mobile navigation -->
+          <v-col cols="auto" class="d-flex d-md-none">
+            <v-menu location="bottom end">
+              <template #activator="{ props }">
+                <v-btn icon variant="text" v-bind="props" aria-label="فتح القائمة">
+                  <v-icon>mdi-menu</v-icon>
+                </v-btn>
+              </template>
+              <v-list density="compact">
+                <v-list-item @click="scrollToSection('hero')" title="الرئيسية" prepend-icon="mdi-home" />
+                <v-list-item @click="scrollToSection('features')" title="للمعلمين" prepend-icon="mdi-account-tie" />
+                <v-list-item @click="scrollToSection('how-it-works')" title="للطلاب" prepend-icon="mdi-school" />
+                <v-list-item @click="scrollToSection('pricing')" title="باقات الأشتراك" prepend-icon="mdi-cash" />
+                <v-list-item @click="scrollToSection('footer')" title="تواصل معنا" prepend-icon="mdi-email" />
+                <v-divider class="my-1" />
+                <v-list-item :to="{ path: '/privacy-policy' }" title="سياسة الخصوصية"
+                  prepend-icon="mdi-shield-account" />
+                <v-list-item :to="{ path: '/terms-and-conditions' }" title="شروط الاستخدام"
+                  prepend-icon="mdi-file-document" />
+                <!-- 🔹 زر ديناميكي حسب حالة تسجيل الدخول -->
+                <v-btn v-if="!isLoggedIn" color="support" style="background-color: #1c324c !important;"
+                  variant="elevated" @click="openStartDialog">
+                  <v-icon start>mdi-rocket-launch</v-icon>
+                  ابدأ الآن
+                </v-btn>
+
+                <v-btn v-else color="success" variant="elevated" to="/teacher/dashboard">
+                  <v-icon start>mdi-view-dashboard</v-icon>
+                  لوحة التحكم
+                </v-btn>
+
+              </v-list>
+            </v-menu>
           </v-col>
 
           <v-col cols="auto">
@@ -50,7 +100,7 @@
                   <v-divider />
                   <v-list v-if="notificationsList.length" density="compact">
                     <v-list-item v-for="n in notificationsList" :key="n.id" @click="openNotification(n)"
-                                   :title="n.title" :subtitle="formatDate(n.sentAt)" class="notification-item">
+                      :title="n.title" :subtitle="formatDate(n.sentAt)" class="notification-item">
                       <template #prepend>
                         <v-avatar size="36" :color="n.is_read ? 'grey' : 'primary'">
                           <v-img v-if="n.image" :src="n.image" cover />
@@ -62,7 +112,9 @@
                   <div v-else class="text-center pa-6 text-medium-emphasis">لا توجد إشعارات</div>
                   <v-divider v-if="notificationsHasMore" />
                   <div v-if="notificationsHasMore" class="d-flex justify-center pa-2">
-                    <v-btn size="small" :loading="notificationsLoading" variant="text" @click="loadMoreNotifications">عرض المزيد</v-btn>
+                    <v-btn size="small" :loading="notificationsLoading" variant="text"
+                      @click="loadMoreNotifications">عرض
+                      المزيد</v-btn>
                   </div>
                   <v-card-actions class="justify-end">
                     <v-btn variant="text" @click="notificationsMenu = false">إغلاق</v-btn>
@@ -70,17 +122,6 @@
                 </v-card>
               </v-menu>
 
-              <!-- 🔹 زر ديناميكي حسب حالة تسجيل الدخول -->
-              <v-btn v-if="!isLoggedIn" color="support" style="background-color: #1c324c !important;" variant="elevated"
-                @click="openStartDialog">
-                <v-icon start>mdi-rocket-launch</v-icon>
-                ابدأ الآن
-              </v-btn>
-
-              <v-btn v-else color="success" variant="elevated" to="/teacher/dashboard">
-                <v-icon start>mdi-view-dashboard</v-icon>
-                لوحة التحكم
-              </v-btn>
             </div>
           </v-col>
         </v-row>
@@ -149,8 +190,10 @@
                     show-arrows="hover" height="auto" class="hero-carousel">
                     <v-carousel-item v-for="(screen, index) in appScreenshots" :key="index">
                       <div class="d-flex justify-center align-center pa-4">
-                        <div style="max-inline-size: 800px; inline-size: 100%; cursor: pointer;" @click="openNews(screen)">
-                          <v-img :src="screen.image" :alt="screen.title" cover aspect-ratio="16/9" class="elevation-4 rounded-lg" />
+                        <div style=" cursor: pointer; inline-size: 100%;max-inline-size: 800px;"
+                          @click="openNews(screen)">
+                          <v-img :src="screen.image" :alt="screen.title" cover aspect-ratio="16/9"
+                            class="elevation-4 rounded-lg" />
                           <div class="text-center mt-4">
                             <h3 class="text-h5 font-weight-bold text-white mb-2">
                               {{ screen.title }}
@@ -480,10 +523,12 @@
                 <v-btn variant="text" color="white" size="small" class="justify-start">
                   عن المنصة
                 </v-btn>
-                <v-btn variant="text" color="white" size="small" class="justify-start">
+                <v-btn variant="text" color="white" size="small" class="justify-start"
+                  :to="{ path: '/privacy-policy' }">
                   سياسة الخصوصية
                 </v-btn>
-                <v-btn variant="text" color="white" size="small" class="justify-start">
+                <v-btn variant="text" color="white" size="small" class="justify-start"
+                  :to="{ path: '/terms-and-conditions' }">
                   شروط الاستخدام
                 </v-btn>
                 <v-btn variant="text" color="white" size="small" class="justify-start">
@@ -894,7 +939,7 @@ export default {
       const params = new URLSearchParams(window.location.search)
       const qid = params.get('notificationId')
       if (qid) this.markNotificationAsRead(String(qid))
-    } catch {}
+    } catch { }
   },
 
   methods: {
@@ -1083,7 +1128,7 @@ export default {
       // يحاول تعليم الإشعار إن كان له معرف صالح (للقائمة التجريبية قد لا يكون ذلك متاحًا)
       try {
         if (notification?.id) await teacher_api.markNotificationRead(notification.id)
-      } catch {}
+      } catch { }
     },
 
     formatDate(d) {
