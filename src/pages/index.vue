@@ -293,7 +293,8 @@
                             <v-list density="compact">
                               <v-list-item v-for="notification in notifications" :key="notification.id"
                                 :prepend-icon="notification.icon" :title="notification.title"
-                                :subtitle="notification.time" class="notification-item">
+                                :subtitle="notification.time" class="notification-item"
+                                @click="onDemoNotificationClick(notification)">
                                 <template #prepend>
                                   <v-avatar :color="notification.color" size="32">
                                     <v-icon size="16" color="white">{{ notification.icon }}</v-icon>
@@ -889,6 +890,11 @@ export default {
     this.fetchPricingPlans()
     this.getPublicNews()
     if (this.isLoggedIn) this.refreshNotifications()
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const qid = params.get('notificationId')
+      if (qid) this.markNotificationAsRead(String(qid))
+    } catch {}
   },
 
   methods: {
@@ -1054,6 +1060,30 @@ export default {
       this.selectedNotification = n
       this.notificationDialog = true
       this.notificationsMenu = false
+      if (n && !n.is_read && n.id) {
+        await this.markNotificationAsRead(n.id)
+      }
+    },
+
+    async markNotificationAsRead(id) {
+      try {
+        if (!id) return
+        await teacher_api.markNotificationRead(id)
+        const idx = this.notificationsList.findIndex(x => x.id === id)
+        if (idx > -1 && !this.notificationsList[idx].is_read) {
+          this.notificationsList[idx].is_read = true
+          this.unreadCount = Math.max(0, this.unreadCount - 1)
+        }
+      } catch (err) {
+        console.warn('Failed to mark notification as read:', err)
+      }
+    },
+
+    async onDemoNotificationClick(notification) {
+      // يحاول تعليم الإشعار إن كان له معرف صالح (للقائمة التجريبية قد لا يكون ذلك متاحًا)
+      try {
+        if (notification?.id) await teacher_api.markNotificationRead(notification.id)
+      } catch {}
     },
 
     formatDate(d) {

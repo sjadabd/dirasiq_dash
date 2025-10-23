@@ -2,6 +2,7 @@
 import navItems from "@/navigation/vertical";
 import teacher_api from "@/api/teacher/teacher_api";
 import { ref, onMounted } from "vue";
+import { useRouter, useRoute } from 'vue-router'
 defineOptions({ inheritAttrs: false })
 
 // Components
@@ -22,9 +23,32 @@ const notificationsHasMore = ref(false)
 const notificationsLoading = ref(false)
 const unreadCount = ref(0)
 const selectedNotification = ref(null)
+const router = useRouter()
+const route = useRoute()
 
 const formatDate = d => {
   try { return new Date(d).toLocaleString('en-IQ') } catch { return d }
+}
+
+const buildInternalRoute = (raw) => {
+  try {
+    const t = raw?.type || raw?.data?.type
+    const d = raw?.data || {}
+    switch (t) {
+      case 'new_booking':
+      case 'booking_update': {
+        if (d.bookingId) return `/teacher/payments/reservations/${encodeURIComponent(d.bookingId)}`
+        return '/teacher/payments/reservations/show-reservation-payments'
+      }
+      case 'course_update':
+        return '/teacher/course/show-course'
+      case 'teacher_message':
+      case 'message':
+        return '/teacher/notifications/show-notifications'
+      default:
+        return null
+    }
+  } catch { return null }
 }
 
 const fetchNotifications = async (page = 1, append = false) => {
@@ -42,7 +66,7 @@ const fetchNotifications = async (page = 1, append = false) => {
       is_read: !!n.is_read,
       sentAt: n.sent_at || n.created_at,
       image: n.data?.imageUrl ? (baseUrl ? `${baseUrl}${n.data.imageUrl}` : n.data.imageUrl) : null,
-      url: n.data?.url || null,
+      url: n.data?.url || buildInternalRoute(n) || null,
       raw: n,
     }))
     notificationsList.value = append ? [...notificationsList.value, ...mapped] : mapped
@@ -69,9 +93,32 @@ const loadMoreNotifications = () => {
 }
 
 const openNotification = async (n) => {
-  selectedNotification.value = n
-  notificationDialog.value = true
-  notificationsMenu.value = false
+  try {
+    notificationsMenu.value = false
+    console.debug('[Notifications] item clicked', n?.id)
+    if (n?.id) await markNotificationAsRead(String(n.id))
+    selectedNotification.value = n
+    notificationDialog.value = true
+  } catch (e) {
+    console.warn('openNotification failed:', e)
+  }
+}
+
+const markNotificationAsRead = async (id) => {
+  try {
+    if (!id) return
+    console.debug('[Notifications] marking read ->', id)
+    await teacher_api.markNotificationRead(String(id))
+    const idx = notificationsList.value.findIndex(x => String(x.id) === String(id))
+    if (idx > -1 && !notificationsList.value[idx].is_read) {
+      notificationsList.value[idx].is_read = true
+      unreadCount.value = Math.max(0, unreadCount.value - 1)
+    } else {
+      unreadCount.value = Math.max(0, unreadCount.value - 1)
+    }
+  } catch (err) {
+    console.warn('Failed to mark notification as read:', err)
+  }
 }
 
 onMounted(() => {
@@ -79,7 +126,20 @@ onMounted(() => {
   const user = localStorage.getItem('user')
   isLoggedIn.value = !!(token && user)
   if (isLoggedIn.value) refreshNotifications()
+  const qid = route.query?.notificationId
+  if (qid) markNotificationAsRead(String(qid)).then(() => {}).catch(() => {})
 })
+
+const openLink = async (n) => {
+  if (!n?.url) return
+  try {
+    if (n.url.startsWith('http://') || n.url.startsWith('https://')) {
+      window.open(n.url, '_blank')
+    } else {
+      await router.push(n.url)
+    }
+  } catch (e) { /* noop */ }
+}
 </script>
 
 <template>
@@ -183,9 +243,7 @@ onMounted(() => {
         </div>
       </VCardText>
       <VCardActions class="justify-end">
-        <VBtn v-if="selectedNotification?.url" :href="selectedNotification.url" target="_blank" variant="tonal">
-          فتح الرابط
-        </VBtn>
+        <VBtn v-if="selectedNotification?.url" @click="openLink(selectedNotification)" variant="tonal">فتح</VBtn>
         <VBtn variant="text" @click="notificationDialog = false">إغلاق</VBtn>
       </VCardActions>
     </VCard>
