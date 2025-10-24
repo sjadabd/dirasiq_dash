@@ -24,6 +24,7 @@ declare module 'vue-router/auto-routes' {
     'admin-grades-show-grades': RouteRecordInfo<'admin-grades-show-grades', '/admin/grades/show-grades', Record<never, never>, Record<never, never>>,
     'admin-study-years-show-study-years': RouteRecordInfo<'admin-study-years-show-study-years', '/admin/study-years/show-study-years', Record<never, never>, Record<never, never>>,
     'admin-subscription-packages-show-subscription-packages': RouteRecordInfo<'admin-subscription-packages-show-subscription-packages', '/admin/subscription-packages/show-subscription-packages', Record<never, never>, Record<never, never>>,
+    'contact': RouteRecordInfo<'contact', '/contact', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'privacy-policy': RouteRecordInfo<'privacy-policy', '/privacy-policy', Record<never, never>, Record<never, never>>,
     'second-page': RouteRecordInfo<'second-page', '/second-page', Record<never, never>, Record<never, never>>,

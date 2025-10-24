@@ -23,7 +23,7 @@
               <v-btn variant="text" @click="scrollToSection('features')">للمعلمين</v-btn>
               <v-btn variant="text" @click="scrollToSection('how-it-works')">للطلاب</v-btn>
               <v-btn variant="text" @click="scrollToSection('pricing')">باقات الأشتراك</v-btn>
-              <v-btn variant="text" @click="scrollToSection('contact')">تواصل معنا</v-btn>
+              <v-btn variant="text" :to="{ path: '/contact' }">تواصل معنا</v-btn>
               <v-divider vertical class="mx-2" inset />
               <v-btn variant="text" :to="{ path: '/privacy-policy' }">سياسة الخصوصية</v-btn>
               <v-btn variant="text" :to="{ path: '/terms-and-conditions' }">شروط الاستخدام</v-btn>
@@ -55,7 +55,7 @@
                 <v-list-item @click="scrollToSection('features')" title="للمعلمين" prepend-icon="mdi-account-tie" />
                 <v-list-item @click="scrollToSection('how-it-works')" title="للطلاب" prepend-icon="mdi-school" />
                 <v-list-item @click="scrollToSection('pricing')" title="باقات الأشتراك" prepend-icon="mdi-cash" />
-                <v-list-item @click="scrollToSection('contact')" title="تواصل معنا" prepend-icon="mdi-email" />
+                <v-list-item :to="{ path: '/contact' }" title="تواصل معنا" prepend-icon="mdi-email" />
                 <v-divider class="my-1" />
                 <v-list-item :to="{ path: '/privacy-policy' }" title="سياسة الخصوصية"
                   prepend-icon="mdi-shield-account" />
@@ -579,7 +579,7 @@
                   :to="{ path: '/terms-and-conditions' }">
                   شروط الاستخدام
                 </v-btn>
-                <v-btn variant="text" color="white" size="small" class="justify-start">
+                <v-btn variant="text" :to="{ path: '/contact' }" color="white" size="small" class="justify-start">
                   الدعم الفني
                 </v-btn>
               </div>
