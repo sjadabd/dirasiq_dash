@@ -23,11 +23,11 @@
               <v-btn variant="text" @click="scrollToSection('features')">للمعلمين</v-btn>
               <v-btn variant="text" @click="scrollToSection('how-it-works')">للطلاب</v-btn>
               <v-btn variant="text" @click="scrollToSection('pricing')">باقات الأشتراك</v-btn>
-              <v-btn variant="text" @click="scrollToSection('footer')">تواصل معنا</v-btn>
+              <v-btn variant="text" @click="scrollToSection('contact')">تواصل معنا</v-btn>
               <v-divider vertical class="mx-2" inset />
               <v-btn variant="text" :to="{ path: '/privacy-policy' }">سياسة الخصوصية</v-btn>
               <v-btn variant="text" :to="{ path: '/terms-and-conditions' }">شروط الاستخدام</v-btn>
-                            <!-- 🔹 زر ديناميكي حسب حالة تسجيل الدخول -->
+              <!-- 🔹 زر ديناميكي حسب حالة تسجيل الدخول -->
               <v-btn v-if="!isLoggedIn" color="support" style="background-color: #1c324c !important;" variant="elevated"
                 @click="openStartDialog">
                 <v-icon start>mdi-rocket-launch</v-icon>
@@ -55,7 +55,7 @@
                 <v-list-item @click="scrollToSection('features')" title="للمعلمين" prepend-icon="mdi-account-tie" />
                 <v-list-item @click="scrollToSection('how-it-works')" title="للطلاب" prepend-icon="mdi-school" />
                 <v-list-item @click="scrollToSection('pricing')" title="باقات الأشتراك" prepend-icon="mdi-cash" />
-                <v-list-item @click="scrollToSection('footer')" title="تواصل معنا" prepend-icon="mdi-email" />
+                <v-list-item @click="scrollToSection('contact')" title="تواصل معنا" prepend-icon="mdi-email" />
                 <v-divider class="my-1" />
                 <v-list-item :to="{ path: '/privacy-policy' }" title="سياسة الخصوصية"
                   prepend-icon="mdi-shield-account" />
@@ -501,6 +501,54 @@
         </v-container>
       </section>
 
+      <!-- 8️⃣ Contact Us -->
+      <section id="contact" class="py-12">
+        <v-container>
+          <v-row>
+            <v-col cols="12" class="text-center mb-6">
+              <h2 class="text-h4 font-weight-bold">تواصل معنا</h2>
+              <p class="text-medium-emphasis">نرحب باستفساراتك وملاحظاتك دائمًا</p>
+            </v-col>
+
+            <v-col cols="12" md="8" class="mx-auto">
+              <v-alert v-if="contactError" type="error" variant="tonal" class="mb-4" closable
+                @click:close="contactError = ''">
+                {{ contactError }}
+              </v-alert>
+              <v-alert v-if="contactSuccess" type="success" variant="tonal" class="mb-4" closable
+                @click:close="contactSuccess = ''">
+                {{ contactSuccess }}
+              </v-alert>
+
+              <v-form @submit.prevent="submitContact">
+                <v-row>
+                  <v-col cols="12" md="6">
+                    <v-text-field v-model="contactForm.name" label="الاسم الكامل" prepend-inner-icon="mdi-account" />
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <v-text-field v-model="contactForm.email" type="email" label="البريد الإلكتروني"
+                      prepend-inner-icon="mdi-email" />
+                  </v-col>
+                  <v-col cols="12">
+                    <v-text-field v-model="contactForm.subject" label="الموضوع" prepend-inner-icon="mdi-text-short" />
+                  </v-col>
+                  <v-col cols="12">
+                    <v-textarea v-model="contactForm.message" label="نص الرسالة" rows="5" auto-grow
+                      prepend-inner-icon="mdi-message-text" />
+                  </v-col>
+                  <v-col cols="12" class="d-flex justify-end">
+                    <v-btn type="submit" color="primary" :loading="contactLoading">
+                      <v-icon start>mdi-send</v-icon>
+                      إرسال الرسالة
+                    </v-btn>
+                  </v-col>
+                </v-row>
+              </v-form>
+            </v-col>
+          </v-row>
+        </v-container>
+      </section>
+
       <!-- 9️⃣ Footer -->
       <v-footer id="footer" color="primary" class="footer-section">
         <v-container>
@@ -669,6 +717,7 @@
 <script>
 import teacher_api from '@/api/teacher/teacher_api';
 import logo from '@/assets/images/logo.png';
+import emailjs from 'emailjs-com';
 
 export default {
   name: 'IndexPage',
@@ -705,6 +754,12 @@ export default {
         message: '',
         color: 'success'
       },
+
+      // Contact form state
+      contactForm: { name: '', email: '', subject: '', message: '' },
+      contactLoading: false,
+      contactError: '',
+      contactSuccess: '',
 
       // Features data
       features: [
@@ -968,6 +1023,53 @@ export default {
         show: true,
         message: this.dashboardDark ? 'تم التبديل للوضع الليلي' : 'تم التبديل للوضع النهاري',
         color: 'info'
+      }
+    },
+
+    async submitContact() {
+      try {
+        this.contactError = ''
+        this.contactSuccess = ''
+        const { name, email, subject, message } = this.contactForm
+
+        if (!name || !email || !message) {
+          this.contactError = 'يرجى تعبئة الاسم والبريد والرسالة'
+          return
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          this.contactError = 'يرجى إدخال بريد إلكتروني صالح'
+          return
+        }
+
+        this.contactLoading = true
+
+        const templateParams = {
+          from_name: name,
+          from_email: email,
+          subject: subject || 'رسالة من نموذج التواصل',
+          message,
+        }
+
+
+        // ⚙️ ضع قيمك هنا من لوحة EmailJS
+        const SERVICE_ID = 'service_e6wa64v'
+        const TEMPLATE_ID = 'template_rn0tt0u'
+        const PUBLIC_KEY = 'km9zF8cdDOxdFruui'  // تجده في صفحة Account > API Keys في EmailJS
+
+        const response = await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
+
+        if (response.status === 200) {
+          this.contactSuccess = '✅ تم إرسال رسالتك بنجاح وسنعاود التواصل قريبًا'
+          this.contactForm = { name: '', email: '', subject: '', message: '' }
+        } else {
+          this.contactError = 'حدث خطأ أثناء الإرسال، حاول لاحقًا'
+        }
+      } catch (err) {
+        console.error('EmailJS Error:', err)
+        this.contactError = 'تعذر إرسال الرسالة، يرجى المحاولة لاحقًا'
+      } finally {
+        this.contactLoading = false
       }
     },
 
