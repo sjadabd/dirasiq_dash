@@ -6,8 +6,7 @@ class TeacherApi {
     const response = await axiosInstance.post(`/auth/complete-profile`, userData);
     return response;
   }
-    async uploadIntroVideo(payload, config = {}) {
-    // If payload is FormData, send as multipart
+  async uploadIntroVideo(payload, config = {}) {
     if (payload instanceof FormData) {
       const response = await axiosInstance.post("/teacher/profile/intro-video", payload, {
         ...config,
