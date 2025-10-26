@@ -244,7 +244,6 @@ export default {
 
     handleVideoUploadSuccess(response) {
       this.success = "تم رفع الفيديو بنجاح! سيتم معالجته قريباً.";
-      console.log("Video upload response:", response);
     },
 
     validateForm() {

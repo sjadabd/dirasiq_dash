@@ -6,9 +6,17 @@ class TeacherApi {
     const response = await axiosInstance.post(`/auth/complete-profile`, userData);
     return response;
   }
-    async uploadIntroVideo(payload) {
-    // payload: { videoBase64: string, fileName?: string }
-    const response = await axiosInstance.post("/teacher/profile/intro-video", payload)
+    async uploadIntroVideo(payload, config = {}) {
+    // If payload is FormData, send as multipart
+    if (payload instanceof FormData) {
+      const response = await axiosInstance.post("/teacher/profile/intro-video", payload, {
+        ...config,
+        headers: { ...(config.headers || {}), "Content-Type": "multipart/form-data" },
+      })
+      return response
+    }
+    // Fallback: JSON payload (base64)
+    const response = await axiosInstance.post("/teacher/profile/intro-video", payload, config)
     return response
   }
 

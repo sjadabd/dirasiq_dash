@@ -1,7 +1,7 @@
 import App from '@/App.vue'
+import { router } from '@/plugins/1.router/index.js'
 import { registerPlugins } from '@core/utils/plugins'
 import { createApp } from 'vue'
-import { router } from '@/plugins/1.router/index.js'
 
 // Styles
 import '@core/scss/template/index.scss'
@@ -40,5 +40,5 @@ router.isReady().then(() => {
       .map(r => r.path)
       .filter(p => typeof p === 'string' && p.startsWith('/teacher'))
   )).sort()
-  console.log('Teacher routes:', teacherLinks)
+  // console.log('Teacher routes:', teacherLinks)
 })

@@ -15,12 +15,8 @@
         </v-alert>
 
         <div class="existing-video-container mb-4">
-          <video
-            :poster="'https://api.mulhimiq.com' + existingVideo.thumbnailUrl"
-            class="video-preview"
-            controls
-            preload="metadata"
-          >
+          <video :poster="'https://api.mulhimiq.com' + existingVideo.thumbnailUrl" class="video-preview" controls
+            preload="metadata">
             <source :src="'https://api.mulhimiq.com' + existingVideo.manifestUrl" type="application/x-mpegURL" />
             المتصفح لا يدعم تشغيل الفيديو
           </video>
@@ -45,13 +41,7 @@
           </v-col>
         </v-row>
 
-        <v-btn
-          color="primary"
-          variant="outlined"
-          block
-          @click="showUploadSection = true"
-          prepend-icon="mdi-upload"
-        >
+        <v-btn color="primary" variant="outlined" block @click="showUploadSection = true" prepend-icon="mdi-upload">
           رفع فيديو جديد
         </v-btn>
       </div>
@@ -63,27 +53,14 @@
         <div class="text-body-2 text-medium-emphasis mb-4">
           يساعد الفيديو الطلاب على التعرف عليك بشكل أفضل
         </div>
-        <v-file-input
-          ref="fileInput"
-          accept="video/*"
-          variant="outlined"
-          density="comfortable"
-          prepend-icon="mdi-video"
-          label="اختر فيديو"
-          @change="onVideoSelected"
-          :disabled="isUploading"
-        />
+        <v-file-input ref="fileInput" accept="video/*" variant="outlined" density="comfortable" prepend-icon="mdi-video"
+          label="اختر فيديو" @change="onVideoSelected" :disabled="isUploading" />
         <div class="text-caption text-medium-emphasis mt-2">
           يدعم: MP4, MOV, AVI. يمكنك قص الفيديو بعد اختياره لتقليل الحجم
         </div>
-        
+
         <!-- Add cancel button if existing video is present -->
-        <v-btn
-          v-if="existingVideo && showUploadSection"
-          variant="text"
-          class="mt-2"
-          @click="showUploadSection = false"
-        >
+        <v-btn v-if="existingVideo && showUploadSection" variant="text" class="mt-2" @click="showUploadSection = false">
           إلغاء
         </v-btn>
       </div>
@@ -94,7 +71,7 @@
         <v-alert type="info" variant="tonal" class="mb-4">
           <div class="d-flex align-center">
             <v-icon class="me-2">mdi-information</v-icon>
-            <span>قم بقص الفيديو لتقليل حجمه قبل الرفع. يمكنك اختيار الجزء الذي تريد رفعه فقط</span>
+            <span>قم بقص الفيديو لتقليل حجمه قبل الرفع. اسحب المقابض لتحديد الجزء الذي تريد رفعه</span>
           </div>
         </v-alert>
 
@@ -108,16 +85,10 @@
 
         <!-- Video Preview -->
         <div class="video-container mb-4">
-          <video
-            ref="videoPlayer"
-            :src="videoUrl"
-            class="video-preview"
-            @loadedmetadata="onVideoLoaded"
-            @timeupdate="onTimeUpdate"
-            controls
-          ></video>
+          <video ref="videoPlayer" :src="videoUrl" class="video-preview" @loadedmetadata="onVideoLoaded"
+            @timeupdate="onTimeUpdate" controls></video>
         </div>
-
+        
         <!-- Video Info -->
         <v-row class="mb-4">
           <v-col cols="12" md="4">
@@ -146,74 +117,73 @@
           </v-col>
         </v-row>
 
-        <!-- Trim Controls -->
+        <!-- Timeline Trim Controls -->
         <v-card variant="outlined" class="mb-4">
           <v-card-text>
             <div class="text-subtitle-2 mb-3">
               <v-icon size="small" class="me-1">mdi-content-cut</v-icon>
               قص الفيديو
             </div>
-            
-            <!-- Start Time -->
-            <div class="mb-4">
-              <div class="d-flex align-center justify-space-between mb-2">
-                <span class="text-body-2">نقطة البداية</span>
-                <v-chip size="small" color="primary">{{ formatTime(startTime) }}</v-chip>
-              </div>
-              <v-slider
-                v-model="startTime"
-                :max="endTime - 1"
-                :min="0"
-                :step="0.1"
-                color="primary"
-                track-color="grey-lighten-2"
-                thumb-label
-                @update:model-value="onStartTimeChange"
-              >
-                <template v-slot:thumb-label="{ modelValue }">
-                  {{ formatTime(modelValue) }}
-                </template>
-              </v-slider>
-            </div>
 
-            <!-- End Time -->
-            <div>
-              <div class="d-flex align-center justify-space-between mb-2">
-                <span class="text-body-2">نقطة النهاية</span>
-                <v-chip size="small" color="primary">{{ formatTime(endTime) }}</v-chip>
+            <!-- Timeline with Thumbnails -->
+            <div class="timeline-container" ref="timelineContainer">
+              <!-- Thumbnails Strip -->
+              <div class="thumbnails-strip" ref="thumbnailsStrip">
+                <canvas v-for="(thumb, index) in thumbnails" :key="index" :ref="el => { if (el) thumbnailRefs[index] = el }"
+                  class="thumbnail-frame"
+                  :style="{ width: thumbnailWidth + 'px' }"
+                  ></canvas>
               </div>
-              <v-slider
-                v-model="endTime"
-                :max="originalDuration"
-                :min="startTime + 1"
-                :step="0.1"
-                color="primary"
-                track-color="grey-lighten-2"
-                thumb-label
-                @update:model-value="onEndTimeChange"
-              >
-                <template v-slot:thumb-label="{ modelValue }">
-                  {{ formatTime(modelValue) }}
-                </template>
-              </v-slider>
+
+              <!-- Trim Overlay -->
+              <div class="trim-overlay">
+                <!-- Left Dimmed Area -->
+                <div class="dimmed-area left-dim" :style="{ width: leftDimWidth + 'px' }"></div>
+
+                <!-- Selection Area -->
+                <div class="selection-area" :style="{
+                  left: leftDimWidth + 'px',
+                  width: selectionWidth + 'px'
+                }">
+                  <!-- Left Handle -->
+                  <div class="trim-handle left-handle" @mousedown="startDrag('start', $event)"
+                    @touchstart="startDrag('start', $event)">
+                    <div class="handle-line"></div>
+                    <div class="handle-grip">
+                      <v-icon size="small" color="white">mdi-chevron-right</v-icon>
+                    </div>
+                  </div>
+
+                  <!-- Time Labels -->
+                  <div class="time-labels">
+                    <span class="start-time">{{ formatTime(startTime) }}</span>
+                    <span class="end-time">{{ formatTime(endTime) }}</span>
+                  </div>
+
+                  <!-- Right Handle -->
+                  <div class="trim-handle right-handle" @mousedown="startDrag('end', $event)"
+                    @touchstart="startDrag('end', $event)">
+                    <div class="handle-line"></div>
+                    <div class="handle-grip">
+                      <v-icon size="small" color="white">mdi-chevron-left</v-icon>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Dimmed Area -->
+                <div class="dimmed-area right-dim" :style="{
+                  left: (leftDimWidth + selectionWidth) + 'px',
+                  width: rightDimWidth + 'px'
+                }"></div>
+              </div>
             </div>
 
             <!-- Quick Actions -->
             <div class="d-flex gap-2 mt-4">
-              <v-btn
-                size="small"
-                variant="outlined"
-                @click="resetTrim"
-                prepend-icon="mdi-restore"
-              >
+              <v-btn size="small" variant="outlined" @click="resetTrim" prepend-icon="mdi-restore">
                 إعادة تعيين
               </v-btn>
-              <v-btn
-                size="small"
-                variant="outlined"
-                @click="previewTrimmed"
-                prepend-icon="mdi-play"
-              >
+              <v-btn size="small" variant="outlined" @click="previewTrimmed" prepend-icon="mdi-play">
                 معاينة القص
               </v-btn>
             </div>
@@ -222,61 +192,31 @@
 
         <!-- Action Buttons -->
         <div class="d-flex gap-2">
-          <v-btn
-            color="primary"
-            size="large"
-            :loading="isUploading"
-            :disabled="isUploading"
-            @click="uploadVideo"
-            prepend-icon="mdi-upload"
-          >
+          <v-btn color="primary" size="large" :loading="isUploading" :disabled="isUploading" @click="uploadVideo"
+            prepend-icon="mdi-upload">
             رفع الفيديو
           </v-btn>
-          <v-btn
-            variant="outlined"
-            size="large"
-            :disabled="isUploading"
-            @click="cancelVideo"
-            prepend-icon="mdi-close"
-          >
+          <v-btn variant="outlined" size="large" :disabled="isUploading" @click="cancelVideo" prepend-icon="mdi-close">
             إلغاء
           </v-btn>
         </div>
 
         <!-- Upload Progress -->
-        <v-progress-linear
-          v-if="isUploading"
-          :model-value="uploadProgress"
-          color="primary"
-          height="6"
-          class="mt-4"
-        ></v-progress-linear>
+        <v-progress-linear v-if="isUploading" :model-value="uploadProgress" color="primary" height="6"
+          class="mt-4"></v-progress-linear>
         <div v-if="isUploading" class="text-center text-caption mt-2">
           {{ uploadStatusText }}
         </div>
       </div>
 
       <!-- Success Message -->
-      <v-alert
-        v-if="uploadSuccess"
-        type="success"
-        variant="tonal"
-        class="mt-4"
-        closable
-        @click:close="uploadSuccess = false"
-      >
+      <v-alert v-if="uploadSuccess" type="success" variant="tonal" class="mt-4" closable
+        @click:close="uploadSuccess = false">
         تم رفع الفيديو بنجاح! جاري معالجته...
       </v-alert>
 
       <!-- Error Message -->
-      <v-alert
-        v-if="uploadError"
-        type="error"
-        variant="tonal"
-        class="mt-4"
-        closable
-        @click:close="uploadError = ''"
-      >
+      <v-alert v-if="uploadError" type="error" variant="tonal" class="mt-4" closable @click:close="uploadError = ''">
         {{ uploadError }}
       </v-alert>
     </v-card-text>
@@ -288,7 +228,7 @@ import TeacherApi from "@/api/teacher/teacher_api";
 
 export default {
   name: "VideoUploadEditor",
-  
+
   data() {
     return {
       videoFile: null,
@@ -304,6 +244,13 @@ export default {
       uploadError: "",
       existingVideo: null,
       showUploadSection: false,
+      thumbnails: [],
+      thumbnailRefs: [],
+      thumbnailWidth: 80,
+      thumbnailCount: 10,
+      isDragging: false,
+      dragType: null, // 'start' or 'end'
+      timelineWidth: 0,
     };
   },
 
@@ -317,10 +264,38 @@ export default {
       const estimatedBytes = this.videoFile.size * ratio;
       return this.formatBytes(estimatedBytes);
     },
+    leftDimWidth() {
+      if (!this.timelineWidth || !this.originalDuration) return 0;
+      return (this.startTime / this.originalDuration) * this.timelineWidth;
+    },
+    selectionWidth() {
+      if (!this.timelineWidth || !this.originalDuration) return this.timelineWidth;
+      return (this.trimmedDuration / this.originalDuration) * this.timelineWidth;
+    },
+    rightDimWidth() {
+      if (!this.timelineWidth) return 0;
+      return this.timelineWidth - this.leftDimWidth - this.selectionWidth;
+    },
   },
 
   mounted() {
     this.loadExistingVideo();
+    document.addEventListener('mousemove', this.onDrag);
+    document.addEventListener('mouseup', this.stopDrag);
+    document.addEventListener('touchmove', this.onDrag);
+    document.addEventListener('touchend', this.stopDrag);
+    window.addEventListener('resize', this.updateTimelineWidth);
+  },
+
+  beforeUnmount() {
+    if (this.videoUrl) {
+      URL.revokeObjectURL(this.videoUrl);
+    }
+    document.removeEventListener('mousemove', this.onDrag);
+    document.removeEventListener('mouseup', this.stopDrag);
+    document.removeEventListener('touchmove', this.onDrag);
+    document.removeEventListener('touchend', this.stopDrag);
+    window.removeEventListener('resize', this.updateTimelineWidth);
   },
 
   methods: {
@@ -370,11 +345,18 @@ export default {
       this.uploadSuccess = false;
     },
 
-    onVideoLoaded() {
+    async onVideoLoaded() {
       const video = this.$refs.videoPlayer;
       this.originalDuration = video.duration;
       this.endTime = video.duration;
       this.startTime = 0;
+
+      // انتظر حتى يتم عرض التايم لاين
+      await this.$nextTick();
+      this.updateTimelineWidth();
+
+      // إنشاء الصور المصغرة
+      await this.generateThumbnails();
     },
 
     onTimeUpdate() {
@@ -388,15 +370,98 @@ export default {
       }
     },
 
-    onStartTimeChange(value) {
-      const video = this.$refs.videoPlayer;
-      if (video) {
-        video.currentTime = value;
+    startDrag(type, event) {
+      event.preventDefault();
+      this.isDragging = true;
+      this.dragType = type;
+    },
+
+    onDrag(event) {
+      if (!this.isDragging || !this.dragType) return;
+
+      event.preventDefault();
+      const timeline = this.$refs.timelineContainer;
+      if (!timeline) return;
+
+      const rect = timeline.getBoundingClientRect();
+      const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+      const x = Math.max(0, Math.min(clientX - rect.left, this.timelineWidth));
+      const time = (x / this.timelineWidth) * this.originalDuration;
+
+      if (this.dragType === 'start') {
+        // لا تسمح بتجاوز نقطة النهاية
+        this.startTime = Math.max(0, Math.min(time, this.endTime - 1));
+        // تحديث موضع الفيديو
+        const video = this.$refs.videoPlayer;
+        if (video) {
+          video.currentTime = this.startTime;
+        }
+      } else if (this.dragType === 'end') {
+        // لا تسمح بتجاوز نقطة البداية
+        this.endTime = Math.max(this.startTime + 1, Math.min(time, this.originalDuration));
       }
     },
 
-    onEndTimeChange(value) {
-      // Optional: jump to end time for preview
+    stopDrag() {
+      this.isDragging = false;
+      this.dragType = null;
+    },
+
+    updateTimelineWidth() {
+      const timeline = this.$refs.timelineContainer;
+      if (timeline) {
+        this.timelineWidth = timeline.offsetWidth;
+      }
+    },
+
+    async generateThumbnails() {
+      const video = this.$refs.videoPlayer;
+      if (!video || !this.originalDuration) return;
+
+      // حساب عدد الصور المصغرة بناءً على عرض التايم لاين
+      this.updateTimelineWidth();
+      this.thumbnailCount = Math.floor(this.timelineWidth / this.thumbnailWidth);
+
+      // إنشاء مصفوفة الصور المصغرة
+      this.thumbnails = Array(this.thumbnailCount).fill(null);
+      this.thumbnailRefs = [];
+
+      await this.$nextTick();
+
+      // إنشاء صورة مصغرة لكل نقطة زمنية
+      for (let i = 0; i < this.thumbnailCount; i++) {
+        const time = (i / (this.thumbnailCount - 1)) * this.originalDuration;
+        await this.captureThumbnail(i, time);
+      }
+    },
+
+    captureThumbnail(index, time) {
+      return new Promise((resolve) => {
+        const video = this.$refs.videoPlayer;
+        const canvas = this.thumbnailRefs[index];
+
+        if (!video || !canvas) {
+          resolve();
+          return;
+        }
+
+        video.currentTime = time;
+
+        const onSeeked = () => {
+          const ctx = canvas.getContext('2d');
+          const aspectRatio = video.videoHeight / video.videoWidth;
+
+          canvas.width = this.thumbnailWidth;
+          canvas.height = this.thumbnailWidth * aspectRatio;
+
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          video.removeEventListener('seeked', onSeeked);
+          resolve();
+        };
+
+        video.addEventListener('seeked', onSeeked);
+      });
     },
 
     resetTrim() {
@@ -424,46 +489,56 @@ export default {
       this.uploadStatusText = "جاري تحضير الفيديو...";
       this.uploadError = "";
 
+      // Pause any playing preview to avoid background playback during upload
+      const preview = this.$refs.videoPlayer;
+      if (preview && !preview.paused) {
+        preview.pause();
+      }
+
       try {
         // Step 1: Trim video
         this.uploadStatusText = "جاري قص الفيديو...";
         this.uploadProgress = 20;
-        
-        const trimmedBlob = await this.trimVideo();
-        
-        // Step 2: Convert to Base64
-        this.uploadStatusText = "جاري تحويل الفيديو...";
-        this.uploadProgress = 50;
-        
-        const base64Video = await this.blobToBase64(trimmedBlob);
-        
-        // Step 3: Upload to server
-        this.uploadStatusText = "جاري رفع الفيديو...";
-        this.uploadProgress = 70;
-        
-        const payload = {
-          videoBase64: base64Video,
-          fileName: this.videoFile.name,
-        };
 
-        const response = await TeacherApi.uploadIntroVideo(payload);
-        
+        const trimmedBlob = await this.trimVideo();
+
+        this.uploadStatusText = "جاري رفع الفيديو...";
+        this.uploadProgress = 50;
+
+        const formData = new FormData();
+        const ext = (this.videoFile.name.split('.').pop() || 'webm').toLowerCase();
+        const safeName = this.videoFile.name ? this.videoFile.name.replace(/[^\w\-.]+/g, '_') : `intro_video.${ext}`;
+        const file = new File([trimmedBlob], safeName, { type: trimmedBlob.type || 'video/webm' });
+        formData.append('video', file);
+
+        const response = await TeacherApi.uploadIntroVideo(formData, {
+          timeout: 300000,
+          onUploadProgress: (e) => {
+            if (e && e.total) {
+              const ratio = e.loaded / e.total;
+              const percent = Math.min(99, Math.floor(50 + ratio * 50));
+              this.uploadProgress = percent;
+              this.uploadStatusText = `جاري رفع الفيديو... ${percent}%`;
+            }
+          },
+        });
+
         this.uploadProgress = 100;
         this.uploadStatusText = "تم الرفع بنجاح!";
         this.uploadSuccess = true;
-        
+
         this.updateLocalStorageVideo(response.data);
-        
+
         // Emit success event to parent
         this.$emit("upload-success", response.data);
-        
+
         // Reset after 2 seconds
         setTimeout(() => {
           this.resetUpload();
           this.loadExistingVideo(); // Reload to show new video
           this.showUploadSection = false;
         }, 2000);
-        
+
       } catch (error) {
         console.error("[v0] Upload error:", error);
         this.uploadError = error.response?.data?.message || "حدث خطأ أثناء رفع الفيديو";
@@ -476,13 +551,18 @@ export default {
       return new Promise((resolve, reject) => {
         const video = document.createElement("video");
         video.src = this.videoUrl;
-        
+        // Ensure background playback is silent
+        video.muted = true;
+        video.volume = 0;
+        video.playsInline = true;
+        video.setAttribute("muted", "");
+
         video.onloadedmetadata = async () => {
           try {
             // Create canvas for video processing
             const canvas = document.createElement("canvas");
             const ctx = canvas.getContext("2d");
-            
+
             // Set canvas dimensions to video dimensions
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
@@ -490,7 +570,7 @@ export default {
             // Use MediaRecorder to capture trimmed video
             const stream = canvas.captureStream(30); // 30 FPS
             const audioContext = new AudioContext();
-            
+
             // Add audio track if available
             if (video.captureStream) {
               const videoStream = video.captureStream();
@@ -502,7 +582,7 @@ export default {
 
             const mediaRecorder = new MediaRecorder(stream, {
               mimeType: "video/webm;codecs=vp8,opus",
-              videoBitsPerSecond: 2500000, // 2.5 Mbps
+              videoBitsPerSecond: 1000000,
             });
 
             const chunks = [];
@@ -520,10 +600,10 @@ export default {
             // Start recording
             mediaRecorder.start();
             video.currentTime = this.startTime;
-            
+
             video.onseeked = () => {
               video.play();
-              
+
               // Draw video frames to canvas
               const drawFrame = () => {
                 if (video.currentTime >= this.endTime) {
@@ -531,19 +611,19 @@ export default {
                   mediaRecorder.stop();
                   return;
                 }
-                
+
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 requestAnimationFrame(drawFrame);
               };
-              
+
               drawFrame();
             };
-            
+
           } catch (error) {
             reject(error);
           }
         };
-        
+
         video.onerror = reject;
       });
     },
@@ -575,6 +655,8 @@ export default {
       this.endTime = 0;
       this.uploadProgress = 0;
       this.uploadStatusText = "";
+      this.thumbnails = [];
+      this.thumbnailRefs = [];
       if (this.$refs.fileInput) {
         this.$refs.fileInput.reset();
       }
@@ -609,37 +691,166 @@ export default {
       }
     },
   },
-
-  beforeUnmount() {
-    if (this.videoUrl) {
-      URL.revokeObjectURL(this.videoUrl);
-    }
-  },
 };
 </script>
 
 <style scoped>
 .video-container {
   position: relative;
-  inline-size: 100%;
-  background: #000;
-  border-radius: 8px;
   overflow: hidden;
+  border-radius: 8px;
+  background: #000;
+  inline-size: 100%;
 }
 
 .video-preview {
-  inline-size: 100%;
-  block-size: auto;
-  max-block-size: 400px;
   display: block;
+  block-size: auto;
+  inline-size: 100%;
+  max-block-size: 400px;
+  object-fit: contain;
 }
 
-/* Added styles for existing video container */
 .existing-video-container {
   position: relative;
-  inline-size: 100%;
-  background: #000;
-  border-radius: 8px;
   overflow: hidden;
+  border-radius: 8px;
+  background: #000;
+  inline-size: 100%;
+}
+
+.timeline-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #1a1a1a;
+  block-size: 80px;
+  inline-size: 100%;
+  user-select: none;
+}
+
+.thumbnails-strip {
+  display: flex;
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+.thumbnail-frame {
+  flex-shrink: 0;
+  block-size: 100%;
+  border-inline-end: 1px solid rgba(255, 255, 255, 10%);
+  object-fit: cover;
+}
+
+.trim-overlay {
+  position: absolute;
+  block-size: 100%;
+  inline-size: 100%;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  pointer-events: none;
+}
+
+.dimmed-area {
+  position: absolute;
+  background: rgba(0, 0, 0, 70%);
+  block-size: 100%;
+  inset-block-start: 0;
+  pointer-events: none;
+}
+
+.left-dim {
+  inset-inline-start: 0;
+}
+
+.right-dim {
+  inset-inline-start: auto;
+}
+
+.selection-area {
+  position: absolute;
+  block-size: 100%;
+  border-block: 3px solid #2196f3;
+  inset-block-start: 0;
+  pointer-events: none;
+}
+
+.trim-handle {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2196f3;
+  block-size: 100%;
+  cursor: ew-resize;
+  inline-size: 12px;
+  inset-block-start: 0;
+  pointer-events: auto;
+  transition: background 0.2s;
+}
+
+.trim-handle:hover {
+  background: #1976d2;
+}
+
+.trim-handle:active {
+  background: #1565c0;
+}
+
+.left-handle {
+  border-end-start-radius: 4px;
+  border-start-start-radius: 4px;
+  inset-inline-start: -6px;
+}
+
+.right-handle {
+  border-end-end-radius: 4px;
+  border-start-end-radius: 4px;
+  inset-inline-end: -6px;
+}
+
+.handle-line {
+  position: absolute;
+  background: white;
+  block-size: 100%;
+  inline-size: 2px;
+  inset-block-start: 0;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+}
+
+.handle-grip {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 20%);
+  block-size: 30px;
+  inline-size: 100%;
+}
+
+.time-labels {
+  position: absolute;
+  display: flex;
+  justify-content: space-between;
+  inline-size: 100%;
+  inset-block-start: -24px;
+  inset-inline-start: 0;
+  padding-inline: 8px;
+  pointer-events: none;
+}
+
+.start-time,
+.end-time {
+  border-radius: 4px;
+  background: #2196f3;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  padding-block: 2px;
+  padding-inline: 8px;
+  white-space: nowrap;
 }
 </style>
