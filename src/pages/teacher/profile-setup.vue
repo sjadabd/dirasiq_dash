@@ -13,7 +13,7 @@
         <!-- Header -->
         <div class="text-center mb-8">
           <v-avatar size="96" class="mb-4" variant="elevated">
-            <img v-if="avatarPreviewSrc" style="    inline-size: 100px;" :src="avatarPreviewSrc" alt="Teacher Avatar" />
+            <img v-if="avatarPreviewSrc" style="inline-size: 100px;" :src="avatarPreviewSrc" alt="Teacher Avatar" />
             <v-icon v-else size="48" color="primary">mdi-account</v-icon>
           </v-avatar>
           <h1 class="text-h3 font-weight-bold mb-2">إعداد ملف الشخصي</h1>
@@ -43,7 +43,7 @@
                 <v-col cols="12">
                   <div class="d-flex align-center flex-wrap ga-4">
                     <v-avatar size="72">
-                      <img v-if="avatarPreviewSrc" style="    inline-size: 100px;" :src="avatarPreviewSrc"
+                      <img v-if="avatarPreviewSrc" style="inline-size: 100px;" :src="avatarPreviewSrc"
                         alt="Teacher Avatar" />
                       <v-icon v-else size="36">mdi-account</v-icon>
                     </v-avatar>
@@ -105,10 +105,14 @@
             </v-card-text>
           </v-card>
 
+          <!-- Added Video Upload Editor Component -->
+          <VideoUploadEditor @upload-success="handleVideoUploadSuccess" class="mb-6" />
+
           <!-- Location Selection -->
           <MapPicker :initial-lat="formData.latitude" :initial-lng="formData.longitude"
             @location-update="handleLocationUpdate" class="mb-6" />
         </v-form>
+
         <!-- Submit Button -->
         <div class="text-center pt-6">
           <v-btn type="submit" color="primary" size="large" :loading="isLoading" :disabled="isLoading"
@@ -124,9 +128,14 @@
 
 <script>
 import TeacherApi from "@/api/teacher/teacher_api";
+import VideoUploadEditor from "@/components/teacher/VideoUploadEditor.vue";
 
 export default {
   name: "StudentProfileForm",
+
+  components: {
+    VideoUploadEditor,
+  },
 
   data() {
     return {
@@ -149,7 +158,7 @@ export default {
         address: "",
         gender: null,
         birthDate: null,
-        latitude: 31.2001, // ← صححت الاسم
+        latitude: 31.2001,
         longitude: 29.9187,
         profileImageBase64: null,
       },
@@ -168,6 +177,7 @@ export default {
       avatarPreviewSrc: null,
     };
   },
+
   created() {
     this.getAllGrades();
     this.formData.name = this.user.name;
@@ -187,33 +197,29 @@ export default {
     if (this.user.teacherGrades && this.user.teacherGrades.length) {
       this.formData.gradeIds = this.user.teacherGrades.map((g) => g.gradeId);
     }
-    // Prefill existing avatar for teacher if present
+
     if (this.user?.profileImagePath) {
       const contentUrl = localStorage.getItem('content_url') || '';
       const img = this.user.profileImagePath.trim();
 
-      // ✅ إذا كانت Base64 (تبدأ بـ data:image/)
       if (img.startsWith('data:image/')) {
         this.avatarPreviewSrc = img;
       }
-      // ✅ إذا كانت رابط مطلق (تبدأ بـ http)
       else if (img.startsWith('http')) {
         this.avatarPreviewSrc = img;
       }
-      // ✅ إذا كانت مسار نسبي من السيرفر
       else {
         this.avatarPreviewSrc = `${contentUrl}${img.startsWith('/') ? '' : '/'}${img}`;
       }
     }
-
   },
+
   methods: {
-    // تحديث الموقع من كومبوننت الخريطة
     handleLocationUpdate(coords) {
       this.formData.latitude = coords.latitude;
       this.formData.longitude = coords.longitude;
     },
-    // اختيار صورة وتحويلها إلى Base64
+
     async onAvatarSelected(files) {
       try {
         const file = Array.isArray(files) ? files[0] : files?.target?.files?.[0] || files;
@@ -226,6 +232,7 @@ export default {
         this.error = 'تعذر قراءة الصورة المختارة';
       }
     },
+
     fileToBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -235,7 +242,11 @@ export default {
       });
     },
 
-    // تحقق من صحة البيانات قبل الإرسال
+    handleVideoUploadSuccess(response) {
+      this.success = "تم رفع الفيديو بنجاح! سيتم معالجته قريباً.";
+      console.log("Video upload response:", response);
+    },
+
     validateForm() {
       if (!this.formData.name.trim()) return "اسم الطالب مطلوب";
       if (!this.formData.phone.trim()) return "رقم هاتف مطلوب";
@@ -249,6 +260,7 @@ export default {
       if (!this.formData.birthDate) return "تاريخ الميلاد مطلوب";
       return null;
     },
+
     async getAllGrades() {
       try {
         const response = await TeacherApi.getAllGrades();
@@ -263,7 +275,6 @@ export default {
       }
     },
 
-    // إرسال البيانات للسيرفر
     async handleSubmit() {
       const { valid } = await this.$refs.form.validate();
       if (!valid) return;

@@ -6,6 +6,17 @@ class TeacherApi {
     const response = await axiosInstance.post(`/auth/complete-profile`, userData);
     return response;
   }
+    async uploadIntroVideo(payload) {
+    // payload: { videoBase64: string, fileName?: string }
+    const response = await axiosInstance.post("/teacher/profile/intro-video", payload)
+    return response
+  }
+
+  async getIntroVideo() {
+    const response = await axiosInstance.get("/teacher/profile/intro-video")
+    return response
+  }
+
 
   // Academic years (Teacher)
   async getAcademicYears() {
