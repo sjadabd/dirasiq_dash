@@ -10,7 +10,7 @@ class TeacherApi {
     if (payload instanceof FormData) {
       const response = await axiosInstance.post("/teacher/profile/intro-video", payload, {
         ...config,
-        headers: { ...(config.headers || {}), "Content-Type": "multipart/form-data" },
+        // Do NOT set Content-Type manually; Axios will set the correct multipart boundary
       })
       return response
     }

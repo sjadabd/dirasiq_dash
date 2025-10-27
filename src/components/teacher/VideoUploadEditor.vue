@@ -120,8 +120,8 @@
           <v-col cols="12" md="4">
             <v-card color="primary">
               <v-card-text class="text-center">
-                <p class="text-caption">المدة بعد القص</p>
-                <p class="text-h4 font-weight-bold">{{ formatTime(trimmedDuration) }}</p>
+                <p class="text-caption" style="color: white;">المدة بعد القص</p>
+                <p class="text-h4 font-weight-bold" style="color: white;">{{ formatTime(trimmedDuration) }}</p>
               </v-card-text>
             </v-card>
           </v-col>
@@ -333,6 +333,21 @@ interface Props {
   numberOfFrames?: number
 }
 
+// Helper: trim with timeout to avoid hanging forever on slow networks/CDN
+const trimWithTimeout = async (
+  file: File,
+  start: number,
+  duration: number,
+  timeoutMs = 120000,
+): Promise<Blob> => {
+  return await Promise.race([
+    trimVideoWithFFmpeg(file, start, duration),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('trim-timeout')), timeoutMs)
+    ),
+  ])
+}
+
 const props = withDefaults(defineProps<Props>(), {
   maxDuration: 120,
   minDuration: 1,
@@ -357,9 +372,11 @@ const uploadError = ref('')
 const wasAutoTrimmed = ref(false)
 
 const ffmpegRef = ref<FFmpeg | null>(null)
+let ffmpegLoadPromise: Promise<FFmpeg> | null = null
 const isProcessing = ref(false)
 const processingStatus = ref('')
 const showPreviewDialog = ref(false)
+const ffmpegReady = ref(false)
 
 // Timeline state
 const videoFrames = ref<string[]>([])
@@ -415,15 +432,24 @@ const formatBytes = (bytes: number): string => {
 
 const loadFFmpeg = async () => {
   if (ffmpegRef.value) return ffmpegRef.value
+  if (ffmpegLoadPromise) return ffmpegLoadPromise
 
   try {
-    console.log('[v0] بدء تحميل FFmpeg...')
-    const ffmpeg = new FFmpeg()
+    ffmpegLoadPromise = (async () => {
+      console.log('[v0] بدء تحميل FFmpeg...')
+      const ffmpeg = new FFmpeg()
 
-    ffmpeg.on('log', ({ message }) => {
-      console.log('[v0] FFmpeg log:', message)
-    })
+      ffmpeg.on('log', ({ message }) => {
+        console.log('[v0] FFmpeg log:', message)
+      })
 
+      ffmpeg.on('progress', ({ progress }) => {
+        console.log('[v0] FFmpeg progress:', progress)
+        if (isProcessing.value) {
+          const percent = Math.round(progress * 100)
+          processingStatus.value = `جاري قص الفيديو... ${percent}%`
+        }
+      })
     ffmpeg.on('progress', ({ progress }) => {
       console.log('[v0] FFmpeg progress:', progress)
       if (isProcessing.value) {
@@ -432,17 +458,34 @@ const loadFFmpeg = async () => {
       }
     })
 
-    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd'
-    console.log('[v0] جاري تحميل ملفات FFmpeg من:', baseURL)
+    const bases = [
+      'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd',
+      'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd',
+    ]
+    let loaded = false
+    let lastErr: any = null
+    for (const baseURL of bases) {
+      try {
+        console.log('[v0] جاري تحميل ملفات FFmpeg من:', baseURL)
+        await ffmpeg.load({
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        })
+        loaded = true
+        break
+      } catch (e) {
+        lastErr = e
+        console.warn('[v0] فشل تحميل FFmpeg من:', baseURL, e)
+      }
+    }
+    if (!loaded) throw lastErr || new Error('لم يتمكن من تحميل FFmpeg')
 
-    await ffmpeg.load({
-      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-    })
-
-    console.log('[v0] تم تحميل FFmpeg بنجاح')
-    ffmpegRef.value = ffmpeg
-    return ffmpeg
+      console.log('[v0] تم تحميل FFmpeg بنجاح')
+      ffmpegRef.value = ffmpeg
+      return ffmpeg
+    })()
+    const r = await ffmpegLoadPromise
+    return r
   } catch (error) {
     console.error('[v0] FFmpeg load error:', error)
     throw new Error('فشل تحميل أداة معالجة الفيديو')
@@ -473,19 +516,15 @@ const trimVideoWithFFmpeg = async (file: File, start: number, duration: number):
     processingStatus.value = 'جاري قص الفيديو...'
 
     console.log('[v0] جاري تنفيذ أمر FFmpeg...')
-    await ffmpeg.exec([
-      '-ss', start.toString(),
-      '-i', inputName,
-      '-t', duration.toString(),
-      '-c:v', 'libx264',        // إعادة ترميز الفيديو
-      '-preset', 'ultrafast',   // أسرع إعداد ممكن
-      '-crf', '23',             // جودة معقولة
-      '-c:a', 'aac',            // ترميز الصوت
-      '-b:a', '128k',           // معدل بت الصوت
-      '-movflags', '+faststart', // تحسين للتشغيل على الويب
-      '-y',                     // تجاوز الملف الموجود
-      outputName
-    ])
+await ffmpeg.exec([
+  '-ss', start.toString(),
+  '-i', inputName,
+  '-t', duration.toString(),
+  '-c', 'copy',     // لا تعيد الترميز
+  '-avoid_negative_ts', 'make_zero',
+  '-y',
+  outputName
+])
     console.log('[v0] تم تنفيذ أمر FFmpeg بنجاح')
 
     processingStatus.value = 'جاري حفظ الفيديو...'
@@ -778,7 +817,7 @@ const uploadVideo = async () => {
   uploadSuccess.value = false
 
   try {
-    let fileToUpload: File | Blob = videoFile.value
+    let fileToUpload: File = videoFile.value
 
     // Check if trimming is needed
     const needsTrimming = startTime.value > 0 || endTime.value < originalDuration.value
@@ -787,36 +826,34 @@ const uploadVideo = async () => {
     if (needsTrimming) {
       try {
         console.log('[v0] بدء عملية القص...')
-        const trimmedBlob = await trimVideoWithFFmpeg(
+        const trimmedBlob = await trimWithTimeout(
           videoFile.value,
           startTime.value,
           trimmedDuration.value
         )
         console.log('[v0] تم القص بنجاح، الحجم الجديد:', trimmedBlob.size)
-        fileToUpload = trimmedBlob
+        const name = (videoFile.value.name.replace(/\.[^/.]+$/, '') || 'intro') + '.mp4'
+        fileToUpload = new File([trimmedBlob], name, { type: 'video/mp4' })
       } catch (trimError) {
         console.error('[v0] خطأ في القص:', trimError)
-        throw trimError
+        uploadError.value = 'تعذر قص الفيديو. يرجى التحقق من اتصال الإنترنت والمحاولة مجدداً.'
+        isUploading.value = false
+        isProcessing.value = false
+        processingStatus.value = ''
+        return
       }
     }
 
-    // Convert to base64
+    // Build FormData (multipart)
     isUploading.value = true
-    processingStatus.value = 'جاري تحويل الفيديو...'
-    console.log('[v0] جاري تحويل الفيديو إلى base64...')
-
-    const dataUrl = await fileToBase64(fileToUpload)
-    console.log('[v0] تم التحويل، طول البيانات:', dataUrl.length)
-
     processingStatus.value = 'جاري رفع الفيديو...'
 
-    const payload = {
-      videoBase64: dataUrl,
-      fileName: videoFile.value.name.replace(/\.[^/.]+$/, '') + '.mp4',
-    }
+    const form = new FormData()
+    form.append('video', fileToUpload)
 
-    console.log('[v0] جاري إرسال الطلب إلى الخادم...')
-    await teacherApi.uploadIntroVideo(payload, {
+    console.log('[v0] جاري إرسال الطلب إلى الخادم (multipart/form-data)...')
+    await teacherApi.uploadIntroVideo(form, {
+      timeout: 600000, // allow up to 10 minutes for server-side processing
       onUploadProgress: (e) => {
         if (e.total) {
           const progress = Math.round((e.loaded * 100) / e.total)
@@ -957,6 +994,10 @@ onMounted(() => {
   document.addEventListener('touchmove', onDrag)
   document.addEventListener('touchend', stopDrag)
   loadExistingVideo()
+  // Preload FFmpeg in background to make trimming fast when user uploads
+  loadFFmpeg()
+    .then(() => { ffmpegReady.value = true; console.log('[v0] FFmpeg preloaded') })
+    .catch((e) => { console.warn('[v0] FFmpeg preload failed', e) })
 })
 
 onUnmounted(() => {
