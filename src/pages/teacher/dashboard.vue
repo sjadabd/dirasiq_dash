@@ -123,7 +123,7 @@ const updateProfile = () => {
         <VCol cols="12">
           <VCard color="primary" variant="tonal" class="pa-6">
             <VRow align="center">
-              <VCol cols="12" md="8">
+              <VCol cols="12" md="6">
                 <h1 class="text-h4 mb-2">مرحباً {{ user?.name }}! 👋</h1>
                 <p class="text-body-1 mb-0">
                   {{ user?.email }}
@@ -133,12 +133,20 @@ const updateProfile = () => {
                   {{ new Date(user?.createdAt).toLocaleDateString("en-IQ") }}
                 </p>
               </VCol>
-              <VCol cols="12" md="4" class="text-center">
+              <VCol cols="12" md="6" class="text-center" style="display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;">
                 <VAvatar size="80" color="primary">
                   <VImg v-if="user?.profileImagePath" :src="`https://api.mulhimiq.com${user.profileImagePath}`"
                     alt="User Avatar" cover />
                   <VIcon v-else size="40">mdi-account</VIcon>
                 </VAvatar>
+                <div>
+                  <p>رمز تسجيل حضور الطلاب عن طريق التطبيق</p>
+                  <img style="inline-size: 60px;" v-if="user?.qr" :src="`https://api.mulhimiq.com${user.qr}`"
+                    alt="User Avatar" />
+                </div>
               </VCol>
             </VRow>
           </VCard>
