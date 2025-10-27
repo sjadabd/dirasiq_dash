@@ -6,16 +6,65 @@
     </v-card-title>
 
     <v-card-text>
+      <input ref="fileInputRef" type="file" accept="video/*" @change="onVideoSelected" style="display: none;"
+        id="video-upload" />
+
+      <!-- Enhanced existing video display with better HLS support -->
+      <div v-if="existingVideoUrl && !videoFile" class="d-flex align-center justify-space-between mb-4">
+        <div class="d-flex align-center gap-3">
+          <v-avatar size="56" rounded>
+            <v-img :src="videoPoster || existingVideoUrl" alt="thumbnail" />
+          </v-avatar>
+          <div>
+            <div class="d-flex align-center gap-2">
+              <v-chip size="small" color="success" v-if="introStatus === 'ready'">جاهز</v-chip>
+              <v-chip size="small" color="warning" v-else-if="introStatus === 'processing'">قيد المعالجة</v-chip>
+              <v-chip size="small" color="info" v-else>{{ introStatus || 'غير معروف' }}</v-chip>
+            </div>
+            <div class="text-caption text-medium-emphasis mt-1">
+              المدة: {{ formatTime(introDuration || 0) }}
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <v-btn size="small" variant="tonal" color="primary" @click="previewExistingVideo">
+            <v-icon start>mdi-play</v-icon>
+            معاينة
+          </v-btn>
+          <v-btn size="small" variant="tonal" color="primary" @click="openFilePicker">
+            <v-icon start>mdi-upload</v-icon>
+            استبدال الفيديو
+          </v-btn>
+        </div>
+      </div>
+
+      <!-- Preview modal for existing video -->
+      <v-dialog v-model="showPreviewDialog" max-width="800">
+        <v-card>
+          <v-card-title class="d-flex align-center justify-space-between">
+            <span>معاينة الفيديو</span>
+            <v-btn icon variant="text" @click="showPreviewDialog = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-card-title>
+          <v-card-text>
+            <div class="video-container rounded-lg overflow-hidden bg-black">
+              <video ref="previewVideoRef" :poster="videoPoster || undefined" class="w-100"
+                style="max-block-size: 500px;" controls playsinline />
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+
+
       <!-- Upload Section -->
-      <div v-if="!videoFile" class="text-center py-12">
+      <div v-if="!videoUrl" class="text-center py-12">
         <v-icon size="64" color="primary" class="mb-4">mdi-video</v-icon>
         <h3 class="text-h6 mb-2">ارفع فيديو تعريفي عنك</h3>
         <p class="text-body-2 text-medium-emphasis mb-4">
           يساعد الفيديو الطلاب على التعرف عليك بشكل أفضل
         </p>
-        <input ref="fileInputRef" type="file" accept="video/*" @change="onVideoSelected" style="display: none;"
-          id="video-upload" />
-        <v-btn color="primary" @click="() => fileInputRef?.click()">
+        <v-btn color="primary" @click="openFilePicker">
           <v-icon start>mdi-upload</v-icon>
           اختر فيديو
         </v-btn>
@@ -24,8 +73,8 @@
         </p>
       </div>
 
-      <!-- Video Editor Section -->
-      <div v-else class="d-flex flex-column gap-4">
+      <!-- Video Editor Section (only for new/base64 selection) -->
+      <div v-else-if="isEditable" class="d-flex flex-column gap-4">
         <!-- Auto-trim Alert -->
         <v-alert v-if="wasAutoTrimmed" type="warning" variant="tonal" density="compact">
           <template #prepend>
@@ -123,19 +172,19 @@
               <div style="position: absolute; inset: 0; pointer-events: none;">
                 <!-- Left Dimmed Area -->
                 <div
-                  style="position: absolute; background: rgba(0, 0, 0, 0.7); block-size: 100%; inset-block-start: 0; inset-inline-start: 0;"
-                  :style="{ width: selectionLeft + 'px' }" />
+                  style="position: absolute; background: rgba(0, 0, 0, 70%); block-size: 100%; inset-block-start: 0; inset-inline-start: 0;"
+                  :style="{ width: `${selectionLeft}px` }" />
 
                 <!-- Selection Box -->
                 <div
-                  style="position: absolute; block-size: 100%; border-block-end: 2px solid #2196f3; border-block-start: 2px solid #2196f3; inset-block-start: 0; background: transparent;"
+                  style="position: absolute; block-size: 100%; border-block-end: 2px solid #2196f3; border-block-start: 2px solid #2196f3; inset-block-start: 0;"
                   :style="{
-                    left: selectionLeft + 'px',
-                    width: selectionWidth + 'px',
+                    left: `${selectionLeft}px`,
+                    width: `${selectionWidth}px`,
                   }">
                   <!-- Left Handle -->
                   <div class="handle-left"
-                    style="position: absolute; display: flex; align-items: center; justify-content: center; border-radius: 4px 0 0 4px; background: #2196f3; block-size: 100%; cursor: ew-resize; inline-size: 12px; inset-block-start: 0; left: -6px; pointer-events: auto;"
+                    style="position: absolute; display: flex; align-items: center; justify-content: center; border-radius: 4px 0 0 4px; background: #2196f3; block-size: 100%; cursor: ew-resize; inline-size: 12px; inset-block-start: 0; inset-inline-start: -6px; pointer-events: auto;"
                     @mousedown="(e) => startDrag('left', e)" @touchstart="(e) => startDrag('left', e)">
                     <div style=" background: rgba(255, 255, 255, 80%); block-size: 100%;inline-size: 2px;" />
                     <div
@@ -172,7 +221,7 @@
 
                   <!-- Right Handle -->
                   <div class="handle-right"
-                    style="position: absolute; display: flex; align-items: center; justify-content: center; border-radius: 0 4px 4px 0; background: #2196f3; block-size: 100%; cursor: ew-resize; inline-size: 12px; inset-block-start: 0; right: -6px; pointer-events: auto;"
+                    style="position: absolute; display: flex; align-items: center; justify-content: center; border-radius: 0 4px 4px 0; background: #2196f3; block-size: 100%; cursor: ew-resize; inline-size: 12px; inset-block-start: 0; inset-inline-end: -6px; pointer-events: auto;"
                     @mousedown="(e) => startDrag('right', e)" @touchstart="(e) => startDrag('right', e)">
                     <div style=" background: rgba(255, 255, 255, 80%); block-size: 100%;inline-size: 2px;" />
                     <div
@@ -183,10 +232,10 @@
                 </div>
 
                 <!-- Right Dimmed Area -->
-                <div style="position: absolute; background: rgba(0, 0, 0, 0.7); block-size: 100%; inset-block-start: 0;"
+                <div style="position: absolute; background: rgba(0, 0, 0, 70%); block-size: 100%; inset-block-start: 0;"
                   :style="{
-                    left: (selectionLeft + selectionWidth) + 'px',
-                    width: Math.max(0, timelineWidth - selectionLeft - selectionWidth) + 'px',
+                    left: `${selectionLeft + selectionWidth}px`,
+                    width: `${timelineWidth - selectionLeft - selectionWidth}px`,
                   }" />
               </div>
             </div>
@@ -222,17 +271,31 @@
           </v-card-text>
         </v-card>
 
-        <!-- Upload/Cancel Buttons -->
+        <!-- Enhanced upload section with trimming progress -->
         <div class="d-flex gap-2">
-          <v-btn color="primary" :disabled="isUploading" :loading="isUploading" block @click="uploadVideo">
+          <v-btn color="primary" :disabled="isUploading || !videoFile || isProcessing"
+            :loading="isUploading || isProcessing" block @click="uploadVideo">
             <v-icon start>mdi-upload</v-icon>
-            {{ isUploading ? `جاري الرفع... ${uploadProgress}%` : 'رفع الفيديو' }}
+            {{ getUploadButtonText() }}
           </v-btn>
-          <v-btn variant="outlined" :disabled="isUploading" @click="cancelVideo">
+          <v-btn variant="outlined" :disabled="isUploading || isProcessing" @click="cancelVideo">
             <v-icon start>mdi-close</v-icon>
             إلغاء
           </v-btn>
         </div>
+
+        <!-- Processing Progress -->
+        <v-card v-if="isProcessing" color="info" variant="tonal">
+          <v-card-text>
+            <div class="d-flex align-center gap-3">
+              <v-progress-circular indeterminate color="info" size="24" />
+              <div class="flex-grow-1">
+                <p class="font-weight-medium mb-1">{{ processingStatus }}</p>
+                <p class="text-caption text-medium-emphasis">قد يستغرق هذا بضع ثوانٍ...</p>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
 
         <!-- Upload Progress -->
         <v-progress-linear v-if="isUploading" :model-value="uploadProgress" color="primary" height="8" rounded />
@@ -242,11 +305,12 @@
           <template #prepend>
             <v-icon>mdi-check-circle</v-icon>
           </template>
-          تم رفع الفيديو بنجاح! جاري معالجته...
+          تم رفع الفيديو بنجاح! جاري معالجته على الخادم...
         </v-alert>
 
         <!-- Error Alert -->
-        <v-alert v-if="uploadError" type="error" variant="tonal" density="compact">
+        <v-alert v-if="uploadError" type="error" variant="tonal" density="compact" closable
+          @click:close="uploadError = ''">
           <template #prepend>
             <v-icon>mdi-alert</v-icon>
           </template>
@@ -258,26 +322,31 @@
 </template>
 
 <script setup lang="ts">
+import teacherApi from '@/api/teacher/teacher_api.js';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
-import TeacherApi from '@/api/teacher/teacher_api';
 
 interface Props {
   maxDuration?: number
   minDuration?: number
   numberOfFrames?: number
-  maxFileSizeMB?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   maxDuration: 120,
   minDuration: 1,
   numberOfFrames: 10,
-  maxFileSizeMB: 50,
 })
 
 // Refs
 const videoFile = ref<File | null>(null)
 const videoUrl = ref<string | null>(null)
+const existingVideoUrl = ref<string | null>(null)
+const videoPoster = ref<string | null>(null)
+const introStatus = ref<string>('')
+const introDuration = ref<number>(0)
+let hlsInstance: any = null
 const originalDuration = ref(0)
 const startTime = ref(0)
 const endTime = ref(0)
@@ -286,6 +355,11 @@ const uploadProgress = ref(0)
 const uploadSuccess = ref(false)
 const uploadError = ref('')
 const wasAutoTrimmed = ref(false)
+
+const ffmpegRef = ref<FFmpeg | null>(null)
+const isProcessing = ref(false)
+const processingStatus = ref('')
+const showPreviewDialog = ref(false)
 
 // Timeline state
 const videoFrames = ref<string[]>([])
@@ -300,16 +374,28 @@ const dragStartWidth = ref(0)
 
 // Element refs
 const videoRef = ref<HTMLVideoElement | null>(null)
+const previewVideoRef = ref<HTMLVideoElement | null>(null)
 const timelineRef = ref<HTMLDivElement | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
 // Computed
-const trimmedDuration = computed(() => Math.max(0, endTime.value - startTime.value))
+const trimmedDuration = computed(() => endTime.value - startTime.value)
 
 const estimatedSize = computed(() => {
   if (!videoFile.value) return '0 MB'
   return formatBytes(videoFile.value.size * (trimmedDuration.value / originalDuration.value))
 })
+
+const isEditable = computed(() => {
+  const url = videoUrl.value || ''
+  return !!videoFile.value || url.startsWith('data:')
+})
+
+const getUploadButtonText = () => {
+  if (isProcessing.value) return processingStatus.value
+  if (isUploading.value) return `جاري الرفع... ${uploadProgress.value}%`
+  return 'رفع الفيديو'
+}
 
 // Methods
 const formatTime = (seconds: number): string => {
@@ -327,6 +413,142 @@ const formatBytes = (bytes: number): string => {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
 }
 
+const loadFFmpeg = async () => {
+  if (ffmpegRef.value) return ffmpegRef.value
+
+  try {
+    console.log('[v0] بدء تحميل FFmpeg...')
+    const ffmpeg = new FFmpeg()
+
+    ffmpeg.on('log', ({ message }) => {
+      console.log('[v0] FFmpeg log:', message)
+    })
+
+    ffmpeg.on('progress', ({ progress }) => {
+      console.log('[v0] FFmpeg progress:', progress)
+      if (isProcessing.value) {
+        const percent = Math.round(progress * 100)
+        processingStatus.value = `جاري قص الفيديو... ${percent}%`
+      }
+    })
+
+    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd'
+    console.log('[v0] جاري تحميل ملفات FFmpeg من:', baseURL)
+
+    await ffmpeg.load({
+      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+    })
+
+    console.log('[v0] تم تحميل FFmpeg بنجاح')
+    ffmpegRef.value = ffmpeg
+    return ffmpeg
+  } catch (error) {
+    console.error('[v0] FFmpeg load error:', error)
+    throw new Error('فشل تحميل أداة معالجة الفيديو')
+  }
+}
+
+const trimVideoWithFFmpeg = async (file: File, start: number, duration: number): Promise<Blob> => {
+  try {
+    console.log('[v0] بدء عملية القص:', { start, duration, fileSize: file.size })
+    isProcessing.value = true
+    processingStatus.value = 'جاري تحميل أداة المعالجة...'
+
+    const ffmpeg = await loadFFmpeg()
+    console.log('[v0] FFmpeg جاهز للاستخدام')
+
+    processingStatus.value = 'جاري تحضير الفيديو...'
+
+    // Write input file
+    const inputName = 'input.mp4'
+    const outputName = 'output.mp4'
+
+    console.log('[v0] جاري كتابة ملف الإدخال...')
+    const fileData = await fetchFile(file)
+    console.log('[v0] حجم البيانات:', fileData.byteLength)
+    await ffmpeg.writeFile(inputName, fileData)
+    console.log('[v0] تم كتابة ملف الإدخال بنجاح')
+
+    processingStatus.value = 'جاري قص الفيديو...'
+
+    console.log('[v0] جاري تنفيذ أمر FFmpeg...')
+    await ffmpeg.exec([
+      '-ss', start.toString(),
+      '-i', inputName,
+      '-t', duration.toString(),
+      '-c:v', 'libx264',        // إعادة ترميز الفيديو
+      '-preset', 'ultrafast',   // أسرع إعداد ممكن
+      '-crf', '23',             // جودة معقولة
+      '-c:a', 'aac',            // ترميز الصوت
+      '-b:a', '128k',           // معدل بت الصوت
+      '-movflags', '+faststart', // تحسين للتشغيل على الويب
+      '-y',                     // تجاوز الملف الموجود
+      outputName
+    ])
+    console.log('[v0] تم تنفيذ أمر FFmpeg بنجاح')
+
+    processingStatus.value = 'جاري حفظ الفيديو...'
+
+    // Read output file
+    console.log('[v0] جاري قراءة ملف الإخراج...')
+    const data = await ffmpeg.readFile(outputName)
+    console.log('[v0] حجم الإخراج:', data.byteLength)
+    const blob = new Blob([data], { type: 'video/mp4' })
+
+    // Cleanup
+    console.log('[v0] جاري تنظيف الملفات المؤقتة...')
+    await ffmpeg.deleteFile(inputName)
+    await ffmpeg.deleteFile(outputName)
+    console.log('[v0] تمت عملية القص بنجاح')
+
+    return blob
+  } catch (error) {
+    console.error('[v0] FFmpeg trim error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'خطأ غير معروف'
+    throw new Error(`فشل قص الفيديو: ${errorMessage}. يرجى المحاولة مرة أخرى أو اختيار فيديو آخر.`)
+  } finally {
+    isProcessing.value = false
+    processingStatus.value = ''
+  }
+}
+
+const fileToBase64 = (file: File | Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = async () => {
+      try {
+        const res = reader.result
+        if (typeof res === 'string' && res.startsWith('data:')) {
+          resolve(res)
+          return
+        }
+        // Fallback: read as ArrayBuffer and build data URL
+        const abReader = new FileReader()
+        abReader.onload = () => {
+          try {
+            const buf = abReader.result as ArrayBuffer
+            const bytes = new Uint8Array(buf)
+            let binary = ''
+            for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i])
+            const b64 = btoa(binary)
+            const mime = file instanceof File ? (file.type || 'video/mp4') : 'video/mp4'
+            resolve(`data:${mime};base64,${b64}`)
+          } catch (e) {
+            reject(e as any)
+          }
+        }
+        abReader.onerror = () => reject(abReader.error || new Error('File read error (ArrayBuffer)'))
+        abReader.readAsArrayBuffer(file)
+      } catch (e) {
+        reject(e as any)
+      }
+    }
+    reader.onerror = () => reject(reader.error || new Error('File read error'))
+    reader.readAsDataURL(file)
+  })
+}
+
 const onVideoSelected = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
@@ -341,6 +563,10 @@ const onVideoSelected = (event: Event) => {
   videoUrl.value = URL.createObjectURL(file)
   uploadError.value = ''
   uploadSuccess.value = false
+}
+
+const openFilePicker = () => {
+  if (fileInputRef.value) fileInputRef.value.click()
 }
 
 const generateVideoFrames = async () => {
@@ -413,21 +639,15 @@ const onVideoLoaded = async () => {
   const duration = video.duration
   originalDuration.value = duration
 
-  // Auto-trim by duration cap
-  let targetEnd = Math.min(duration, props.maxDuration)
-
-  // Auto-trim by file size if needed
-  if (videoFile.value && props.maxFileSizeMB && videoFile.value.size > props.maxFileSizeMB * 1024 * 1024) {
-    const sizeRatio = (props.maxFileSizeMB * 1024 * 1024) / videoFile.value.size
-    const sizeLimitedDuration = Math.max(props.minDuration, duration * sizeRatio)
-    targetEnd = Math.min(targetEnd, sizeLimitedDuration)
+  if (duration > props.maxDuration) {
+    startTime.value = 0
+    endTime.value = props.maxDuration
     wasAutoTrimmed.value = true
   } else {
-    wasAutoTrimmed.value = duration > props.maxDuration
+    startTime.value = 0
+    endTime.value = duration
+    wasAutoTrimmed.value = false
   }
-
-  startTime.value = 0
-  endTime.value = Math.max(props.minDuration, targetEnd)
 
   await nextTick()
   setTimeout(() => {
@@ -533,132 +753,195 @@ const previewTrimmed = () => {
 }
 
 const cancelVideo = () => {
-  if (videoUrl.value) {
+  if (videoFile.value && videoUrl.value && videoUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(videoUrl.value)
   }
   videoFile.value = null
-  videoUrl.value = null
+  videoUrl.value = existingVideoUrl.value
   originalDuration.value = 0
   startTime.value = 0
   endTime.value = 0
   videoFrames.value = []
+  uploadError.value = ''
+  uploadSuccess.value = false
   if (fileInputRef.value) {
     fileInputRef.value.value = ''
   }
 }
 
-const trimVideo = async (): Promise<Blob> => {
-  // Render the selected range to a canvas and record via MediaRecorder
-  return await new Promise<Blob>((resolve, reject) => {
-    const src = videoUrl.value
-    if (!src) return reject(new Error('لا يوجد فيديو'))
-
-    const tmpVideo = document.createElement('video')
-    tmpVideo.src = src
-    tmpVideo.muted = true
-    tmpVideo.volume = 0
-    ;(tmpVideo as any).playsInline = true
-
-    tmpVideo.onloadedmetadata = () => {
-      try {
-        const canvas = document.createElement('canvas')
-        const w = tmpVideo.videoWidth || 640
-        const h = tmpVideo.videoHeight || 360
-        canvas.width = w
-        canvas.height = h
-        const ctx = canvas.getContext('2d')
-        if (!ctx) return reject(new Error('Canvas context not available'))
-
-        const stream = canvas.captureStream(30)
-        // Try to attach audio from original video if present
-        if ((tmpVideo as any).captureStream) {
-          const vStream: MediaStream = (tmpVideo as any).captureStream()
-          const audioTracks = vStream.getAudioTracks()
-          if (audioTracks.length > 0) {
-            stream.addTrack(audioTracks[0])
-          }
-        }
-
-        const recorder = new MediaRecorder(stream, {
-          mimeType: 'video/webm;codecs=vp8,opus',
-          videoBitsPerSecond: 1_000_000,
-        })
-
-        const chunks: BlobPart[] = []
-        recorder.ondataavailable = (e) => {
-          if (e.data && e.data.size > 0) chunks.push(e.data)
-        }
-        recorder.onstop = () => {
-          resolve(new Blob(chunks, { type: 'video/webm' }))
-        }
-
-        recorder.start()
-        tmpVideo.currentTime = startTime.value
-        tmpVideo.onseeked = () => {
-          tmpVideo.play()
-          const draw = () => {
-            if (tmpVideo.currentTime >= endTime.value) {
-              tmpVideo.pause()
-              recorder.stop()
-              return
-            }
-            ctx.drawImage(tmpVideo, 0, 0, w, h)
-            requestAnimationFrame(draw)
-          }
-          draw()
-        }
-      } catch (err) {
-        reject(err as any)
-      }
-    }
-    tmpVideo.onerror = () => reject(new Error('تعذر فتح ملف الفيديو'))
-  })
-}
-
 const uploadVideo = async () => {
   if (!videoFile.value) return
 
-  isUploading.value = true
+  isUploading.value = false
   uploadProgress.value = 0
   uploadError.value = ''
+  uploadSuccess.value = false
 
   try {
-    // Pause preview while processing
-    if (videoRef.value && !videoRef.value.paused) videoRef.value.pause()
+    let fileToUpload: File | Blob = videoFile.value
 
-    // Trim
-    const trimmed = await trimVideo()
+    // Check if trimming is needed
+    const needsTrimming = startTime.value > 0 || endTime.value < originalDuration.value
+    console.log('[v0] هل يحتاج القص؟', needsTrimming, { start: startTime.value, end: endTime.value, original: originalDuration.value })
 
-    // Prepare form data
-    const ext = (videoFile.value.name.split('.').pop() || 'webm').toLowerCase()
-    const safeName = videoFile.value.name.replace(/[^\w\-.]+/g, '_') || `intro_video.${ext}`
-    const file = new File([trimmed], safeName, { type: trimmed.type || 'video/webm' })
-    const form = new FormData()
-    form.append('video', file)
-    form.append('startTime', String(startTime.value))
-    form.append('endTime', String(endTime.value))
+    if (needsTrimming) {
+      try {
+        console.log('[v0] بدء عملية القص...')
+        const trimmedBlob = await trimVideoWithFFmpeg(
+          videoFile.value,
+          startTime.value,
+          trimmedDuration.value
+        )
+        console.log('[v0] تم القص بنجاح، الحجم الجديد:', trimmedBlob.size)
+        fileToUpload = trimmedBlob
+      } catch (trimError) {
+        console.error('[v0] خطأ في القص:', trimError)
+        throw trimError
+      }
+    }
 
-    await TeacherApi.uploadIntroVideo(form, {
-      timeout: 300000,
-      onUploadProgress: (e: any) => {
-        if (e && e.total) {
-          const percent = Math.min(99, Math.floor((e.loaded / e.total) * 100))
-          uploadProgress.value = percent
+    // Convert to base64
+    isUploading.value = true
+    processingStatus.value = 'جاري تحويل الفيديو...'
+    console.log('[v0] جاري تحويل الفيديو إلى base64...')
+
+    const dataUrl = await fileToBase64(fileToUpload)
+    console.log('[v0] تم التحويل، طول البيانات:', dataUrl.length)
+
+    processingStatus.value = 'جاري رفع الفيديو...'
+
+    const payload = {
+      videoBase64: dataUrl,
+      fileName: videoFile.value.name.replace(/\.[^/.]+$/, '') + '.mp4',
+    }
+
+    console.log('[v0] جاري إرسال الطلب إلى الخادم...')
+    await teacherApi.uploadIntroVideo(payload, {
+      onUploadProgress: (e) => {
+        if (e.total) {
+          const progress = Math.round((e.loaded * 100) / e.total)
+          uploadProgress.value = progress
+          console.log('[v0] تقدم الرفع:', progress + '%')
         }
       },
     })
 
-    uploadProgress.value = 100
+    console.log('[v0] تم الرفع بنجاح')
     uploadSuccess.value = true
 
+    // Refresh existing video from server after successful upload
+    await loadExistingVideo()
+
+    // Clear the editor
+    cancelVideo()
+
     setTimeout(() => {
-      cancelVideo()
       uploadSuccess.value = false
-    }, 1500)
-  } catch (error: any) {
-    uploadError.value = error?.response?.data?.message || 'حدث خطأ أثناء رفع الفيديو'
+    }, 3000)
+  } catch (err: any) {
+    const status = err?.response?.status
+    const errors = Array.isArray(err?.response?.data?.errors) ? err.response.data.errors.join('، ') : ''
+    const msg = err?.response?.data?.message || err?.message || 'حدث خطأ أثناء رفع الفيديو'
+    uploadError.value = [msg, errors].filter(Boolean).join(' - ')
+    console.error('[v0] upload error', { status, data: err?.response?.data, err })
   } finally {
     isUploading.value = false
+    isProcessing.value = false
+    processingStatus.value = ''
+  }
+}
+
+const previewExistingVideo = async () => {
+  showPreviewDialog.value = true
+  await nextTick()
+
+  const video = previewVideoRef.value
+  if (!video || !existingVideoUrl.value) return
+
+  const isM3u8 = existingVideoUrl.value.endsWith('.m3u8')
+
+  if (!isM3u8) {
+    video.src = existingVideoUrl.value
+    return
+  }
+
+  // Setup HLS for preview
+  if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = existingVideoUrl.value
+    return
+  }
+
+  try {
+    const mod = await import('hls.js')
+    const Hls = (mod as any).default || (mod as any)
+    if (Hls && Hls.isSupported()) {
+      const hls = new Hls()
+      hls.loadSource(existingVideoUrl.value)
+      hls.attachMedia(video)
+
+      // Cleanup on dialog close
+      watch(showPreviewDialog, (newVal) => {
+        if (!newVal && hls) {
+          hls.destroy()
+        }
+      })
+    }
+  } catch (error) {
+    console.error('[v0] HLS preview error:', error)
+  }
+}
+
+const loadExistingVideo = async () => {
+  try {
+    const res = await teacherApi.getIntroVideo()
+    const base = res?.data?.content_url || ''
+    const data = res?.data?.data || {}
+    introStatus.value = data?.status || ''
+    introDuration.value = Number(data?.durationSeconds || 0)
+    const manifest = data?.manifestUrl ? `${base}${data.manifestUrl}` : null
+    const thumb = data?.thumbnailUrl ? `${base}${data.thumbnailUrl}` : null
+    if (manifest) {
+      existingVideoUrl.value = manifest
+      videoUrl.value = manifest
+      videoPoster.value = thumb || null
+      setupHlsIfNeeded()
+    } else {
+      existingVideoUrl.value = null
+      videoPoster.value = null
+      if (!videoFile.value) videoUrl.value = null
+    }
+  } catch (_) {
+    // ignore if none exists
+    existingVideoUrl.value = null
+  }
+}
+
+const setupHlsIfNeeded = async () => {
+  const video = videoRef.value
+  if (!video || !videoUrl.value) return
+  const isM3u8 = typeof videoUrl.value === 'string' && videoUrl.value.endsWith('.m3u8')
+  if (!isM3u8) return
+
+  if (hlsInstance) {
+    try { hlsInstance.destroy() } catch (_) { }
+    hlsInstance = null
+  }
+
+  if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = videoUrl.value
+    return
+  }
+
+  try {
+    const mod = await import('hls.js')
+    const Hls = (mod as any).default || (mod as any)
+    if (Hls && Hls.isSupported()) {
+      hlsInstance = new Hls()
+      hlsInstance.loadSource(videoUrl.value)
+      hlsInstance.attachMedia(video)
+    }
+  } catch (_) {
+    // ignore
   }
 }
 
@@ -673,17 +956,7 @@ onMounted(() => {
   document.addEventListener('mouseup', stopDrag)
   document.addEventListener('touchmove', onDrag)
   document.addEventListener('touchend', stopDrag)
-
-  // Initialize timeline width
-  if (timelineRef.value) {
-    timelineWidth.value = timelineRef.value.offsetWidth
-  }
-  window.addEventListener('resize', () => {
-    if (timelineRef.value) {
-      timelineWidth.value = timelineRef.value.offsetWidth
-      updateSelectionFromTime()
-    }
-  })
+  loadExistingVideo()
 })
 
 onUnmounted(() => {
@@ -695,6 +968,14 @@ onUnmounted(() => {
   if (videoUrl.value) {
     URL.revokeObjectURL(videoUrl.value)
   }
+  if (hlsInstance) {
+    try { hlsInstance.destroy() } catch (_) { }
+    hlsInstance = null
+  }
+})
+
+watch(videoUrl, () => {
+  setupHlsIfNeeded()
 })
 </script>
 

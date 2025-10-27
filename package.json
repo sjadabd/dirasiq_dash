@@ -10,11 +10,14 @@
     "preview": "vite preview --port 5050",
     "lint": "eslint . -c .eslintrc.cjs --fix --ext .ts,.js,.cjs,.vue,.tsx,.jsx",
     "msw:init": "msw init public/ --save",
+    "build:icons": "echo skipping build:icons",
     "postinstall": "npm run build:icons && npm run msw:init"
   },
   "dependencies": {
     "@casl/ability": "6.7.2",
     "@casl/vue": "2.2.2",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@floating-ui/dom": "1.6.8",
     "@formkit/drag-and-drop": "0.1.6",
     "@iconify-json/bxl": "1.2.2",
@@ -37,6 +40,7 @@
     "emailjs-com": "^3.2.0",
     "eslint-plugin-regexp": "2.7.0",
     "exceljs": "^4.4.0",
+    "hls.js": "^1.6.13",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
     "jwt-decode": "4.0.0",
