@@ -1,45 +1,116 @@
 <template>
   <v-container class="py-10">
-    <h1 class="text-h4 mb-6 font-weight-bold text-center">Privacy Policy</h1>
+    <h1 class="text-h4 mb-6 font-weight-bold text-center">سياسة الخصوصية</h1>
     <v-card class="pa-6">
+      <p>آخر تحديث: أكتوبر 2025</p>
+
       <p>
-        Last updated: October 2025
+        تطبيق وموقع MulhimIQ ("نحن" أو "لنا" أو "التطبيق") يلتزمان بحماية خصوصيتك. توضح هذه السياسة
+        كيفية جمع معلوماتك الشخصية واستخدامها وحمايتها عند استخدامك لخدماتنا.
       </p>
-      <p>
-        MulhimIQ ("we", "our", or "us") operates this mobile application and website (the "Service").
-        We value your privacy. This Privacy Policy explains how we collect, use, and protect your information
-        when you use our Service.
-      </p>
-      <h3 class="text-h6 mt-5">1. Information We Collect</h3>
+
+      <h3 class="text-h6 mt-5">1. المعلومات التي نجمعها</h3>
       <ul>
-        <li>Name, email, and phone number (for registration and login)</li>
-        <li>Usage data and device information to improve performance</li>
-        <li>Optional uploaded content such as profile photos or messages</li>
+        <li>معلومات الحساب: الاسم، البريد الإلكتروني، رقم الهاتف (عند التسجيل/تسجيل الدخول).</li>
+        <li>بيانات الاستخدام والأجهزة: نوع الجهاز، إصدار النظام، معرفات الإشعارات، بيانات الأداء والأخطاء لتحسين الخدمة.
+        </li>
+        <li>محتوى يقدمه المستخدم اختياريًا: مثل الصورة الشخصية، الرسائل داخل التطبيق، أو الملفات المرفوعة.</li>
       </ul>
-      <h3 class="text-h6 mt-5">2. How We Use Your Data</h3>
-      <ul>
-        <li>To create and manage your account</li>
-        <li>To provide educational and communication features</li>
-        <li>To send important notifications related to your account</li>
-      </ul>
-      <h3 class="text-h6 mt-5">3. Data Security</h3>
+
+      <h3 class="text-h6 mt-5">2. مزودو الخدمات ومعالجو البيانات</h3>
       <p>
-        We store your information securely and never share it with third parties unless required by law. All
-        communications
-        between you and our servers are encrypted.
+        للاستفادة من وظائف رئيسية، نستخدم مزودي خدمات موثوقين لمعالجة البيانات نيابة عنا وفق اتفاقيات حماية البيانات،
+        منهم على سبيل المثال لا الحصر:
       </p>
-      <h3 class="text-h6 mt-5">4. Your Rights</h3>
+      <ul>
+        <li>Firebase (مثلاً: المصادقة، التخزين السحابي، التحليلات، تقارير الأعطال).</li>
+        <li>OneSignal (لإرسال الإشعارات الفورية).</li>
+      </ul>
       <p>
-        You have the right to request deletion or correction of your personal information at any time by contacting:
+        لا تمنح هذه الجهات الحق في استخدام بياناتك لأغراضهم الخاصة، ويقتصر استخدامها على تقديم الخدمات الموكلة لهم.
+      </p>
+
+      <h3 class="text-h6 mt-5">3. كيف نستخدم بياناتك</h3>
+      <ul>
+        <li>إنشاء وإدارة حسابك وتقديم الميزات التعليمية والتواصل داخل التطبيق.</li>
+        <li>إرسال إشعارات مهمة تتعلق بحسابك أو نشاطك داخل التطبيق.</li>
+        <li>تحسين الأداء وتجربة المستخدم عبر قياس الاستخدام وحل المشاكل التقنية.</li>
+        <li>الامتثال للأنظمة والقوانين إذا طُلِب ذلك.</li>
+      </ul>
+
+      <h3 class="text-h6 mt-5">4. الأذونات على جهازك</h3>
+      <p>
+        قد يطلب التطبيق أذونات اختيارية للوصول إلى الكاميرا أو الصور أو الميكروفون أو التخزين بهدف تنفيذ ميزات محددة مثل
+        رفع صورة الملف الشخصي أو إرسال مرفقات. لن يتم تفعيل هذه الأذونات إلا بموافقتك، ويمكنك إيقافها من إعدادات الجهاز
+        مع العلم أن بعض الميزات قد لا تعمل بدونها.
+      </p>
+
+      <h3 class="text-h6 mt-5">5. الإشعارات الفورية</h3>
+      <p>
+        نستخدم مزودًا مثل OneSignal لإرسال إشعارات تتعلق بالحساب والمهام والتحديثات. يمكنك التحكم في استقبال الإشعارات
+        من داخل التطبيق أو من إعدادات نظام التشغيل.
+      </p>
+
+      <h3 class="text-h6 mt-5">6. ملفات تعريف الارتباط والتتبع</h3>
+      <p>
+        قد نستخدم ملفات تعريف الارتباط وتقنيات مشابهة (في الموقع أو واجهة الويب) لأغراض جلسات الاستخدام وتحسين الأداء
+        وقياس التفاعل.
+      </p>
+
+      <h3 class="text-h6 mt-5">7. أمن البيانات</h3>
+      <p>
+        نتخذ تدابير أمنية تقنية وتنظيمية لحماية بياناتك، بما في ذلك التشفير أثناء النقل والتخزين عند الاقتضاء. ومع ذلك،
+        لا توجد وسيلة نقل أو تخزين عبر الإنترنت آمنة بنسبة 100%.
+      </p>
+
+      <h3 class="text-h6 mt-5">8. الاحتفاظ بالبيانات</h3>
+      <p>
+        نحتفظ ببياناتك للمدة اللازمة لتحقيق الأغراض الموضحة في هذه السياسة، أو حسب ما تقتضيه القوانين. عند إغلاق الحساب
+        أو طلب الحذف، سنحذف أو نجهّل البيانات خلال فترة زمنية معقولة ما لم يكن الاحتفاظ بها مطلوبًا قانونيًا.
+      </p>
+
+      <h3 class="text-h6 mt-5">9. مشاركة البيانات</h3>
+      <p>
+        لا نبيع بياناتك الشخصية. قد نشاركها فقط مع:
+      </p>
+      <ul>
+        <li>مزودي الخدمة لمعالجة البيانات وفقًا لهذه السياسة.</li>
+        <li>الجهات الرسمية إذا فرض القانون ذلك.</li>
+        <li>في حالة الاندماج أو الاستحواذ مع إخطار المستخدمين قبل نقل البيانات أو إخضاعها لسياسة مختلفة.</li>
+      </ul>
+
+      <h3 class="text-h6 mt-5">10. حقوقك</h3>
+      <p>
+        يمكنك طلب الوصول إلى بياناتك، تصحيحها، تقييد معالجتها، الاعتراض على معالجتها، أو طلب حذفها. كما يمكنك سحب
+        موافقتك على المعالجة التي تعتمد على الموافقة في أي وقت دون المساس بمشروعية المعالجة السابقة للسحب.
+      </p>
+
+      <h3 class="text-h6 mt-5">11. خصوصية الأطفال</h3>
+      <p>
+        لا يستهدف التطبيق الأطفال دون السن القانونية المطبقة محليًا دون موافقة ولي الأمر. إن كنت تعتقد أنه تم جمع بيانات
+        طفل دون موافقة مناسبة، يُرجى التواصل معنا لحذفها.
+      </p>
+
+      <h3 class="text-h6 mt-5">12. النقل الدولي للبيانات</h3>
+      <p>
+        قد تُعالَج بياناتك على خوادم خارج بلدك عبر مزودي الخدمة المشار إليهم. نحرص على تطبيق ضمانات مناسبة لحماية
+        البيانات وفق القوانين المعمول بها.
+      </p>
+
+      <h3 class="text-h6 mt-5">13. التحديثات على هذه السياسة</h3>
+      <p>
+        قد نقوم بتحديث هذه السياسة من وقت لآخر. استمرارك في استخدام التطبيق بعد نشر التعديلات يعني موافقتك على النسخة
+        المحدّثة.
+      </p>
+
+      <h3 class="text-h6 mt-5">14. طريقة التواصل</h3>
+      <p>
+        لطلب الوصول أو الحذف أو لتقديم استفسار بخصوص الخصوصية، تواصل معنا على:
         <strong>mulhim@lamassu-iq.com</strong>
       </p>
-      <h3 class="text-h6 mt-5">5. Updates</h3>
-      <p>
-        We may update this Privacy Policy periodically. Continued use of the app after changes means you accept the new
-        terms.
-      </p>
+
       <v-divider class="my-6"></v-divider>
-      <p class="text-center text-caption">© 2025 MulhimIQ. All rights reserved.</p>
+      <p class="text-center text-caption">© 2025 MulhimIQ. جميع الحقوق محفوظة.</p>
     </v-card>
   </v-container>
 </template>

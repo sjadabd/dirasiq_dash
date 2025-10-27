@@ -1,67 +1,107 @@
 <template>
   <v-container class="py-10">
-    <h1 class="text-h4 mb-6 font-weight-bold text-center">Terms and Conditions</h1>
+    <h1 class="text-h4 mb-6 font-weight-bold text-center">الشروط والأحكام</h1>
     <v-card class="pa-6">
+      <p>آخر تحديث: أكتوبر 2025</p>
+
       <p>
-        Last updated: October 2025
+        مرحبًا بك في MulhimIQ! يُرجى قراءة هذه الشروط والأحكام ("الشروط") بعناية قبل استخدام تطبيق أو موقع
+        MulhimIQ ("الخدمة"). باستخدامك للخدمة، فإنك توافق على الالتزام بهذه الشروط.
       </p>
+
+      <h3 class="text-h6 mt-5">1. قبول الشروط</h3>
       <p>
-        Welcome to MulhimIQ! Please read these Terms and Conditions ("Terms") carefully before using the MulhimIQ mobile
-        application or website (the "Service") operated by MulhimIQ ("we", "our", or "us").
+        يشكّل وصولك إلى الخدمة أو استخدامها موافقة ملزمة على هذه الشروط. إذا لم توافق على أي بند، يُرجى التوقف عن
+        استخدام الخدمة.
       </p>
-      <h3 class="text-h6 mt-5">1. Acceptance of Terms</h3>
-      <p>
-        By accessing or using our Service, you agree to be bound by these Terms. If you disagree with any part, you may
-        not
-        access or use the Service.
-      </p>
-      <h3 class="text-h6 mt-5">2. Use of the Service</h3>
+
+      <h3 class="text-h6 mt-5">2. إنشاء الحساب واستخدام الخدمة</h3>
       <ul>
-        <li>Provide accurate information when creating your account.</li>
-        <li>Use the Service only for lawful educational purposes.</li>
-        <li>Do not misuse or attempt to interfere with the functionality or security of the Service.</li>
+        <li>تقديم معلومات دقيقة وحديثة عند إنشاء الحساب والحفاظ على سرية بيانات الدخول.</li>
+        <li>استخدام الخدمة لأغراض تعليمية مشروعة فقط ووفق القوانين المعمول بها.</li>
+        <li>عدم إساءة استخدام الخدمة أو محاولة تعطيل وظائفها أو أمنها أو الوصول غير المصرّح به.</li>
       </ul>
-      <h3 class="text-h6 mt-5">3. Subscriptions and Payments</h3>
+
+      <h3 class="text-h6 mt-5">3. الاشتراكات والرسوم</h3>
       <p>
-        Some features may require a paid subscription. Fees are charged annually or per student depending on the plan.
-        Payments made are non-refundable once the service period begins. MulhimIQ reserves the right to change pricing
-        with
-        prior notice.
+        قد تتطلب بعض الميزات اشتراكًا مدفوعًا. تُحصّل الرسوم سنويًا أو لكل طالب وفق الخطة. تعتبر المدفوعات
+        غير قابلة للاسترداد بعد بدء فترة الخدمة، ما لم ينص القانون خلاف ذلك. قد نقوم بتعديل الأسعار مع إشعار مسبق.
       </p>
-      <h3 class="text-h6 mt-5">4. Intellectual Property</h3>
+      <ul>
+        <li>قد تتم عمليات الشراء عبر متاجر التطبيقات (Apple App Store/Google Play) أو عبر الدفع المباشر.</li>
+        <li>تُجدد الاشتراكات تلقائيًا ما لم يتم الإلغاء قبل تاريخ التجديد.</li>
+        <li>تُضاف الضرائب والرسوم الحكومية إن وُجدت حسب الولاية القضائية.</li>
+      </ul>
+
+      <h3 class="text-h6 mt-5">4. المحتوى التعليمي ومحتوى المستخدم</h3>
+      <ul>
+        <li>المحتوى التعليمي مقدم للغرض التعليمي والإرشادي ولا يشكل استشارة مهنية.</li>
+        <li>أنت مسؤول عن أي محتوى ترفعه وتضمن امتلاكك الحقوق اللازمة له وعدم انتهاكه لحقوق الغير.</li>
+        <li>تمنحنا ترخيصًا غير حصري وقابلًا للإلغاء لاستخدام المحتوى داخل حدود تشغيل الخدمة.</li>
+      </ul>
+
+      <h3 class="text-h6 mt-5">5. الملكية الفكرية</h3>
       <p>
-        All content, designs, and trademarks within MulhimIQ are the exclusive property of MulhimIQ. You may not copy,
-        modify, or redistribute any content without written permission.
+        جميع العلامات والتصاميم والمحتوى داخل MulhimIQ مملوكة لـ MulhimIQ. لا يجوز نسخ أو تعديل أو إعادة توزيع أي
+        جزء دون إذن خطي مسبق.
       </p>
-      <h3 class="text-h6 mt-5">5. Limitation of Liability</h3>
+
+      <h3 class="text-h6 mt-5">6. الخدمات والروابط الخارجية</h3>
       <p>
-        MulhimIQ is not liable for any indirect or incidental damages arising from your use of the Service, including
-        but not
-        limited to data loss or service interruptions.
+        قد تعتمد الخدمة على مزودي خدمات خارجيين (مثل الدفع أو الإشعارات أو التحليلات). استخدامك لها يخضع لشروطهم إلى
+        جانب هذه الشروط.
       </p>
-      <h3 class="text-h6 mt-5">6. Privacy</h3>
+
+      <h3 class="text-h6 mt-5">7. الاتصالات والإشعارات</h3>
       <p>
-        Your use of the Service is also governed by our Privacy Policy. Please review it at
+        قد نرسل لك إشعارات متعلقة بالحساب والنشاطات والتحديثات. يمكنك إدارة تفضيلات الإشعارات من داخل التطبيق أو إعدادات
+        الجهاز.
+      </p>
+
+      <h3 class="text-h6 mt-5">8. سياسة الخصوصية</h3>
+      <p>
+        يخضع استخدامك للخدمة أيضًا لسياسة الخصوصية لدينا. يُرجى الاطلاع عليها هنا:
         <strong><a href="/privacy" target="_blank">https://mulhimiq.com/privacy</a></strong>.
       </p>
-      <h3 class="text-h6 mt-5">7. Termination</h3>
+
+      <h3 class="text-h6 mt-5">9. إخلاء المسؤولية وحدودها</h3>
+      <ul>
+        <li>يُقدَّم التطبيق "كما هو" و"حسب التوفر" دون أي ضمانات صريحة أو ضمنية.</li>
+        <li>لا نتحمل المسؤولية عن أي أضرار غير مباشرة أو عرضية أو تبعية ناتجة عن استخدامك للخدمة، بما في ذلك فقدان
+          البيانات أو انقطاع الخدمة.</li>
+      </ul>
+
+      <h3 class="text-h6 mt-5">10. توفّر الخدمة والصيانة</h3>
       <p>
-        We may suspend or terminate your access if you violate these Terms or misuse the Service. You may stop using the
-        Service
-        at any time by deleting your account.
+        قد تتوقف الخدمة مؤقتًا بسبب الصيانة أو ظروف خارجة عن إرادتنا. سنبذل جهدًا معقولًا لتقليل الانقطاعات.
       </p>
-      <h3 class="text-h6 mt-5">8. Changes to Terms</h3>
+
+      <h3 class="text-h6 mt-5">11. إنهاء الاستخدام</h3>
       <p>
-        We may update these Terms periodically. Updated versions will be posted on this page with a revised date.
-        Continued use of the Service indicates your acceptance of the new Terms.
+        يجوز لنا تعليق أو إنهاء وصولك للخدمة في حال مخالفة الشروط أو إساءة الاستخدام. يمكنك إنهاء الاستخدام بحذف حسابك،
+        مع ملاحظة أن بعض الالتزامات (مثل الرسوم المستحقة) قد تستمر حتى تاريخ الانتهاء.
       </p>
-      <h3 class="text-h6 mt-5">9. Contact Us</h3>
+
+      <h3 class="text-h6 mt-5">12. القانون الحاكم وتسوية النزاعات</h3>
       <p>
-        For questions or concerns about these Terms, please contact us at:
+        تُفسَّر هذه الشروط وفق القوانين المعمول بها في الولاية القضائية التي نعمل ضمنها. في حال النزاع، تكون
+        الجهات القضائية المختصة هي المحاكم المختصة في تلك الولاية ما لم يُتفق على خلاف ذلك. أخبرنا ببلد الاختصاص لتخصيص
+        هذا البند.
+      </p>
+
+      <h3 class="text-h6 mt-5">13. التعديلات على الشروط</h3>
+      <p>
+        قد نقوم بتحديث هذه الشروط من وقت لآخر. يُعد استمرارك في استخدام الخدمة بعد نشر التعديلات قبولًا للنسخة المحدّثة.
+      </p>
+
+      <h3 class="text-h6 mt-5">14. للتواصل</h3>
+      <p>
+        لأي استفسارات حول هذه الشروط، يُرجى التواصل معنا على:
         <strong>mulhim@lamassu-iq.com</strong>
       </p>
+
       <v-divider class="my-6"></v-divider>
-      <p class="text-center text-caption">© 2025 MulhimIQ. All rights reserved.</p>
+      <p class="text-center text-caption">© 2025 MulhimIQ. جميع الحقوق محفوظة.</p>
     </v-card>
   </v-container>
 </template>
