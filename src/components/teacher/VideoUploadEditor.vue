@@ -69,14 +69,14 @@
           اختر فيديو
         </v-btn>
         <p class="text-caption text-medium-emphasis mt-2">
-          يدعم: MP4, MOV, AVI. الحد الأقصى للمدة: {{ formatTime(maxDuration) }}
+          يدعم: MP4, MOV, AVI. الحد الأقصى للحجم: {{ formatBytes(MAX_UPLOAD_BYTES) }}
         </p>
       </div>
 
       <!-- Video Editor Section (only for new/base64 selection) -->
       <div v-else-if="isEditable" class="d-flex flex-column gap-4">
-        <!-- Auto-trim Alert -->
-        <v-alert v-if="wasAutoTrimmed" type="warning" variant="tonal" density="compact">
+        <!-- Auto-trim Alert (hidden in simple mode) -->
+        <v-alert v-if="!SIMPLE_MODE && wasAutoTrimmed" type="warning" variant="tonal" density="compact">
           <template #prepend>
             <v-icon>mdi-alert</v-icon>
           </template>
@@ -84,7 +84,7 @@
           يمكنك تحريك المقطع المحدد إلى أي جزء من الفيديو باستخدام السحب.
         </v-alert>
 
-        <v-alert v-else type="info" variant="tonal" density="compact">
+        <v-alert v-else-if="!SIMPLE_MODE" type="info" variant="tonal" density="compact">
           <template #prepend>
             <v-icon>mdi-information</v-icon>
           </template>
@@ -92,13 +92,13 @@
           الحد الأقصى: {{ formatTime(maxDuration) }}
         </v-alert>
 
-        <!-- Large File Warning -->
-        <v-alert v-if="videoFile && videoFile.size > 50 * 1024 * 1024" type="error" variant="tonal" density="compact">
+        <!-- Large File Warning (hard cap) -->
+        <v-alert v-if="videoFile && videoFile.size > MAX_UPLOAD_BYTES" type="error" variant="tonal" density="compact">
           <template #prepend>
             <v-icon>mdi-alert</v-icon>
           </template>
-          حجم الفيديو الأصلي: {{ formatBytes(videoFile.size) }}.
-          يرجى قص الفيديو لتقليل الحجم
+          حجم الفيديو: {{ formatBytes(videoFile.size) }}.
+          الحد الأقصى المسموح للرفع هو {{ formatBytes(MAX_UPLOAD_BYTES) }}. يرجى اختيار فيديو آخر أصغر.
         </v-alert>
 
         <!-- Video Player -->
@@ -107,8 +107,8 @@
             @loadedmetadata="onVideoLoaded" @timeupdate="onVideoTimeUpdate" />
         </div>
 
-        <!-- Stats Cards -->
-        <v-row>
+        <!-- Stats Cards (hidden in simple mode) -->
+        <v-row v-if="!SIMPLE_MODE">
           <v-col cols="12" md="4">
             <v-card>
               <v-card-text class="text-center">
@@ -135,8 +135,8 @@
           </v-col>
         </v-row>
 
-        <!-- Trimming Section -->
-        <v-card>
+        <!-- Trimming Section (hidden in simple mode) -->
+        <v-card v-if="!SIMPLE_MODE">
           <v-card-text>
             <div class="d-flex align-center gap-2 mb-3">
               <v-icon size="small">mdi-content-cut</v-icon>
@@ -272,8 +272,9 @@
         </v-card>
 
         <!-- Enhanced upload section with trimming progress -->
-        <div class="d-flex gap-2">
-          <v-btn color="primary" :disabled="isUploading || !videoFile || isProcessing"
+        <div class="d-flex gap-2" style="flex-direction: column;">
+          <v-btn color="primary"
+            :disabled="isUploading || !videoFile || isProcessing || (videoFile && videoFile.size > MAX_UPLOAD_BYTES)"
             :loading="isUploading || isProcessing" block @click="uploadVideo">
             <v-icon start>mdi-upload</v-icon>
             {{ getUploadButtonText() }}
@@ -323,8 +324,6 @@
 
 <script setup lang="ts">
 import teacherApi from '@/api/teacher/teacher_api.js';
-import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 interface Props {
@@ -333,26 +332,14 @@ interface Props {
   numberOfFrames?: number
 }
 
-// Helper: trim with timeout to avoid hanging forever on slow networks/CDN
-const trimWithTimeout = async (
-  file: File,
-  start: number,
-  duration: number,
-  timeoutMs = 120000,
-): Promise<Blob> => {
-  return await Promise.race([
-    trimVideoWithFFmpeg(file, start, duration),
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('trim-timeout')), timeoutMs)
-    ),
-  ])
-}
-
 const props = withDefaults(defineProps<Props>(), {
   maxDuration: 120,
   minDuration: 1,
   numberOfFrames: 10,
 })
+
+// Simple mode toggle (hide trimming and advanced processing)
+const SIMPLE_MODE = true
 
 // Refs
 const videoFile = ref<File | null>(null)
@@ -371,12 +358,11 @@ const uploadSuccess = ref(false)
 const uploadError = ref('')
 const wasAutoTrimmed = ref(false)
 
-const ffmpegRef = ref<FFmpeg | null>(null)
-let ffmpegLoadPromise: Promise<FFmpeg> | null = null
 const isProcessing = ref(false)
 const processingStatus = ref('')
 const showPreviewDialog = ref(false)
-const ffmpegReady = ref(false)
+// no client trimming in simple mode
+const MAX_UPLOAD_BYTES = 60 * 1024 * 1024
 
 // Timeline state
 const videoFrames = ref<string[]>([])
@@ -430,128 +416,6 @@ const formatBytes = (bytes: number): string => {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
 }
 
-const loadFFmpeg = async () => {
-  if (ffmpegRef.value) return ffmpegRef.value
-  if (ffmpegLoadPromise) return ffmpegLoadPromise
-
-  try {
-    ffmpegLoadPromise = (async () => {
-      console.log('[v0] بدء تحميل FFmpeg...')
-      const ffmpeg = new FFmpeg()
-
-      ffmpeg.on('log', ({ message }) => {
-        console.log('[v0] FFmpeg log:', message)
-      })
-
-      ffmpeg.on('progress', ({ progress }) => {
-        console.log('[v0] FFmpeg progress:', progress)
-        if (isProcessing.value) {
-          const percent = Math.round(progress * 100)
-          processingStatus.value = `جاري قص الفيديو... ${percent}%`
-        }
-      })
-    ffmpeg.on('progress', ({ progress }) => {
-      console.log('[v0] FFmpeg progress:', progress)
-      if (isProcessing.value) {
-        const percent = Math.round(progress * 100)
-        processingStatus.value = `جاري قص الفيديو... ${percent}%`
-      }
-    })
-
-    const bases = [
-      'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd',
-      'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd',
-    ]
-    let loaded = false
-    let lastErr: any = null
-    for (const baseURL of bases) {
-      try {
-        console.log('[v0] جاري تحميل ملفات FFmpeg من:', baseURL)
-        await ffmpeg.load({
-          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-        })
-        loaded = true
-        break
-      } catch (e) {
-        lastErr = e
-        console.warn('[v0] فشل تحميل FFmpeg من:', baseURL, e)
-      }
-    }
-    if (!loaded) throw lastErr || new Error('لم يتمكن من تحميل FFmpeg')
-
-      console.log('[v0] تم تحميل FFmpeg بنجاح')
-      ffmpegRef.value = ffmpeg
-      return ffmpeg
-    })()
-    const r = await ffmpegLoadPromise
-    return r
-  } catch (error) {
-    console.error('[v0] FFmpeg load error:', error)
-    throw new Error('فشل تحميل أداة معالجة الفيديو')
-  }
-}
-
-const trimVideoWithFFmpeg = async (file: File, start: number, duration: number): Promise<Blob> => {
-  try {
-    console.log('[v0] بدء عملية القص:', { start, duration, fileSize: file.size })
-    isProcessing.value = true
-    processingStatus.value = 'جاري تحميل أداة المعالجة...'
-
-    const ffmpeg = await loadFFmpeg()
-    console.log('[v0] FFmpeg جاهز للاستخدام')
-
-    processingStatus.value = 'جاري تحضير الفيديو...'
-
-    // Write input file
-    const inputName = 'input.mp4'
-    const outputName = 'output.mp4'
-
-    console.log('[v0] جاري كتابة ملف الإدخال...')
-    const fileData = await fetchFile(file)
-    console.log('[v0] حجم البيانات:', fileData.byteLength)
-    await ffmpeg.writeFile(inputName, fileData)
-    console.log('[v0] تم كتابة ملف الإدخال بنجاح')
-
-    processingStatus.value = 'جاري قص الفيديو...'
-
-    console.log('[v0] جاري تنفيذ أمر FFmpeg...')
-await ffmpeg.exec([
-  '-ss', start.toString(),
-  '-i', inputName,
-  '-t', duration.toString(),
-  '-c', 'copy',     // لا تعيد الترميز
-  '-avoid_negative_ts', 'make_zero',
-  '-y',
-  outputName
-])
-    console.log('[v0] تم تنفيذ أمر FFmpeg بنجاح')
-
-    processingStatus.value = 'جاري حفظ الفيديو...'
-
-    // Read output file
-    console.log('[v0] جاري قراءة ملف الإخراج...')
-    const data = await ffmpeg.readFile(outputName)
-    console.log('[v0] حجم الإخراج:', data.byteLength)
-    const blob = new Blob([data], { type: 'video/mp4' })
-
-    // Cleanup
-    console.log('[v0] جاري تنظيف الملفات المؤقتة...')
-    await ffmpeg.deleteFile(inputName)
-    await ffmpeg.deleteFile(outputName)
-    console.log('[v0] تمت عملية القص بنجاح')
-
-    return blob
-  } catch (error) {
-    console.error('[v0] FFmpeg trim error:', error)
-    const errorMessage = error instanceof Error ? error.message : 'خطأ غير معروف'
-    throw new Error(`فشل قص الفيديو: ${errorMessage}. يرجى المحاولة مرة أخرى أو اختيار فيديو آخر.`)
-  } finally {
-    isProcessing.value = false
-    processingStatus.value = ''
-  }
-}
-
 const fileToBase64 = (file: File | Blob): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -602,6 +466,11 @@ const onVideoSelected = (event: Event) => {
   videoUrl.value = URL.createObjectURL(file)
   uploadError.value = ''
   uploadSuccess.value = false
+
+  // Enforce hard size cap
+  if (videoFile.value.size > MAX_UPLOAD_BYTES) {
+    uploadError.value = `حجم الفيديو ${formatBytes(videoFile.value.size)} أكبر من الحد المسموح ${formatBytes(MAX_UPLOAD_BYTES)}، يرجى اختيار فيديو آخر أصغر.`
+  }
 }
 
 const openFilePicker = () => {
@@ -817,9 +686,13 @@ const uploadVideo = async () => {
   uploadSuccess.value = false
 
   try {
-    let fileToUpload: File = videoFile.value
+    // Enforce hard size cap before upload
+    if (videoFile.value.size > MAX_UPLOAD_BYTES) {
+      uploadError.value = `حجم الفيديو ${formatBytes(videoFile.value.size)} أكبر من الحد المسموح ${formatBytes(MAX_UPLOAD_BYTES)}، يرجى اختيار فيديو آخر أصغر.`
+      return
+    }
 
-    // Server handles trimming; send original file with start/end times
+    const fileToUpload: File = videoFile.value
 
     // Build FormData (multipart)
     isUploading.value = true
@@ -827,8 +700,6 @@ const uploadVideo = async () => {
 
     const form = new FormData()
     form.append('video', fileToUpload)
-    form.append('start', String(Math.floor(startTime.value)))
-    form.append('end', String(Math.floor(endTime.value)))
 
     console.log('[v0] جاري إرسال الطلب إلى الخادم (multipart/form-data)...')
     await teacherApi.uploadIntroVideo(form, {
@@ -973,10 +844,6 @@ onMounted(() => {
   document.addEventListener('touchmove', onDrag)
   document.addEventListener('touchend', stopDrag)
   loadExistingVideo()
-  // Preload FFmpeg in background to make trimming fast when user uploads
-  loadFFmpeg()
-    .then(() => { ffmpegReady.value = true; console.log('[v0] FFmpeg preloaded') })
-    .catch((e) => { console.warn('[v0] FFmpeg preload failed', e) })
 })
 
 onUnmounted(() => {
