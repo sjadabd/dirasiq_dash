@@ -819,30 +819,7 @@ const uploadVideo = async () => {
   try {
     let fileToUpload: File = videoFile.value
 
-    // Check if trimming is needed
-    const needsTrimming = startTime.value > 0 || endTime.value < originalDuration.value
-    console.log('[v0] هل يحتاج القص؟', needsTrimming, { start: startTime.value, end: endTime.value, original: originalDuration.value })
-
-    if (needsTrimming) {
-      try {
-        console.log('[v0] بدء عملية القص...')
-        const trimmedBlob = await trimWithTimeout(
-          videoFile.value,
-          startTime.value,
-          trimmedDuration.value
-        )
-        console.log('[v0] تم القص بنجاح، الحجم الجديد:', trimmedBlob.size)
-        const name = (videoFile.value.name.replace(/\.[^/.]+$/, '') || 'intro') + '.mp4'
-        fileToUpload = new File([trimmedBlob], name, { type: 'video/mp4' })
-      } catch (trimError) {
-        console.error('[v0] خطأ في القص:', trimError)
-        uploadError.value = 'تعذر قص الفيديو. يرجى التحقق من اتصال الإنترنت والمحاولة مجدداً.'
-        isUploading.value = false
-        isProcessing.value = false
-        processingStatus.value = ''
-        return
-      }
-    }
+    // Server handles trimming; send original file with start/end times
 
     // Build FormData (multipart)
     isUploading.value = true
@@ -850,6 +827,8 @@ const uploadVideo = async () => {
 
     const form = new FormData()
     form.append('video', fileToUpload)
+    form.append('start', String(Math.floor(startTime.value)))
+    form.append('end', String(Math.floor(endTime.value)))
 
     console.log('[v0] جاري إرسال الطلب إلى الخادم (multipart/form-data)...')
     await teacherApi.uploadIntroVideo(form, {
