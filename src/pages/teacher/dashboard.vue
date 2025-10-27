@@ -113,6 +113,48 @@ const logout = () => {
 const updateProfile = () => {
   router.push("/teacher/profile-setup");
 };
+
+// طباعة رمز QR في ورقة A4 مع رسالة للطلاب
+const printQr = () => {
+  const qrPath = user.value?.qr;
+  if (!qrPath) return;
+  const qrUrl = `https://api.mulhimiq.com${qrPath}`;
+
+  const win = window.open('', '_blank');
+  if (!win) return;
+
+  const html = `<!DOCTYPE html>
+  <html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <title>طباعة رمز الحضور</title>
+    <style>
+      @page { size: A4 portrait; margin: 20mm; }
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Naskh Arabic", Arial, sans-serif; }
+      .container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 40mm); text-align: center; }
+      h1 { margin: 0 0 12px; font-size: 24px; }
+      p { margin: 0 0 20px; font-size: 18px; }
+      img { width: 260px; height: 260px; object-fit: contain; }
+      .note { margin-top: 16px; font-size: 14px; color: #555; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>تسجيل الحضور عبر التطبيق</h1>
+      <p>يرجى من الطالب مسح رمز QR أدناه باستخدام التطبيق لتسجيل حضورك.</p>
+      <img src="${qrUrl}" alt="رمز حضور الطلاب" />
+      <div class="note">في حال تعذّر المسح، يرجى مراجعة المعلم.</div>
+    </div>
+    <script>
+      window.onload = function() { setTimeout(function(){ window.print(); window.close(); }, 300); };
+    <\/script>
+  </body>
+  </html>`;
+
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+};
 </script>
 
 <template>
@@ -123,8 +165,14 @@ const updateProfile = () => {
         <VCol cols="12">
           <VCard color="primary" variant="tonal" class="pa-6">
             <VRow align="center">
-              <VCol cols="12" md="6">
-                <h1 class="text-h4 mb-2">مرحباً {{ user?.name }}! 👋</h1>
+              <VCol cols="12" md="6" style="display: flex;flex-wrap: wrap; flex-direction: row; align-items: center; gap: 8px;">
+                <VAvatar size="80" color="primary">
+                  <VImg v-if="user?.profileImagePath" :src="`https://api.mulhimiq.com${user.profileImagePath}`"
+                    alt="User Avatar" cover />
+                  <VIcon v-else size="40">mdi-account</VIcon>
+                </VAvatar>
+                <div>
+                  <h1 class="text-h4 mb-2">مرحباً {{ user?.name }}! 👋</h1>
                 <p class="text-body-1 mb-0">
                   {{ user?.email }}
                 </p>
@@ -132,21 +180,24 @@ const updateProfile = () => {
                   عضو منذ
                   {{ new Date(user?.createdAt).toLocaleDateString("en-IQ") }}
                 </p>
+                </div>
               </VCol>
               <VCol cols="12" md="6" class="text-center" style="display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;">
-                <VAvatar size="80" color="primary">
-                  <VImg v-if="user?.profileImagePath" :src="`https://api.mulhimiq.com${user.profileImagePath}`"
-                    alt="User Avatar" cover />
-                  <VIcon v-else size="40">mdi-account</VIcon>
-                </VAvatar>
-                <div>
-                  <p>رمز تسجيل حضور الطلاب عن طريق التطبيق</p>
-                  <img style="inline-size: 60px;" v-if="user?.qr" :src="`https://api.mulhimiq.com${user.qr}`"
-                    alt="User Avatar" />
-                </div>
+                
+                <div style="display: flex;flex-wrap: wrap; flex-direction: row; align-items: center; gap: 8px;">
+                  <div>
+                    <p class="mb-0" style="font-size: 12px; color: rgba(0,0,0,.7);">رمز تسجيل حضور الطلاب عن طريق التطبيق</p>
+                  <img style="inline-size: 80px; block-size: 80px; object-fit: contain;" v-if="user?.qr" :src="`https://api.mulhimiq.com${user.qr}`"
+                    alt="رمز حضور الطلاب" />
+                  </div>
+                  </div>
+                  <VBtn v-if="user?.qr" size="small" variant="tonal" color="primary" @click="printQr">
+                    <VIcon start size="18">mdi-printer</VIcon>
+                    طباعة الرمز
+                  </VBtn>
               </VCol>
             </VRow>
           </VCard>

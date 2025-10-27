@@ -362,7 +362,7 @@ const isProcessing = ref(false)
 const processingStatus = ref('')
 const showPreviewDialog = ref(false)
 // no client trimming in simple mode
-const MAX_UPLOAD_BYTES = 60 * 1024 * 1024
+const MAX_UPLOAD_BYTES = 128 * 1024 * 1024
 
 // Timeline state
 const videoFrames = ref<string[]>([])
