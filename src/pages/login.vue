@@ -252,14 +252,16 @@ const handleEmailLogin = async () => {
     }
   } catch (err) {
     try {
-      const msg = err?.response?.data?.message || err?.message || ''
+      const msg = err?.response?.data?.message || err?.response?.data?.errors?.[0] || err?.message || ''
       const email = form.value.email
       if (typeof msg === 'string' && msg.includes('غير مفعل')) {
-        // توجيه لصفحة التحقق
         return await router.push({ path: '/verify-email', query: { email } })
       }
-    } catch { }
-    error.value = "خطأ في تسجيل الدخول. يرجى المحاولة مرة أخرى.";
+      if (msg) error.value = msg
+      else error.value = "خطأ في تسجيل الدخول. يرجى المحاولة مرة أخرى."
+    } catch {
+      error.value = "خطأ في تسجيل الدخول. يرجى المحاولة مرة أخرى."
+    }
     console.error("Login error:", err);
   } finally {
     isLoading.value = false;
@@ -314,7 +316,8 @@ const handleGoogleLogin = async (response) => {
     }
   } catch (err) {
     console.error("Google login error:", err);
-    error.value = "خطأ في تسجيل الدخول بـ Google";
+    const msg = err?.response?.data?.message || err?.response?.data?.errors?.[0] || err?.message
+    error.value = msg || "خطأ في تسجيل الدخول بـ Google";
   }
 };
 
