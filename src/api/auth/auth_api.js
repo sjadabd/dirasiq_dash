@@ -2,9 +2,11 @@ import axiosInstance from "@/utils/axios.js";
 
 class Auth {
   async loginInGoogele(userData) {
+    // userData should contain: { idToken: string, oneSignalPlayerId?: string, userType?: string }
     const requestData = {
-      googleData: userData,
-      userType: "teacher",
+      googleToken: userData.idToken,
+      oneSignalPlayerId: userData.oneSignalPlayerId,
+      userType: userData.userType || "teacher",
     };
     const response = await axiosInstance.post(`/auth/google-auth`, requestData);
 

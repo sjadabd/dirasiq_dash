@@ -277,14 +277,12 @@ const handleEmailLogin = async () => {
 const handleGoogleLogin = async (response) => {
   try {
     const token = response.credential;
-    const decodedToken = decodeJWT(token);
-
-    if (decodedToken) {
+    if (token) {
       const playerId = await getOneSignalPlayerId();
       console.log("playerId", playerId)
 
       const res = await Auth.loginInGoogele({
-        ...decodedToken,
+        idToken: token,
         oneSignalPlayerId: playerId,
       });
 
@@ -564,7 +562,8 @@ const handleResetPassword = async () => {
                     <div id="google-signin-button" class="google-signin-wrapper"></div>
                     <div class="d-flex justify-space-between mt-3">
                       <VBtn variant="text" size="small" @click="forgotDialog = true">نسيت كلمة المرور؟</VBtn>
-                      <VBtn variant="text" size="small" :to="{ path: '/verify-email', query: { email: form.email } }">تفعيل الحساب</VBtn>
+                      <VBtn variant="text" size="small" :to="{ path: '/verify-email', query: { email: form.email } }">
+                        تفعيل الحساب</VBtn>
                     </div>
                   </VCol>
                 </VRow>
@@ -649,7 +648,8 @@ const handleResetPassword = async () => {
               <VTextField v-model="resetForm.email" type="email" label="البريد الإلكتروني" />
             </VCol>
             <VCol cols="12" md="6">
-              <VTextField v-model="resetForm.newPassword" label="كلمة المرور الجديدة" :type="isPasswordVisible ? 'text' : 'password'"
+              <VTextField v-model="resetForm.newPassword" label="كلمة المرور الجديدة"
+                :type="isPasswordVisible ? 'text' : 'password'"
                 :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
                 @click:append-inner="isPasswordVisible = !isPasswordVisible" />
             </VCol>

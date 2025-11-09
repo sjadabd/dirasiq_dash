@@ -17,13 +17,13 @@ self.addEventListener("notificationclick", function (event) {
       for (const client of clientList) {
         try {
           if (client.url === url && "focus" in client) return client.focus();
-        } catch (e) {}
+        } catch (e) { }
       }
       for (const client of clientList) {
         try {
           if ("navigate" in client) await client.navigate(url);
           if ("focus" in client) return client.focus();
-        } catch (e) {}
+        } catch (e) { }
       }
       if (clients.openWindow) return clients.openWindow(url);
     })()
