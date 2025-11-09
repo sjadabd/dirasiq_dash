@@ -1,1 +1,0 @@
-const e=r=>r?r.split(" ").map(a=>a.charAt(0).toUpperCase()).join(""):"",n=(r,t={month:"short",day:"numeric",year:"numeric"})=>r&&new Intl.DateTimeFormat("en-US",t).format(new Date(r));export{e as a,n as f};
