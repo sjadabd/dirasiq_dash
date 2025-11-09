@@ -78,10 +78,10 @@ const handleRegisterTeacher = async () => {
       error.value = 'يرجى تعبئة جميع الحقول المطلوبة'
       return
     }
-    // كلمة المرور: ≥ 8 وتحتوي حرف كبير وصغير ورقم
-    const pwOk = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(f.password)
+    // كلمة المرور: أحرف أو أرقام فقط بطول لا يقل عن 6
+    const pwOk = /^[A-Za-z0-9]{6,}$/.test(f.password)
     if (!pwOk) {
-      error.value = 'كلمة المرور يجب أن تكون 8 أحرف على الأقل وتحتوي على حرف كبير وصغير ورقم'
+      error.value = 'كلمة المرور يجب أن تكون 6 رموز على الأقل من أحرف أو أرقام'
       return
     }
     if (f.password !== f.confirmPassword) {
@@ -249,6 +249,10 @@ const handleEmailLogin = async () => {
       }
 
       redirectBasedOnUserType(userData, requiresProfileCompletion);
+    } else {
+      // عرض رسالة الخطأ القادمة من الخادم عندما success=false
+      const msg = response?.data?.message || response?.data?.errors?.[0]
+      error.value = msg || 'خطأ في تسجيل الدخول. يرجى المحاولة مرة أخرى.'
     }
   } catch (err) {
     try {
@@ -312,6 +316,10 @@ const handleGoogleLogin = async (response) => {
         }
 
         redirectBasedOnUserType(userData, requiresProfileCompletion);
+      } else {
+        // عرض رسالة الخطأ القادمة من الخادم عندما success=false
+        const msg = res?.data?.message || res?.data?.errors?.[0]
+        error.value = msg || 'خطأ في تسجيل الدخول بـ Google'
       }
     }
   } catch (err) {
@@ -451,8 +459,8 @@ const handleResetPassword = async () => {
       error.value = 'يرجى تعبئة جميع الحقول المطلوبة'
       return
     }
-    const pwOk = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(f.newPassword)
-    if (!pwOk) { error.value = 'كلمة المرور يجب أن تكون 8 أحرف على الأقل وتحتوي على حرف كبير وصغير ورقم'; return }
+    const pwOk = /^[A-Za-z0-9]{6,}$/.test(f.newPassword)
+    if (!pwOk) { error.value = 'كلمة المرور يجب أن تكون 6 رموز على الأقل من أحرف أو أرقام'; return }
     if (f.newPassword !== f.confirmPassword) { error.value = 'تأكيد كلمة المرور غير مطابق'; return }
     isLoading.value = true
     const payload = { email: f.email, newPassword: f.newPassword }
