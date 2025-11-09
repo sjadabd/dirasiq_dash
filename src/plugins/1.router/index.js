@@ -25,6 +25,18 @@ const router = createRouter({
   ],
 })
 
+router.onError(err => {
+  const msg = err && err.message ? err.message : ''
+  if (
+    msg.includes('Failed to fetch dynamically imported module') ||
+    msg.includes('Importing a module script failed') ||
+    msg.includes('Loading chunk')
+  ) {
+    const current = router.currentRoute.value.fullPath
+    window.location.assign(current)
+  }
+})
+
 export { router }
 export default function (app) {
   app.use(router)
