@@ -103,7 +103,7 @@ const handleRegisterTeacher = async () => {
 
     const res = await Auth.registerTeacher(payload)
     const ok = res?.data?.success || res?.success
-    const msg = res?.data?.message || res?.message || 'تم إنشاء الحساب بنجاح'
+    const msg = res?.data?.message || res?.data?.errors?.[0] || res?.message || 'تم إنشاء الحساب بنجاح'
     if (ok) {
       // تحويل المستخدم مباشرة إلى صفحة التحقق
       registerForm.value.password = ''
@@ -113,7 +113,8 @@ const handleRegisterTeacher = async () => {
     }
   } catch (e) {
     console.error('Register teacher failed:', e)
-    error.value = 'حدث خطأ أثناء إنشاء الحساب'
+    const msg = e?.response?.data?.message || e?.response?.data?.errors?.[0] || e?.message
+    error.value = msg || 'حدث خطأ أثناء إنشاء الحساب'
   } finally {
     isRegisterLoading.value = false
   }
