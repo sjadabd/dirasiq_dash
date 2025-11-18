@@ -283,395 +283,723 @@ const printQr = () => {
   win.document.write(html);
   win.document.close();
 };
+
+// حساب نسبة الطلاب
+const getCapacityPercentage = () => {
+  if (capacity.value.maxStudents === 0) return 0;
+  return Math.round((capacity.value.currentStudents / capacity.value.maxStudents) * 100);
+};
+
+// حساب نسبة العربون المستلم
+const getDepositPercentage = () => {
+  if (stats.value.totalDeposit === 0) return 0;
+  return Math.round((stats.value.receivedDeposit / stats.value.totalDeposit) * 100);
+};
+
+// حساب نسبة المدفوع من الطلاب
+const getStudentPaidPercentage = () => {
+  if (stats.value.studentTotalDue === 0) return 0;
+  return Math.round((stats.value.studentAmountPaid / stats.value.studentTotalDue) * 100);
+};
 </script>
 
 <template>
   <div class="teacher-dashboard">
-    <VContainer fluid class="pa-6">
-      <!-- ترحيب -->
-      <VRow class="mb-6">
+    <VContainer fluid class="pa-4 pa-md-8">
+      <!-- Enhanced welcome section with gradient background and better layout -->
+      <VRow class="mb-8">
         <VCol cols="12">
-          <VCard color="primary" variant="tonal" class="pa-6">
-            <VRow align="center">
-              <VCol cols="12" md="6" style="display: flex; flex-flow: row wrap; align-items: center; gap: 8px;">
-                <VAvatar size="80" color="primary">
-                  <VImg v-if="user?.profileImagePath" :src="`https://api.mulhimiq.com${user.profileImagePath}`"
-                    alt="User Avatar" cover />
-                  <VIcon v-else size="40">mdi-account</VIcon>
-                </VAvatar>
-                <div>
-                  <h1 class="text-h4 mb-2">مرحباً {{ user?.name }}! 👋</h1>
-                  <p class="text-body-1 mb-0">
-                    {{ user?.email }}
-                  </p>
-                  <p class="text-caption mt-2">
-                    عضو منذ
-                    {{ new Date(user?.createdAt).toLocaleDateString("en-IQ") }}
-                  </p>
-                </div>
-              </VCol>
-              <VCol cols="12" md="6" class="text-center" style="display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;">
-
-                <div style="display: flex; flex-flow: row wrap; align-items: center; gap: 8px;">
-                  <div>
-                    <p class="mb-0" style=" color: rgba(0, 0, 0, 70%);font-size: 12px;">رمز تسجيل حضور الطلاب عن طريق
-                      التطبيق</p>
-                    <img style=" block-size: 80px;inline-size: 80px; object-fit: contain;" v-if="user?.qr"
-                      :src="`https://api.mulhimiq.com${user.qr}`" alt="رمز حضور الطلاب" />
+          <VCard class="welcome-card overflow-hidden" elevation="8">
+            <div class="welcome-gradient"></div>
+            <VCardText class="pa-6 pa-md-8 position-relative">
+              <VRow align="center">
+                <VCol cols="12" md="8">
+                  <div class="d-flex align-center gap-4 flex-wrap">
+                    <VAvatar size="100" class="avatar-glow" color="white"
+                      style="border: 4px solid rgba(255, 255, 255, 30%);">
+                      <VImg v-if="user?.profileImagePath" :src="`https://api.mulhimiq.com${user.profileImagePath}`"
+                        alt="User Avatar" cover />
+                      <VIcon v-else size="50" color="primary">mdi-account</VIcon>
+                    </VAvatar>
+                    <div class="welcome-text">
+                      <h1 class="text-h3 text-white mb-2 font-weight-bold">مرحباً {{ user?.name }}! 👋</h1>
+                      <p class="text-h6 mb-2 text-white" style="opacity: 0.95;">
+                        {{ user?.email }}
+                      </p>
+                      <VChip color="white" variant="flat" size="small" class="mt-1">
+                        <VIcon start size="16">mdi-calendar-check</VIcon>
+                        عضو منذ {{ new Date(user?.createdAt).toLocaleDateString("ar-IQ") }}
+                      </VChip>
+                    </div>
                   </div>
-                </div>
-                <VBtn v-if="user?.qr" size="small" variant="tonal" color="primary" @click="printQr">
-                  <VIcon start size="18">mdi-printer</VIcon>
-                  طباعة الرمز
-                </VBtn>
-              </VCol>
-            </VRow>
+                </VCol>
+                <VCol cols="12" md="4">
+                  <VCard class="qr-card text-center pa-4" elevation="4">
+                    <div class="text-caption mb-2 font-weight-bold">رمز الحضور للطلاب</div>
+                    <img v-if="user?.qr" class="qr-image mx-auto" :src="`https://api.mulhimiq.com${user.qr}`"
+                      alt="رمز حضور الطلاب" />
+                    <VBtn v-if="user?.qr" block size="small" variant="tonal" color="primary" class="mt-3"
+                      @click="printQr">
+                      <VIcon start size="18">mdi-printer</VIcon>
+                      طباعة الرمز
+                    </VBtn>
+                  </VCard>
+                </VCol>
+              </VRow>
+            </VCardText>
           </VCard>
         </VCol>
       </VRow>
 
-      <!-- الإحصائيات -->
-      <VRow class="mb-6" style="justify-content: center;">
-
-        <!-- سعة الاشتراك للطلاب -->
-        <VCol cols="12" md="12">
-          <VCard class="pa-4" elevation="2">
-            <div class="d-flex align-center justify-space-between mb-3">
-              <div class="d-flex align-center gap-2">
-                <VIcon size="28" color="primary">mdi-account-group</VIcon>
-                <div>
-                  <div class="text-subtitle-1 fw-600">سعة اشتراك الطلاب</div>
-                  <div class="text-caption text-medium-emphasis">
-                    تقرير بعدد الطلاب المسموح به والمتبقّي في باقتك الحالية
-                  </div>
-                </div>
-              </div>
-              <VBtn size="small" variant="text" :loading="capacityLoading" @click="() => {
-                capacityLoading = true; teacher_api.getRemainingStudents().then(resCap => {
-                  const ok = resCap?.data?.success || resCap?.success
-                  const data = resCap?.data?.data || resCap?.data || resCap
-                  if (ok && data) {
-                    capacity = {
-                      currentStudents: Number(data.currentStudents) || 0,
-                      maxStudents: Number(data.maxStudents) || 0,
-                      remaining: Number(data.remaining) || 0,
-                      canAdd: Boolean(data.canAdd),
-                    }
-                  }
-                }).catch(e => {
-                  console.warn('Failed to refresh subscription capacity:', e)
-                }).finally(() => { capacityLoading = false })
-              }">
-                تحديث
-              </VBtn>
-            </div>
-
-            <VAlert v-if="capacityError" type="error" variant="tonal" class="mb-3" density="comfortable">
-              {{ capacityError }}
-            </VAlert>
-
-            <div class="d-flex flex-wrap gap-4">
-              <div>
-                <div class="text-caption text-medium-emphasis">الطلاب الحاليون</div>
-                <div class="text-h6 font-weight-bold">
-                  {{ capacity.currentStudents }}
-                </div>
-              </div>
-              <div>
-                <div class="text-caption text-medium-emphasis">الحد الأقصى في الباقة</div>
-                <div class="text-h6 font-weight-bold">
-                  {{ capacity.maxStudents }}
-                </div>
-              </div>
-              <div>
-                <div class="text-caption text-medium-emphasis">المتبقّي</div>
-                <div class="text-h6 font-weight-bold">
-                  {{ capacity.remaining }}
-                </div>
-              </div>
-              <div>
-                <div class="text-caption text-medium-emphasis">إمكانية إضافة طلاب جدد</div>
-                <div class="text-subtitle-2 font-weight-bold" :class="capacity.canAdd ? 'text-success' : 'text-error'">
-                  {{ capacity.canAdd ? 'يمكن إضافة طلاب جدد' : 'لا يمكن إضافة طلاب جدد' }}
-                </div>
-              </div>
-            </div>
-          </VCard>
-        </VCol>
-
-        <!-- برنامج الإحالات للمعلم -->
-        <VCol cols="12" md="12">
-          <VCard class="pa-4" elevation="2">
-            <div class="d-flex align-center justify-space-between mb-3">
-              <div class="d-flex align-center gap-2">
-                <VIcon size="28" color="secondary">mdi-account-multiple-plus</VIcon>
-                <div>
-                  <div class="text-subtitle-1 fw-600">برنامج إحالة المعلمين</div>
-                  <div class="text-caption text-medium-emphasis">
-                    شارك كود الدعوة الخاص بك لتحصل على مقاعد إضافية عند اشتراك المعلمين المدعوين
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <VAlert v-if="referralError" type="error" variant="tonal" class="mb-3" density="comfortable">
-              {{ referralError }}
-            </VAlert>
-
-            <div v-if="referralLoading" class="d-flex justify-center py-4">
-              <VProgressCircular indeterminate color="primary" size="32" />
-            </div>
-
-            <template v-else>
-              <!-- كود الدعوة والرابط -->
-              <div class="d-flex flex-column flex-md-row gap-4 mb-4">
-                <div class="flex-grow-1">
-                  <div class="text-caption text-medium-emphasis mb-1">كود الدعوة الخاص بك</div>
-                  <div class="d-flex align-center gap-2 flex-wrap">
-                    <VBtn size="small" variant="tonal" color="primary"
-                      @click="() => copyToClipboard(referralDashboard.referralCode)">
-                      نسخ الكود
-                    </VBtn>
-                  </div>
-                </div>
-                <div class="flex-grow-1">
-                  <div class="text-caption text-medium-emphasis mb-1">رابط الدعوة للمشاركة</div>
-                  <div class="d-flex align-center gap-2 flex-wrap">
-                    <VBtn size="small" variant="tonal" color="secondary"
-                      @click="() => copyToClipboard('https://mulhimiq.com' + referralDashboard.referralLink)">
-                      نسخ رابط الدعوة
-                    </VBtn>
-                  </div>
-                </div>
-              </div>
-
-              <!-- كروت الإحصائيات -->
-              <div class="d-flex flex-wrap gap-4 mb-4">
-                <div>
-                  <div class="text-caption text-medium-emphasis">إجمالي الإحالات</div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ referralDashboard.referrals.total }}
-                  </div>
-                </div>
-                <div>
-                  <div class="text-caption text-medium-emphasis">الإحالات المكتملة</div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ referralDashboard.referrals.completed }}
-                  </div>
-                </div>
-                <div>
-                  <div class="text-caption text-medium-emphasis">قيد الانتظار</div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ referralDashboard.referrals.pending }}
-                  </div>
-                </div>
-                <div>
-                  <div class="text-caption text-medium-emphasis">إجمالي المقاعد الإضافية من الإحالات</div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ referralDashboard.bonuses.totalBonusSeats }}
-                  </div>
-                </div>
-              </div>
-
-              <!-- جدول المكافآت الفعّالة -->
-              <div>
-                <div class="text-subtitle-2 mb-2">المكافآت الفعّالة حالياً</div>
-                <VAlert v-if="!referralDashboard.bonuses.activeBonuses.length" type="info" variant="tonal"
-                  density="comfortable">
-                  لا توجد مكافآت إحالة فعّالة حالياً.
-                </VAlert>
-                <VTable v-else density="comfortable">
-                  <thead>
-                    <tr>
-                      <th class="text-start">نوع المكافأة</th>
-                      <th class="text-start">عدد المقاعد</th>
-                      <th class="text-start">ينتهي في</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="b in referralDashboard.bonuses.activeBonuses" :key="b.id">
-                      <td>
-                        {{ b.bonusType === 'referral_referrer' ? 'مقاعد إحالة' : (b.bonusType || 'مكافأة') }}
-                      </td>
-                      <td>{{ b.bonusValue }}</td>
-                      <td>
-                        {{ b.expiresAt ? new Date(b.expiresAt).toLocaleDateString('en-IQ') : '—' }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </VTable>
-              </div>
-            </template>
-          </VCard>
-        </VCol>
-
-        <!-- المدفوعات والفواتير -->
+      <!-- Stats overview with icon badges and better visual hierarchy -->
+      <VRow class="mb-8">
         <VCol cols="12">
-          <h2 class="text-h5 mb-4">المدفوعات والفواتير</h2>
-        </VCol>
-
-        <!-- ودائع الحجز (Deposit Invoices) -->
-        <VCol cols="12" md="4">
-          <VCard class="pa-4 text-center" elevation="2">
-            <VIcon size="36" color="primary" class="mb-2">mdi-cash</VIcon>
-            <div class="text-body-2 text-medium-emphasis mb-1">إجمالي مبالغ العربون</div>
-            <div class="text-h5">{{ formatIQD(stats.totalDeposit) }}</div>
-          </VCard>
-        </VCol>
-        <VCol cols="12" md="4">
-          <VCard class="pa-4 text-center" elevation="2">
-            <VIcon size="36" color="success" class="mb-2">mdi-cash-check</VIcon>
-            <div class="text-body-2 text-medium-emphasis mb-1">المستلم من العربون</div>
-            <div class="text-h5">{{ formatIQD(stats.receivedDeposit) }}</div>
-          </VCard>
-        </VCol>
-        <VCol cols="12" md="4">
-          <VCard class="pa-4 text-center" elevation="2">
-            <VIcon size="36" color="warning" class="mb-2">mdi-cash-remove</VIcon>
-            <div class="text-body-2 text-medium-emphasis mb-1">المتبقي من العربون</div>
-            <div class="text-h5">{{ formatIQD(stats.remainingDeposit) }}</div>
-          </VCard>
-        </VCol>
-
-        <!-- فواتير الطلاب (Student Invoices) -->
-        <VCol cols="12" md="4">
-          <VCard class="pa-4 text-center" elevation="2">
-            <VIcon size="36" color="primary" class="mb-2">mdi-receipt</VIcon>
-            <div class="text-body-2 text-medium-emphasis mb-1">إجمالي المستحق على الطلاب</div>
-            <div class="text-h5">{{ formatIQD(stats.studentTotalDue) }}</div>
-          </VCard>
-        </VCol>
-        <VCol cols="12" md="4">
-          <VCard class="pa-4 text-center" elevation="2">
-            <VIcon size="36" color="success" class="mb-2">mdi-receipt-text-check</VIcon>
-            <div class="text-body-2 text-medium-emphasis mb-1">المدفوع من الطلاب</div>
-            <div class="text-h5">{{ formatIQD(stats.studentAmountPaid) }}</div>
-          </VCard>
-        </VCol>
-        <VCol cols="12" md="4">
-          <VCard class="pa-4 text-center" elevation="2">
-            <VIcon size="36" color="warning" class="mb-2">mdi-receipt-text-remove</VIcon>
-            <div class="text-body-2 text-medium-emphasis mb-1">المتبقي على الطلاب</div>
-            <div class="text-h5">{{ formatIQD(stats.studentAmountRemaining) }}</div>
-          </VCard>
-        </VCol>
-
-        <VCol cols="12">
-          <h2 class="text-h5 mb-4">إحصائياتك</h2>
+          <h2 class="text-h4 mb-6 font-weight-bold d-flex align-center gap-2">
+            <VIcon color="primary" size="32">mdi-chart-box</VIcon>
+            نظرة عامة على الإحصائيات
+          </h2>
         </VCol>
 
         <VCol cols="12" v-if="isLoading">
-          <div class="d-flex justify-center py-6">
-            <VProgressCircular indeterminate color="primary" size="48" />
+          <div class="d-flex justify-center align-center" style="min-block-size: 200px;">
+            <div class="text-center">
+              <VProgressCircular indeterminate color="primary" size="64" width="6" />
+              <p class="mt-4 text-medium-emphasis">جاري تحميل البيانات...</p>
+            </div>
           </div>
         </VCol>
 
         <template v-else>
-          <VCol cols="12" sm="6" md="2">
-            <VCard class="pa-4 text-center" elevation="2">
-              <VIcon size="48" color="primary" class="mb-2">mdi-account-group</VIcon>
-              <h3 class="text-h4">{{ stats.totalStudents }}</h3>
-              <p class="text-body-2 text-medium-emphasis">إجمالي الطلاب</p>
+          <VCol cols="12" sm="6" lg="3">
+            <VCard class="stat-card stat-card-primary h-100" elevation="3">
+              <VCardText class="pa-6">
+                <div class="d-flex justify-space-between align-start mb-4">
+                  <div>
+                    <p class="text-caption text-medium-emphasis mb-1">إجمالي الطلاب</p>
+                    <h3 class="text-h3 font-weight-bold">{{ stats.totalStudents }}</h3>
+                  </div>
+                  <div class="stat-icon stat-icon-primary">
+                    <VIcon size="32" color="white">mdi-account-group</VIcon>
+                  </div>
+                </div>
+                <VProgressLinear :model-value="100" color="primary" height="6" rounded />
+              </VCardText>
             </VCard>
           </VCol>
 
-          <VCol cols="12" sm="6" md="2">
-            <VCard class="pa-4 text-center" elevation="2">
-              <VIcon size="48" color="success" class="mb-2">mdi-book-open</VIcon>
-              <h3 class="text-h4">{{ stats.totalCourses }}</h3>
-              <p class="text-body-2 text-medium-emphasis">إجمالي الدورات</p>
+          <VCol cols="12" sm="6" lg="3">
+            <VCard class="stat-card stat-card-success h-100" elevation="3">
+              <VCardText class="pa-6">
+                <div class="d-flex justify-space-between align-start mb-4">
+                  <div>
+                    <p class="text-caption text-medium-emphasis mb-1">إجمالي الدورات</p>
+                    <h3 class="text-h3 font-weight-bold">{{ stats.totalCourses }}</h3>
+                  </div>
+                  <div class="stat-icon stat-icon-success">
+                    <VIcon size="32" color="white">mdi-book-open-variant</VIcon>
+                  </div>
+                </div>
+                <VProgressLinear :model-value="100" color="success" height="6" rounded />
+              </VCardText>
             </VCard>
           </VCol>
 
-          <VCol cols="12" sm="6" md="2">
-            <VCard class="pa-4 text-center" elevation="2">
-              <VIcon size="48" color="info" class="mb-2">mdi-account-check</VIcon>
-              <h3 class="text-h4">{{ stats.activeStudents }}</h3>
-              <p class="text-body-2 text-medium-emphasis">الطلاب النشطون</p>
+          <VCol cols="12" sm="6" lg="3">
+            <VCard class="stat-card stat-card-info h-100" elevation="3">
+              <VCardText class="pa-6">
+                <div class="d-flex justify-space-between align-start mb-4">
+                  <div>
+                    <p class="text-caption text-medium-emphasis mb-1">الطلاب النشطون</p>
+                    <h3 class="text-h3 font-weight-bold">{{ stats.activeStudents }}</h3>
+                  </div>
+                  <div class="stat-icon stat-icon-info">
+                    <VIcon size="32" color="white">mdi-account-check</VIcon>
+                  </div>
+                </div>
+                <VProgressLinear
+                  :model-value="stats.totalStudents > 0 ? (stats.activeStudents / stats.totalStudents) * 100 : 0"
+                  color="info" height="6" rounded />
+              </VCardText>
             </VCard>
           </VCol>
 
-          <VCol cols="12" sm="6" md="2">
-            <VCard class="pa-4 text-center" elevation="2">
-              <VIcon size="48" color="warning" class="mb-2">mdi-book-check</VIcon>
-              <h3 class="text-h4">{{ stats.activeCourses }}</h3>
-              <p class="text-body-2 text-medium-emphasis">الدورات النشطة</p>
-            </VCard>
-          </VCol>
-
-          <VCol cols="12" sm="6" md="2">
-            <VCard class="pa-4 text-center" elevation="2">
-              <VIcon size="48" color="secondary" class="mb-2">mdi-calendar-clock</VIcon>
-              <h3 class="text-h4">{{ stats.sessionsToday }}</h3>
-              <p class="text-body-2 text-medium-emphasis">حصص اليوم</p>
+          <VCol cols="12" sm="6" lg="3">
+            <VCard class="stat-card stat-card-warning h-100" elevation="3">
+              <VCardText class="pa-6">
+                <div class="d-flex justify-space-between align-start mb-4">
+                  <div>
+                    <p class="text-caption text-medium-emphasis mb-1">حصص اليوم</p>
+                    <h3 class="text-h3 font-weight-bold">{{ stats.sessionsToday }}</h3>
+                  </div>
+                  <div class="stat-icon stat-icon-warning">
+                    <VIcon size="32" color="white">mdi-calendar-today</VIcon>
+                  </div>
+                </div>
+                <VProgressLinear :model-value="100" color="warning" height="6" rounded />
+              </VCardText>
             </VCard>
           </VCol>
         </template>
       </VRow>
 
-      <!-- الدروس القادمة اليوم -->
-      <VRow class="mb-6">
+      <!-- Capacity section with circular progress and enhanced design -->
+      <VRow class="mb-8">
         <VCol cols="12">
-          <h2 class="text-h5 mb-4">الدروس القادمة اليوم</h2>
+          <h2 class="text-h4 mb-6 font-weight-bold d-flex align-center gap-2">
+            <VIcon color="primary" size="32">mdi-account-multiple</VIcon>
+            إدارة السعة والإحالات
+          </h2>
         </VCol>
 
-        <!-- Loading -->
+        <VCol cols="12" lg="6">
+          <VCard class="capacity-card h-100" elevation="4">
+            <VCardText class="pa-6">
+              <div class="d-flex align-center justify-space-between mb-4">
+                <div>
+                  <h3 class="text-h5 font-weight-bold mb-1">سعة اشتراك الطلاب</h3>
+                  <p class="text-body-2 text-medium-emphasis">متابعة عدد الطلاب المسموح به في باقتك</p>
+                </div>
+                <VBtn icon size="small" variant="text" :loading="capacityLoading" @click="() => {
+                  capacityLoading = true; teacher_api.getRemainingStudents().then(resCap => {
+                    const ok = resCap?.data?.success || resCap?.success
+                    const data = resCap?.data?.data || resCap?.data || resCap
+                    if (ok && data) {
+                      capacity = {
+                        currentStudents: Number(data.currentStudents) || 0,
+                        maxStudents: Number(data.maxStudents) || 0,
+                        remaining: Number(data.remaining) || 0,
+                        canAdd: Boolean(data.canAdd),
+                      }
+                    }
+                  }).catch(e => {
+                    console.warn('Failed to refresh subscription capacity:', e)
+                  }).finally(() => { capacityLoading = false })
+                }">
+                  <VIcon>mdi-refresh</VIcon>
+                </VBtn>
+              </div>
+
+              <VAlert v-if="capacityError" type="error" variant="tonal" class="mb-4" density="comfortable">
+                {{ capacityError }}
+              </VAlert>
+
+              <div class="d-flex justify-center align-center mb-6">
+                <div class="position-relative">
+                  <VProgressCircular :model-value="getCapacityPercentage()" :size="180" :width="12"
+                    :color="capacity.canAdd ? 'success' : 'error'" class="capacity-progress">
+                    <div class="text-center">
+                      <div class="text-h3 font-weight-bold">{{ capacity.currentStudents }}</div>
+                      <div class="text-caption text-medium-emphasis">من {{ capacity.maxStudents }}</div>
+                    </div>
+                  </VProgressCircular>
+                </div>
+              </div>
+
+              <VRow>
+                <VCol cols="6">
+                  <VCard color="success" variant="tonal" class="pa-4 text-center">
+                    <VIcon size="24" color="success" class="mb-2">mdi-check-circle</VIcon>
+                    <div class="text-h6 font-weight-bold">{{ capacity.remaining }}</div>
+                    <div class="text-caption">مقعد متبقي</div>
+                  </VCard>
+                </VCol>
+                <VCol cols="6">
+                  <VCard :color="capacity.canAdd ? 'success' : 'error'" variant="tonal" class="pa-4 text-center">
+                    <VIcon size="24" :color="capacity.canAdd ? 'success' : 'error'" class="mb-2">
+                      {{ capacity.canAdd ? 'mdi-account-plus' : 'mdi-account-off' }}
+                    </VIcon>
+                    <div class="text-caption font-weight-bold">
+                      {{ capacity.canAdd ? 'يمكن إضافة طلاب' : 'السعة مكتملة' }}
+                    </div>
+                  </VCard>
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+        </VCol>
+
+        <!-- Enhanced referral section with better visual presentation -->
+        <VCol cols="12" lg="6">
+          <VCard class="referral-card h-100" elevation="4">
+            <VCardText class="pa-6">
+              <div class="d-flex align-center justify-space-between mb-4">
+                <div>
+                  <h3 class="text-h5 font-weight-bold mb-1">برنامج إحالة المعلمين</h3>
+                  <p class="text-body-2 text-medium-emphasis">احصل على مقاعد إضافية عند دعوة معلمين جدد</p>
+                </div>
+              </div>
+
+              <VAlert v-if="referralError" type="error" variant="tonal" class="mb-4" density="comfortable">
+                {{ referralError }}
+              </VAlert>
+
+              <div v-if="referralLoading" class="d-flex justify-center py-8">
+                <VProgressCircular indeterminate color="primary" size="48" />
+              </div>
+
+              <template v-else>
+                <VRow class="mb-4">
+                  <VCol cols="12" md="6">
+                    <VCard color="primary" variant="tonal" class="pa-4">
+                      <div class="text-caption mb-2">كود الدعوة</div>
+                      <div class="d-flex align-center gap-2">
+                        <code class="text-h6 font-weight-bold flex-grow-1">{{ referralDashboard.referralCode }}</code>
+                        <VBtn icon size="small" variant="text"
+                          @click="() => copyToClipboard(referralDashboard.referralCode)">
+                          <VIcon>mdi-content-copy</VIcon>
+                        </VBtn>
+                      </div>
+                    </VCard>
+                  </VCol>
+                  <VCol cols="12" md="6">
+                    <VCard color="secondary" variant="tonal" class="pa-4">
+                      <div class="text-caption mb-2">رابط الدعوة</div>
+                      <VBtn block size="small" variant="flat" color="secondary"
+                        @click="() => copyToClipboard('https://mulhimiq.com' + referralDashboard.referralLink)">
+                        <VIcon start size="18">mdi-link-variant</VIcon>
+                        نسخ الرابط
+                      </VBtn>
+                    </VCard>
+                  </VCol>
+                </VRow>
+
+                <VRow class="mb-4">
+                  <VCol cols="6" sm="3">
+                    <div class="text-center">
+                      <div class="text-h4 font-weight-bold text-primary">{{ referralDashboard.referrals.total }}</div>
+                      <div class="text-caption text-medium-emphasis">الإجمالي</div>
+                    </div>
+                  </VCol>
+                  <VCol cols="6" sm="3">
+                    <div class="text-center">
+                      <div class="text-h4 font-weight-bold text-success">{{ referralDashboard.referrals.completed }}
+                      </div>
+                      <div class="text-caption text-medium-emphasis">مكتملة</div>
+                    </div>
+                  </VCol>
+                  <VCol cols="6" sm="3">
+                    <div class="text-center">
+                      <div class="text-h4 font-weight-bold text-warning">{{ referralDashboard.referrals.pending }}</div>
+                      <div class="text-caption text-medium-emphasis">قيد الانتظار</div>
+                    </div>
+                  </VCol>
+                  <VCol cols="6" sm="3">
+                    <div class="text-center">
+                      <div class="text-h4 font-weight-bold text-info">{{ referralDashboard.bonuses.totalBonusSeats }}
+                      </div>
+                      <div class="text-caption text-medium-emphasis">مقاعد إضافية</div>
+                    </div>
+                  </VCol>
+                </VRow>
+
+                <VDivider class="my-4" />
+
+                <div class="text-subtitle-2 mb-3 font-weight-bold">المكافآت الفعّالة</div>
+                <VAlert v-if="!referralDashboard.bonuses.activeBonuses.length" type="info" variant="tonal"
+                  density="comfortable">
+                  لا توجد مكافآت فعّالة حالياً
+                </VAlert>
+                <div v-else class="bonuses-list">
+                  <VCard v-for="b in referralDashboard.bonuses.activeBonuses" :key="b.id" class="pa-3 mb-2"
+                    variant="tonal" color="success">
+                    <div class="d-flex justify-space-between align-center">
+                      <div>
+                        <div class="font-weight-bold">{{ b.bonusType === 'referral_referrer' ? 'مقاعد إحالة' : 'مكافأة'
+                        }}</div>
+                        <div class="text-caption">{{ b.expiresAt ? new Date(b.expiresAt).toLocaleDateString('ar-IQ') :
+                          'بدون انتهاء' }}</div>
+                      </div>
+                      <VChip color="success" size="small">{{ b.bonusValue }} مقعد</VChip>
+                    </div>
+                  </VCard>
+                </div>
+              </template>
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <!-- Financial overview with progress bars and better visualization -->
+      <VRow class="mb-8">
+        <VCol cols="12">
+          <h2 class="text-h4 mb-6 font-weight-bold d-flex align-center gap-2">
+            <VIcon color="primary" size="32">mdi-cash-multiple</VIcon>
+            نظرة عامة على المدفوعات
+          </h2>
+        </VCol>
+
+        <VCol cols="12" lg="6">
+          <VCard class="financial-card h-100" elevation="4">
+            <VCardText class="pa-6">
+              <div class="d-flex align-center gap-3 mb-4">
+                <div class="financial-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                  <VIcon size="32" color="white">mdi-cash-register</VIcon>
+                </div>
+                <div>
+                  <h3 class="text-h6 font-weight-bold">فواتير العربون</h3>
+                  <p class="text-caption text-medium-emphasis mb-0">إجمالي ومدفوعات العربون</p>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <div class="d-flex justify-space-between align-center mb-2">
+                  <span class="text-body-2">نسبة التحصيل</span>
+                  <span class="text-h6 font-weight-bold text-success">{{ getDepositPercentage() }}%</span>
+                </div>
+                <VProgressLinear :model-value="getDepositPercentage()" color="success" height="8" rounded />
+              </div>
+
+              <VRow>
+                <VCol cols="12">
+                  <div class="d-flex justify-space-between align-center pa-3 rounded"
+                    style="background-color: rgba(var(--v-theme-primary), 0.1);">
+                    <div>
+                      <VIcon size="20" color="primary" class="me-2">mdi-cash</VIcon>
+                      <span class="text-body-2">إجمالي العربون</span>
+                    </div>
+                    <span class="text-h6 font-weight-bold">{{ formatIQD(stats.totalDeposit) }}</span>
+                  </div>
+                </VCol>
+                <VCol cols="12">
+                  <div class="d-flex justify-space-between align-center pa-3 rounded"
+                    style="background-color: rgba(var(--v-theme-success), 0.1);">
+                    <div>
+                      <VIcon size="20" color="success" class="me-2">mdi-cash-check</VIcon>
+                      <span class="text-body-2">المستلم</span>
+                    </div>
+                    <span class="text-h6 font-weight-bold text-success">{{ formatIQD(stats.receivedDeposit) }}</span>
+                  </div>
+                </VCol>
+                <VCol cols="12">
+                  <div class="d-flex justify-space-between align-center pa-3 rounded"
+                    style="background-color: rgba(var(--v-theme-warning), 0.1);">
+                    <div>
+                      <VIcon size="20" color="warning" class="me-2">mdi-cash-minus</VIcon>
+                      <span class="text-body-2">المتبقي</span>
+                    </div>
+                    <span class="text-h6 font-weight-bold text-warning">{{ formatIQD(stats.remainingDeposit) }}</span>
+                  </div>
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+        </VCol>
+
+        <VCol cols="12" lg="6">
+          <VCard class="financial-card h-100" elevation="4">
+            <VCardText class="pa-6">
+              <div class="d-flex align-center gap-3 mb-4">
+                <div class="financial-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                  <VIcon size="32" color="white">mdi-receipt-text</VIcon>
+                </div>
+                <div>
+                  <h3 class="text-h6 font-weight-bold">فواتير الطلاب</h3>
+                  <p class="text-caption text-medium-emphasis mb-0">المستحقات والمدفوعات</p>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <div class="d-flex justify-space-between align-center mb-2">
+                  <span class="text-body-2">نسبة السداد</span>
+                  <span class="text-h6 font-weight-bold text-success">{{ getStudentPaidPercentage() }}%</span>
+                </div>
+                <VProgressLinear :model-value="getStudentPaidPercentage()" color="success" height="8" rounded />
+              </div>
+
+              <VRow>
+                <VCol cols="12">
+                  <div class="d-flex justify-space-between align-center pa-3 rounded"
+                    style="background-color: rgba(var(--v-theme-primary), 0.1);">
+                    <div>
+                      <VIcon size="20" color="primary" class="me-2">mdi-receipt</VIcon>
+                      <span class="text-body-2">إجمالي المستحق</span>
+                    </div>
+                    <span class="text-h6 font-weight-bold">{{ formatIQD(stats.studentTotalDue) }}</span>
+                  </div>
+                </VCol>
+                <VCol cols="12">
+                  <div class="d-flex justify-space-between align-center pa-3 rounded"
+                    style="background-color: rgba(var(--v-theme-success), 0.1);">
+                    <div>
+                      <VIcon size="20" color="success" class="me-2">mdi-cash-check</VIcon>
+                      <span class="text-body-2">المدفوع</span>
+                    </div>
+                    <span class="text-h6 font-weight-bold text-success">{{ formatIQD(stats.studentAmountPaid) }}</span>
+                  </div>
+                </VCol>
+                <VCol cols="12">
+                  <div class="d-flex justify-space-between align-center pa-3 rounded"
+                    style="background-color: rgba(var(--v-theme-warning), 0.1);">
+                    <div>
+                      <VIcon size="20" color="warning" class="me-2">mdi-cash-minus</VIcon>
+                      <span class="text-body-2">المتبقي</span>
+                    </div>
+                    <span class="text-h6 font-weight-bold text-warning">{{ formatIQD(stats.studentAmountRemaining)
+                    }}</span>
+                  </div>
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <!-- Enhanced upcoming sessions with modern card design -->
+      <VRow class="mb-8">
+        <VCol cols="12">
+          <h2 class="text-h4 mb-6 font-weight-bold d-flex align-center gap-2">
+            <VIcon color="primary" size="32">mdi-calendar-clock</VIcon>
+            الدروس القادمة اليوم
+          </h2>
+        </VCol>
+
         <VCol cols="12" v-if="isLoadingUpcoming">
-          <div class="d-flex justify-center py-6">
-            <VProgressCircular indeterminate color="primary" size="32" />
+          <div class="d-flex justify-center align-center" style="min-block-size: 200px;">
+            <div class="text-center">
+              <VProgressCircular indeterminate color="primary" size="48" />
+              <p class="mt-4 text-medium-emphasis">جاري تحميل الدروس...</p>
+            </div>
           </div>
         </VCol>
 
-        <!-- Empty -->
         <VCol cols="12" v-else-if="!upcomingToday.length">
-          <VAlert type="info" variant="tonal" border="start" border-color="info">
-            لا توجد دروس قادمة اليوم.
-          </VAlert>
+          <VCard class="pa-8 text-center" elevation="2">
+            <VIcon size="80" color="grey-lighten-1" class="mb-4">mdi-calendar-blank</VIcon>
+            <h3 class="text-h5 mb-2">لا توجد دروس قادمة اليوم</h3>
+            <p class="text-body-2 text-medium-emphasis">استمتع بيومك! 🎉</p>
+          </VCard>
         </VCol>
 
-        <!-- List -->
         <template v-else>
-          <VCol v-for="item in upcomingToday" :key="item.sessionId" cols="12" sm="6" md="4">
-            <VCard elevation="2" class="pa-4">
-              <div class="d-flex align-center justify-space-between mb-2">
-                <div class="text-subtitle-1 fw-600">{{ item.courseName || 'دورة' }}</div>
-                <VChip
-                  :color="item.state === 'confirmed' ? 'success' : (item.state === 'pending' ? 'warning' : 'default')"
-                  size="small">
-                  {{ translateState(item.state) }}
-                </VChip>
+          <VCol v-for="item in upcomingToday" :key="item.sessionId" cols="12" sm="6" lg="4">
+            <VCard class="session-card h-100" elevation="3" hover>
+              <div class="session-card-accent" :style="{
+                background: item.state === 'confirmed' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' :
+                  item.state === 'pending' ? 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' :
+                    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+              }">
               </div>
-              <div class="text-body-1 mb-1">{{ item.title }}</div>
-              <div class="text-body-2 text-medium-emphasis">
-                <VIcon size="18" class="me-1">mdi-clock-outline</VIcon>
-                {{ item.startTime }} - {{ item.endTime }}
-              </div>
+              <VCardText class="pa-6">
+                <div class="d-flex justify-space-between align-center mb-3">
+                  <VChip
+                    :color="item.state === 'confirmed' ? 'success' : (item.state === 'pending' ? 'warning' : 'default')"
+                    size="small" variant="flat">
+                    <VIcon start size="16">
+                      {{ item.state === 'confirmed' ? 'mdi-check-circle' :
+                        item.state === 'pending' ? 'mdi-clock-outline' : 'mdi-close-circle' }}
+                    </VIcon>
+                    {{ translateState(item.state) }}
+                  </VChip>
+                </div>
+
+                <h4 class="text-h6 font-weight-bold mb-2">{{ item.title }}</h4>
+                <p class="text-body-2 text-medium-emphasis mb-3">{{ item.courseName || 'دورة' }}</p>
+
+                <div class="d-flex align-center gap-2 text-body-2">
+                  <VIcon size="18" color="primary">mdi-clock-outline</VIcon>
+                  <span>{{ item.startTime }} - {{ item.endTime }}</span>
+                </div>
+              </VCardText>
             </VCard>
           </VCol>
         </template>
       </VRow>
 
-      <!-- Snackbar للتنبيهات العامة (مثل نجاح/فشل النسخ) -->
-      <VSnackbar v-model="snackbar.show" :color="snackbar.color" location="bottom right" timeout="3000">
-        {{ snackbar.text }}
+      <!-- Snackbar للتنبيهات -->
+      <VSnackbar v-model="snackbar.show" :color="snackbar.color" location="bottom" timeout="3000" rounded="pill">
+        <div class="d-flex align-center gap-2">
+          <VIcon>{{ snackbar.color === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle' }}</VIcon>
+          {{ snackbar.text }}
+        </div>
       </VSnackbar>
     </VContainer>
   </div>
 </template>
 
 <style scoped>
-.v-card {
+/* Added comprehensive modern styles with gradients, animations, and enhanced visual design */
+.teacher-dashboard {
+  background: linear-gradient(to bottom, #f8f9fa 0%, #fff 100%);
+  min-block-size: 100vh;
+}
+
+/* Welcome Card Styles */
+.welcome-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px !important;
+}
+
+.welcome-gradient {
+  position: absolute;
+  background: linear-gradient(135deg, #52657b 0%, #0b2545 100%);
+  inset: 0;
+  opacity: 1;
+}
+
+.welcome-text h1 {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 10%);
+}
+
+.avatar-glow {
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 40%);
+  transition: transform 0.3s ease;
+}
+
+.avatar-glow:hover {
+  transform: scale(1.05);
+}
+
+.qr-card {
+  border-radius: 16px !important;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 95%) !important;
+}
+
+.qr-image {
+  padding: 8px;
   border-radius: 12px;
+  background: white;
+  block-size: 120px;
+  inline-size: 120px;
+  object-fit: contain;
 }
 
-.v-list-item {
-  border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+/* Stat Cards */
+.stat-card {
+  border: 1px solid rgba(0, 0, 0, 5%);
+  border-radius: 16px !important;
+  transition: all 0.3s ease;
 }
 
-.v-list-item:last-child {
-  border-block-end: none;
+.stat-card:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 10%) !important;
+  transform: translateY(-4px);
+}
+
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  block-size: 56px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 15%);
+  inline-size: 56px;
+}
+
+.stat-icon-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-icon-success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.stat-icon-info {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.stat-icon-warning {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+/* Capacity and Referral Cards */
+.capacity-card,
+.referral-card {
+  border: 1px solid rgba(0, 0, 0, 5%);
+  border-radius: 20px !important;
+}
+
+.capacity-progress {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 10%));
+}
+
+/* Financial Cards */
+.financial-card {
+  border: 1px solid rgba(0, 0, 0, 5%);
+  border-radius: 20px !important;
+}
+
+.financial-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  block-size: 56px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 15%);
+  inline-size: 56px;
+}
+
+/* Session Cards */
+.session-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 5%);
+  border-radius: 16px !important;
+  transition: all 0.3s ease;
+}
+
+.session-card:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 15%) !important;
+  transform: translateY(-4px);
+}
+
+.session-card-accent {
+  position: absolute;
+  block-size: 4px;
+  inset-block-start: 0;
+  inset-inline: 0;
+}
+
+/* Bonuses List */
+.bonuses-list {
+  max-block-size: 200px;
+  overflow-y: auto;
+}
+
+.bonuses-list::-webkit-scrollbar {
+  inline-size: 6px;
+}
+
+.bonuses-list::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 5%);
+}
+
+.bonuses-list::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 20%);
+}
+
+.bonuses-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 30%);
+}
+
+/* Responsive adjustments */
+@media (max-width: 960px) {
+  .welcome-text h1 {
+    font-size: 1.75rem !important;
+  }
+
+  .stat-card {
+    margin-block-end: 12px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.v-card {
+  animation: fadeIn 0.5s ease-out;
 }
 </style>
