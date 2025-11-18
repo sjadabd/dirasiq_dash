@@ -4,7 +4,6 @@ import { themeConfig } from "@themeConfig";
 
 // Components
 import logo from "@/assets/images/logo.png";
-import Footer from "@/layouts/components/Footer.vue";
 import NavbarThemeSwitcher from "@/layouts/components/NavbarThemeSwitcher.vue";
 import UserProfile from "@/layouts/components/UserProfile.vue";
 import { HorizontalNavLayout } from "@layouts";
@@ -33,9 +32,9 @@ import { HorizontalNavLayout } from "@layouts";
     <slot />
 
     <!-- 👉 Footer -->
-    <template #footer>
+    <!-- <template #footer>
       <Footer />
-    </template>
+    </template> -->
 
     <!-- 👉 Customizer -->
     <!-- <TheCustomizer /> -->
