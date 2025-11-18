@@ -29,7 +29,7 @@
               <v-btn variant="text" :to="{ path: '/terms-and-conditions' }">شروط الاستخدام</v-btn>
               <!-- 🔹 زر ديناميكي حسب حالة تسجيل الدخول -->
               <v-btn v-if="!isLoggedIn" color="support" style="background-color: #1c324c !important;" variant="elevated"
-                @click="openStartDialog">
+                to="/login">
                 <v-icon start>mdi-rocket-launch</v-icon>
                 ابدأ الآن
               </v-btn>
@@ -62,8 +62,7 @@
                 <v-list-item :to="{ path: '/terms-and-conditions' }" title="شروط الاستخدام"
                   prepend-icon="mdi-file-document" />
                 <!-- 🔹 زر ديناميكي حسب حالة تسجيل الدخول -->
-                <v-btn v-if="!isLoggedIn" color="support" style="background-color: #1c324c !important;"
-                  variant="elevated" @click="openStartDialog">
+                <v-btn v-if="!isLoggedIn" color="white" class="ss" variant="elevated" to="/login">
                   <v-icon start>mdi-rocket-launch</v-icon>
                   ابدأ الآن
                 </v-btn>
@@ -146,29 +145,34 @@
                   </p>
 
                   <div class="d-flex gap-3 flex-wrap mb-6">
-                    <v-btn size="x-large" color="white" variant="elevated" @click="openStartDialog">
+                    <v-btn size="x-large" color="white" variant="elevated" to="/login">
                       <v-icon start>mdi-account-plus</v-icon>
-                      انضم كمعلم
+                      انضم كمدرس
                     </v-btn>
 
-                    <v-btn size="x-large" variant="outlined" color="white" @click="openStartDialog">
+                    <v-btn size="x-large" variant="outlined" color="white" to="/login">
                       <v-icon start>mdi-login</v-icon>
                       تسجيل الدخول
                     </v-btn>
                   </div>
 
-                  <!-- Download app section for students -->
+                  <!-- Student join info and download app section -->
                   <div class="download-section mt-8 pa-4"
                     style=" border-radius: 16px; backdrop-filter: blur(10px);background: rgba(255, 255, 255, 10%);">
                     <h3 class="text-h6 font-weight-bold text-white mb-3">
-                      <v-icon start color="white">mdi-cellphone-download</v-icon>
-                      حمّل التطبيق للطلاب
+                      <v-icon start color="white">mdi-school</v-icon>
+                      انضم كطالب عبر التطبيق
                     </h3>
                     <p class="text-body-2 text-white mb-3" style="opacity: 0.9;">
-                      تابع دروسك وواجباتك من هاتفك المحمول
+                      يمكن للطلاب الانضمام واستخدام ملهم فقط عن طريق تطبيق الجوال، وهذا زر تحميل التطبيق.
                     </p>
+                    <h4 class="text-body-1 text-white mb-3" style="opacity: 0.9;">
+                      <v-icon start color="white">mdi-cellphone-download</v-icon>
+                      حمّل التطبيق للطلاب
+                    </h4>
                     <div class="d-flex gap-2 flex-wrap">
-                      <v-btn color="white" variant="elevated" size="large" href="#">
+                      <v-btn color="white" variant="elevated" size="large"
+                        href="https://apps.apple.com/us/app/mulhimiq/id6754453929" target="_blank">
                         <v-icon start>mdi-apple</v-icon>
                         App Store
                       </v-btn>
@@ -389,7 +393,7 @@
       </section>
 
       <!-- 6️⃣ Testimonials Section -->
-      <section class="testimonials-section py-16">
+      <!-- <section class="testimonials-section py-16">
         <v-container>
           <div class="text-center mb-12">
             <h2 class="text-h3 font-weight-bold mb-4 text-white">آراء المستخدمين</h2>
@@ -416,7 +420,7 @@
             </v-col>
           </v-row>
         </v-container>
-      </section>
+      </section> -->
 
       <!-- 7️⃣ Pricing Section -->
       <section id="pricing" class="pricing-section py-16">
@@ -425,6 +429,58 @@
             <h2 class="text-h3 font-weight-bold mb-4">باقات الأشتراك</h2>
             <p class="text-h6 text-medium-emphasis">اختر الخطة المناسبة لك</p>
           </div>
+
+          <!-- تقرير سعة الاشتراك للمعلم (يظهر فقط عند تسجيل الدخول) -->
+          <v-row v-if="isLoggedIn" class="mb-6" justify="center">
+            <v-col cols="12" md="8">
+              <v-card elevation="2">
+                <v-card-title class="d-flex align-center justify-space-between">
+                  <div class="d-flex align-center gap-2">
+                    <v-icon color="primary">mdi-account-group</v-icon>
+                    <span>سعة اشتراك الطلاب</span>
+                  </div>
+                  <v-btn variant="text" size="small" :loading="subscriptionCapacityLoading"
+                    @click="fetchSubscriptionCapacity">
+                    تحديث
+                  </v-btn>
+                </v-card-title>
+                <v-card-text>
+                  <v-alert v-if="subscriptionCapacityError" type="error" variant="tonal" class="mb-4"
+                    density="comfortable">
+                    {{ subscriptionCapacityError }}
+                  </v-alert>
+
+                  <div class="d-flex flex-wrap gap-4">
+                    <div>
+                      <div class="text-caption text-medium-emphasis">الطلاب الحاليون</div>
+                      <div class="text-h6 font-weight-bold">
+                        {{ subscriptionCapacity.currentStudents }}
+                      </div>
+                    </div>
+                    <div>
+                      <div class="text-caption text-medium-emphasis">الحد الأقصى في الباقة</div>
+                      <div class="text-h6 font-weight-bold">
+                        {{ subscriptionCapacity.maxStudents }}
+                      </div>
+                    </div>
+                    <div>
+                      <div class="text-caption text-medium-emphasis">المتبقّي</div>
+                      <div class="text-h6 font-weight-bold">
+                        {{ subscriptionCapacity.remaining }}
+                      </div>
+                    </div>
+                    <div>
+                      <div class="text-caption text-medium-emphasis">إمكانية إضافة طلاب جدد</div>
+                      <div class="text-subtitle-2 font-weight-bold"
+                        :class="subscriptionCapacity.canAdd ? 'text-success' : 'text-error'">
+                        {{ subscriptionCapacity.canAdd ? 'يمكن إضافة طلاب جدد' : 'لا يمكن إضافة طلاب جدد' }}
+                      </div>
+                    </div>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
 
           <v-row justify="center">
             <v-col cols="12" md="3" v-for="plan in pricingPlans" :key="plan.id">
@@ -491,7 +547,7 @@
                 <p class="text-h6 text-white mb-6" style="opacity: 0.95;">
                   انضم إلى آلاف المعلمين والطلاب الذين يستخدمون ملهم
                 </p>
-                <v-btn size="x-large" color="white" variant="elevated" @click="openStartDialog">
+                <v-btn size="x-large" color="white" variant="elevated" to="/login">
                   <v-icon start>mdi-account-plus</v-icon>
                   أنشئ حسابك مجانًا
                 </v-btn>
@@ -977,6 +1033,16 @@ export default {
         }
       ],
 
+      // تقرير سعة اشتراك المعلم (للمعلمين المسجلين الدخول)
+      subscriptionCapacity: {
+        currentStudents: 0,
+        maxStudents: 0,
+        remaining: 0,
+        canAdd: false,
+      },
+      subscriptionCapacityLoading: false,
+      subscriptionCapacityError: '',
+
       // الأصول
       logo
     }
@@ -989,7 +1055,15 @@ export default {
     // Load pricing plans from backend
     this.fetchPricingPlans()
     this.getPublicNews()
-    if (this.isLoggedIn) this.refreshNotifications()
+    if (this.isLoggedIn) {
+      this.refreshNotifications()
+      try {
+        const parsedUser = JSON.parse(user)
+        if (parsedUser?.userType === 'teacher') {
+          this.fetchSubscriptionCapacity()
+        }
+      } catch { }
+    }
     try {
       const params = new URLSearchParams(window.location.search)
       const qid = params.get('notificationId')
@@ -1130,6 +1204,35 @@ export default {
       }
     },
 
+    async fetchSubscriptionCapacity() {
+      this.subscriptionCapacityLoading = true
+      this.subscriptionCapacityError = ''
+      try {
+        const res = await teacher_api.getRemainingStudents()
+        const ok = res?.data?.success || res?.success
+        const data = res?.data?.data || res?.data || res
+
+        if (!ok || !data) {
+          throw new Error(res?.data?.message || 'تعذر جلب تقرير السعة')
+        }
+
+        this.subscriptionCapacity = {
+          currentStudents: Number(data.currentStudents) || 0,
+          maxStudents: Number(data.maxStudents) || 0,
+          remaining: Number(data.remaining) || 0,
+          canAdd: Boolean(data.canAdd),
+        }
+      } catch (err) {
+        console.warn('Failed to fetch remaining students:', err)
+        this.subscriptionCapacityError =
+          err?.response?.data?.message ||
+          err?.message ||
+          'تعذر جلب تقرير السعة، يرجى المحاولة لاحقًا'
+      } finally {
+        this.subscriptionCapacityLoading = false
+      }
+    },
+
     async getPublicNews() {
       try {
         // ✅ جلب البيانات من API
@@ -1241,11 +1344,25 @@ export default {
       }
     },
 
-    selectPlan(plan) {
-      this.snackbar = {
-        show: true,
-        message: `تم اختيار خطة ${plan.name}`,
-        color: 'success'
+    async selectPlan(plan) {
+      try {
+        const res = await teacher_api.activateSubscriptionPackage(plan.id)
+        const ok = res?.data?.success || res?.success
+        const msg = res?.data?.message || res?.message || `تم تفعيل باقة ${plan.name} بنجاح`
+
+        this.snackbar = {
+          show: true,
+          message: msg,
+          color: ok ? 'success' : 'error',
+        }
+      } catch (err) {
+        console.warn('Failed to activate subscription package:', err)
+        const msg = err?.response?.data?.message || err?.response?.data?.errors?.[0] || 'تعذر تفعيل الباقة، يرجى المحاولة لاحقًا'
+        this.snackbar = {
+          show: true,
+          message: msg,
+          color: 'error',
+        }
       }
     }
   }
@@ -1393,6 +1510,14 @@ definePage({
     font-size: 0.875rem;
     padding-inline: 12px;
   }
+}
+
+.ss {
+  color: white !important;
+}
+
+.ss .v-icon {
+  color: white !important;
 }
 
 /* Typography */

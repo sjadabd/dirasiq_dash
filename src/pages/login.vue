@@ -101,6 +101,10 @@ const handleRegisterTeacher = async () => {
       studyYear: f.studyYear,
     }
 
+    if (referralCode.value) {
+      payload.referralCode = referralCode.value
+    }
+
     const res = await Auth.registerTeacher(payload)
     const ok = res?.data?.success || res?.success
     const msg = res?.data?.message || res?.data?.errors?.[0] || res?.message || 'تم إنشاء الحساب بنجاح'
@@ -142,6 +146,8 @@ const isLoading = ref(false);
 const error = ref("");
 const isUserAuthenticated = ref(false);
 const activeAuthTab = ref('login') // 'login' | 'register'
+const showStudentAppDialog = ref(false)
+const referralCode = ref('')
 // Registration state
 const registerForm = ref({
   name: '',
@@ -229,6 +235,11 @@ const handleEmailLogin = async () => {
         isProfileComplete,
       } = response.data.data;
 
+      if (userData?.userType === 'student') {
+        showStudentAppDialog.value = true
+        return
+      }
+
       localStorage.setItem("isProfileComplete", isProfileComplete);
       localStorage.setItem('content_url', response.data.content_url)
       login(userData, accessToken);
@@ -284,6 +295,8 @@ const handleGoogleLogin = async (response) => {
       const res = await Auth.loginInGoogele({
         idToken: token,
         oneSignalPlayerId: playerId,
+        // دعم إحالات المعلمين عبر Google: نمرر referralCode إن وُجد
+        referralCode: referralCode.value || undefined,
       });
 
       if (res.data.success) {
@@ -293,6 +306,11 @@ const handleGoogleLogin = async (response) => {
           requiresProfileCompletion,
           isProfileComplete,
         } = res.data.data;
+
+        if (userData?.userType === 'student') {
+          showStudentAppDialog.value = true
+          return
+        }
 
         localStorage.setItem("isProfileComplete", isProfileComplete);
         localStorage.setItem('content_url', res.data.content_url)
@@ -354,6 +372,8 @@ onMounted(async () => {
   try {
     const qEmail = route?.query?.email
     if (qEmail) form.value.email = String(qEmail)
+    const qRef = route?.query?.ref
+    if (qRef) referralCode.value = String(qRef)
   } catch { }
 
   const google = window.google;
@@ -623,6 +643,33 @@ const handleResetPassword = async () => {
         </VCard>
       </VCol>
     </VRow>
+
+    <!-- Student must use mobile app dialog -->
+    <VDialog v-model="showStudentAppDialog" max-width="520">
+      <VCard>
+        <VCardTitle>تسجيل الدخول للطلاب</VCardTitle>
+        <VCardText>
+          <p class="mb-4">
+            لا يمكن للطلاب تسجيل الدخول من المتصفح. للمتابعة، يرجى استخدام تطبيق ملهم على الجوال.
+          </p>
+          <p class="mb-4">
+            قم بتحميل التطبيق من الروابط التالية:
+          </p>
+          <div class="d-flex flex-column gap-2">
+            <VBtn color="primary" variant="elevated" href="https://apps.apple.com/us/app/mulhimiq/id6754453929"
+              target="_blank">
+              تحميل من App Store
+            </VBtn>
+            <VBtn color="success" variant="elevated" href="#" target="_blank">
+              تحميل من Google Play
+            </VBtn>
+          </div>
+        </VCardText>
+        <VCardActions class="justify-end">
+          <VBtn variant="text" @click="showStudentAppDialog = false">إغلاق</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
 
     <!-- Forgot Password Dialog -->
     <VDialog v-model="forgotDialog" max-width="520">

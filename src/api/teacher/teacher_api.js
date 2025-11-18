@@ -34,6 +34,10 @@ class TeacherApi {
     const response = await axiosInstance.get(`/teacher/dashboard`);
     return response;
   }
+  async getReferralDashboard() {
+    const response = await axiosInstance.get(`/teacher/dashboard/referrals`);
+    return response;
+  }
   async getActivePackages() {
     const response = await axiosInstance.get(`/teacher/subscription-packages/active`);
     return response;
@@ -41,6 +45,13 @@ class TeacherApi {
   async getPublicNews() {
     const response = await axiosInstance.get(`/public/news`);
     return response;
+  }
+
+  // Subscription packages (Teacher)
+  async activateSubscriptionPackage(id) {
+    const safeId = encodeURIComponent(id)
+    const response = await axiosInstance.post(`/teacher/subscription-packages/${safeId}/activate`, {})
+    return response
   }
   // profile
 
@@ -182,6 +193,12 @@ class TeacherApi {
     return response;
   }
   // bookings
+
+  // Subscription capacity (Teacher)
+  async getRemainingStudents() {
+    const response = await axiosInstance.get('/teacher/bookings/subscription/remaining-students')
+    return response
+  }
 
   // sessions
   async getSessions(userData) {

@@ -88,6 +88,44 @@ async function fetchPricingPlans() {
   }
 }
 
+async function handlePlanClick(plan) {
+  // إذا كانت هذه هي الباقة الحالية، لا نفعل شيئًا
+  if (plan.current) return;
+
+  try {
+    const res = await teacher_api.activateSubscriptionPackage(plan.id);
+    const ok = res?.data?.success || res?.success;
+    const msg =
+      res?.data?.message ||
+      res?.message ||
+      `تم تفعيل باقة ${plan.name} بنجاح`;
+
+    snackbar.value = {
+      show: true,
+      message: msg,
+      color: ok ? 'success' : 'error',
+    };
+
+    if (ok) {
+      pricingPlans.value = pricingPlans.value.map((p) => ({
+        ...p,
+        current: p.id === plan.id,
+      }));
+    }
+  } catch (err) {
+    console.warn('Failed to activate subscription package:', err);
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.errors?.[0] ||
+      'تعذر تفعيل الباقة، يرجى المحاولة لاحقًا';
+    snackbar.value = {
+      show: true,
+      message: msg,
+      color: 'error',
+    };
+  }
+}
+
 // Fetch data on component mount
 onMounted(() => {
   fetchPricingPlans();
@@ -141,7 +179,7 @@ onMounted(() => {
             <div>
               <div class="d-flex justify-center align-center">
                 <h1 class="text-h1 font-weight-medium text-primary">
-                  {{ plan.monthlyPrice === 0 ? 'مجاناً' : new Intl.NumberFormat('ar-IQ').format(plan.monthlyPrice) }}
+                  {{ plan.monthlyPrice === 0 ? 'مجاناً' : new Intl.NumberFormat('en-IQ').format(plan.monthlyPrice) }}
                 </h1>
                 <span v-if="plan.monthlyPrice !== 0" class="text-body-1 font-weight-medium align-self-end ms-2">
                   دينار/شهر
@@ -149,7 +187,7 @@ onMounted(() => {
               </div>
 
               <div v-if="plan.monthlyPrice !== 0" class="text-caption mt-2">
-                {{ new Intl.NumberFormat('ar-IQ').format(plan.yearlyPrice) }} دينار/سنة
+                {{ new Intl.NumberFormat('en-IQ').format(plan.yearlyPrice) }} دينار/سنة
               </div>
             </div>
           </VCardText>
@@ -168,7 +206,7 @@ onMounted(() => {
             </VList>
 
             <VBtn block :color="plan.current ? 'success' : 'primary'"
-              :variant="plan.isPopular ? 'elevated' : 'outlined'" size="large">
+              :variant="plan.isPopular ? 'elevated' : 'outlined'" size="large" @click="handlePlanClick(plan)">
               {{ plan.current ? 'باقتك الحالية' : (plan.monthlyPrice === 0 ? 'ابدأ مجاناً' : 'اشترك الآن') }}
             </VBtn>
           </VCardText>

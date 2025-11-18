@@ -14,7 +14,7 @@ initConfigStore();
 const configStore = useConfigStore();
 
 const isProfileComplete = ref(false)
-const userType = ref < string | null > (null)
+const userType = ref<string | null>(null)
 
 try {
   const storedUser = localStorage.getItem("user")
@@ -46,10 +46,10 @@ const getInitialPosition = (): Position => {
   return { x: 24, y: 24 }
 }
 
-const waPos = ref < Position > (getInitialPosition())
+const waPos = ref<Position>(getInitialPosition())
 const dragging = ref(false)
 const dragStart = ref({ mx: 0, my: 0, x: 0, y: 0 })
-const waRef = ref < HTMLElement | null > (null)
+const waRef = ref<HTMLElement | null>(null)
 const moved = ref(false)
 const recentlyDragged = ref(false)
 
@@ -65,8 +65,11 @@ const onMove = (e: MouseEvent | TouchEvent) => {
     moved.value = true
   }
 
-  e.preventDefault()
-  e.stopPropagation()
+  // لا نمنع الحدث إلا بعد التأكد أنه سحب حقيقي، حتى يعمل الضغط على الجوال
+  if (moved.value) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
 
   const btn = waRef.value
   const btnW = btn ? btn.offsetWidth : 120
@@ -83,7 +86,8 @@ const stopDrag = (e?: MouseEvent | TouchEvent) => {
   if (!dragging.value) return
   dragging.value = false
 
-  if (e) {
+  // نمنع الحدث فقط إذا كان هناك سحب فعلي
+  if (e && moved.value) {
     e.preventDefault()
     e.stopPropagation()
   }
@@ -114,8 +118,11 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
   }
   moved.value = false
 
-  e.preventDefault()
-  e.stopPropagation()
+  // على الفأرة نمنع الحدث مباشرة، أما على اللمس فنتركه حتى نعرف إن كان سحبًا فعليًا
+  if (!('touches' in e)) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
 
   document.addEventListener('mousemove', onMove, { passive: false })
   document.addEventListener('touchmove', onMove, { passive: false })
@@ -185,7 +192,6 @@ onUnmounted(() => {
         zIndex: 9999,
         cursor: dragging ? 'grabbing' : 'grab',
         userSelect: 'none',
-        touchAction: 'none',
       }" @mousedown="startDrag" @touchstart="startDrag">
         <a href="https://wa.me/9647724275947" target="_blank" rel="noopener noreferrer" aria-label="الدعم عبر واتساب"
           @click="onWaClick" style="text-decoration: none;">

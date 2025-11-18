@@ -5,10 +5,10 @@ function recursiveLayouts(route) {
   if (route.children) {
     for (let i = 0; i < route.children.length; i++)
       route.children[i] = recursiveLayouts(route.children[i])
-    
+
     return route
   }
-  
+
   return setupLayouts([route])[0]
 }
 
@@ -17,12 +17,27 @@ const router = createRouter({
   scrollBehavior(to) {
     if (to.hash)
       return { el: to.hash, behavior: 'smooth', top: 60 }
-    
+
     return { top: 0 }
   },
-  extendRoutes: pages => [
-    ...[...pages].map(route => recursiveLayouts(route)),
-  ],
+  extendRoutes: pages => {
+    const routes = [...pages].map(route => recursiveLayouts(route))
+
+    // مسار قديم للتوافق مع روابط الدعوات: /register/teacher?ref=...
+    // يعيد التوجيه إلى صفحة تسجيل/دخول المعلم الحالية في /login مع تمرير ref كما هو.
+    routes.push({
+      path: '/register/teacher',
+      name: 'register-teacher-legacy',
+      redirect: to => {
+        const ref = to?.query?.ref
+        const query = {}
+        if (ref) query.ref = ref
+        return { path: '/login', query }
+      },
+    })
+
+    return routes
+  },
 })
 
 router.onError(err => {

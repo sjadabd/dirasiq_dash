@@ -7,6 +7,8 @@ class Auth {
       googleToken: userData.idToken,
       oneSignalPlayerId: userData.oneSignalPlayerId,
       userType: userData.userType || "teacher",
+      // optional referral code for teacher invitations
+      referralCode: userData.referralCode,
     };
     const response = await axiosInstance.post(`/auth/google-auth`, requestData);
 

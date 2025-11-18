@@ -29,7 +29,7 @@ const handleNavItemClick = (item) => {
   else if (item.value === "settings") {
     router.push("/teacher/settings");
   } else if (item.value === "billing") {
-    // router.push("/teacher/billing/pricing");
+    router.push("/teacher/billing");
   } else if (item.value === "help") {
     router.push("/help");
   }

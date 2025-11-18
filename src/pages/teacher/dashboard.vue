@@ -25,6 +25,41 @@ const stats = ref({
   studentAmountRemaining: 0,
 });
 
+// سعة اشتراك الطلاب (من الباقة)
+const capacity = ref({
+  currentStudents: 0,
+  maxStudents: 0,
+  remaining: 0,
+  canAdd: false,
+})
+const capacityLoading = ref(false)
+const capacityError = ref('')
+
+// Snackbar محلي للتنبيهات الاحترافية (نسخ الكود والرابط وغيرها)
+const snackbar = ref({
+  show: false,
+  text: '',
+  color: 'success',
+})
+
+// نظام الإحالات للمعلم
+const referralLoading = ref(false)
+const referralError = ref('')
+const referralDashboard = ref({
+  referralCode: '',
+  referralLink: '',
+  referrals: {
+    pending: 0,
+    completed: 0,
+    rejected: 0,
+    total: 0,
+  },
+  bonuses: {
+    totalBonusSeats: 0,
+    activeBonuses: [],
+  },
+})
+
 // دروس اليوم القادمة
 const upcomingToday = ref([]);
 
@@ -54,6 +89,34 @@ const formatIQD = (n) => {
     return (num || 0).toLocaleString('en-IQ') + ' د.ع';
   }
 };
+
+// نسخ نص إلى الحافظة
+const copyToClipboard = async (text) => {
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(String(text || ''))
+    } else {
+      const input = document.createElement('input')
+      input.value = String(text || '')
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      document.body.removeChild(input)
+    }
+    snackbar.value = {
+      show: true,
+      text: 'تم نسخ النص بنجاح',
+      color: 'success',
+    }
+  } catch (e) {
+    console.warn('Failed to copy text:', e)
+    snackbar.value = {
+      show: true,
+      text: 'تعذر نسخ النص، يرجى المحاولة مرة أخرى',
+      color: 'error',
+    }
+  }
+}
 
 onMounted(async () => {
   // جلب بيانات المستخدم من localStorage
@@ -90,6 +153,34 @@ onMounted(async () => {
     isLoading.value = false;
   }
 
+  // جلب تقرير سعة الاشتراك
+  try {
+    capacityLoading.value = true
+    capacityError.value = ''
+    const resCap = await teacher_api.getRemainingStudents()
+    const ok = resCap?.data?.success || resCap?.success
+    const data = resCap?.data?.data || resCap?.data || resCap
+
+    if (!ok || !data) {
+      throw new Error(resCap?.data?.message || 'تعذر جلب تقرير السعة')
+    }
+
+    capacity.value = {
+      currentStudents: Number(data.currentStudents) || 0,
+      maxStudents: Number(data.maxStudents) || 0,
+      remaining: Number(data.remaining) || 0,
+      canAdd: Boolean(data.canAdd),
+    }
+  } catch (e) {
+    console.warn('Failed to load subscription capacity:', e)
+    capacityError.value =
+      e?.response?.data?.message ||
+      e?.message ||
+      'تعذر جلب تقرير السعة، يرجى المحاولة لاحقًا'
+  } finally {
+    capacityLoading.value = false
+  }
+
   // جلب الدروس القادمة لليوم
   try {
     const res2 = await teacher_api.getUpcomingToday();
@@ -99,6 +190,43 @@ onMounted(async () => {
     console.warn("Failed to load upcoming today:", e);
   } finally {
     isLoadingUpcoming.value = false;
+  }
+
+  // جلب إحصائيات نظام الإحالات
+  try {
+    referralLoading.value = true
+    referralError.value = ''
+    const resRef = await teacher_api.getReferralDashboard()
+    const ok = resRef?.data?.success || resRef?.success
+    const payload = resRef?.data?.data || resRef?.data || resRef
+    if (!ok || !payload) {
+      throw new Error(resRef?.data?.message || 'تعذر جلب إحصائيات الإحالات')
+    }
+
+    referralDashboard.value = {
+      referralCode: payload.referralCode || '',
+      referralLink: payload.referralLink || '',
+      referrals: {
+        pending: Number(payload?.referrals?.pending ?? 0),
+        completed: Number(payload?.referrals?.completed ?? 0),
+        rejected: Number(payload?.referrals?.rejected ?? 0),
+        total: Number(payload?.referrals?.total ?? 0),
+      },
+      bonuses: {
+        totalBonusSeats: Number(payload?.bonuses?.totalBonusSeats ?? 0),
+        activeBonuses: Array.isArray(payload?.bonuses?.activeBonuses)
+          ? payload.bonuses.activeBonuses
+          : [],
+      },
+    }
+  } catch (e) {
+    console.warn('Failed to load referral dashboard:', e)
+    referralError.value =
+      e?.response?.data?.message ||
+      e?.message ||
+      'تعذر جلب إحصائيات برنامج الإحالات'
+  } finally {
+    referralLoading.value = false
   }
 });
 
@@ -165,7 +293,7 @@ const printQr = () => {
         <VCol cols="12">
           <VCard color="primary" variant="tonal" class="pa-6">
             <VRow align="center">
-              <VCol cols="12" md="6" style="display: flex;flex-wrap: wrap; flex-direction: row; align-items: center; gap: 8px;">
+              <VCol cols="12" md="6" style="display: flex; flex-flow: row wrap; align-items: center; gap: 8px;">
                 <VAvatar size="80" color="primary">
                   <VImg v-if="user?.profileImagePath" :src="`https://api.mulhimiq.com${user.profileImagePath}`"
                     alt="User Avatar" cover />
@@ -173,31 +301,32 @@ const printQr = () => {
                 </VAvatar>
                 <div>
                   <h1 class="text-h4 mb-2">مرحباً {{ user?.name }}! 👋</h1>
-                <p class="text-body-1 mb-0">
-                  {{ user?.email }}
-                </p>
-                <p class="text-caption mt-2">
-                  عضو منذ
-                  {{ new Date(user?.createdAt).toLocaleDateString("en-IQ") }}
-                </p>
+                  <p class="text-body-1 mb-0">
+                    {{ user?.email }}
+                  </p>
+                  <p class="text-caption mt-2">
+                    عضو منذ
+                    {{ new Date(user?.createdAt).toLocaleDateString("en-IQ") }}
+                  </p>
                 </div>
               </VCol>
               <VCol cols="12" md="6" class="text-center" style="display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;">
-                
-                <div style="display: flex;flex-wrap: wrap; flex-direction: row; align-items: center; gap: 8px;">
+
+                <div style="display: flex; flex-flow: row wrap; align-items: center; gap: 8px;">
                   <div>
-                    <p class="mb-0" style="font-size: 12px; color: rgba(0,0,0,.7);">رمز تسجيل حضور الطلاب عن طريق التطبيق</p>
-                  <img style="inline-size: 80px; block-size: 80px; object-fit: contain;" v-if="user?.qr" :src="`https://api.mulhimiq.com${user.qr}`"
-                    alt="رمز حضور الطلاب" />
+                    <p class="mb-0" style=" color: rgba(0, 0, 0, 70%);font-size: 12px;">رمز تسجيل حضور الطلاب عن طريق
+                      التطبيق</p>
+                    <img style=" block-size: 80px;inline-size: 80px; object-fit: contain;" v-if="user?.qr"
+                      :src="`https://api.mulhimiq.com${user.qr}`" alt="رمز حضور الطلاب" />
                   </div>
-                  </div>
-                  <VBtn v-if="user?.qr" size="small" variant="tonal" color="primary" @click="printQr">
-                    <VIcon start size="18">mdi-printer</VIcon>
-                    طباعة الرمز
-                  </VBtn>
+                </div>
+                <VBtn v-if="user?.qr" size="small" variant="tonal" color="primary" @click="printQr">
+                  <VIcon start size="18">mdi-printer</VIcon>
+                  طباعة الرمز
+                </VBtn>
               </VCol>
             </VRow>
           </VCard>
@@ -206,6 +335,178 @@ const printQr = () => {
 
       <!-- الإحصائيات -->
       <VRow class="mb-6" style="justify-content: center;">
+
+        <!-- سعة الاشتراك للطلاب -->
+        <VCol cols="12" md="12">
+          <VCard class="pa-4" elevation="2">
+            <div class="d-flex align-center justify-space-between mb-3">
+              <div class="d-flex align-center gap-2">
+                <VIcon size="28" color="primary">mdi-account-group</VIcon>
+                <div>
+                  <div class="text-subtitle-1 fw-600">سعة اشتراك الطلاب</div>
+                  <div class="text-caption text-medium-emphasis">
+                    تقرير بعدد الطلاب المسموح به والمتبقّي في باقتك الحالية
+                  </div>
+                </div>
+              </div>
+              <VBtn size="small" variant="text" :loading="capacityLoading" @click="() => {
+                capacityLoading = true; teacher_api.getRemainingStudents().then(resCap => {
+                  const ok = resCap?.data?.success || resCap?.success
+                  const data = resCap?.data?.data || resCap?.data || resCap
+                  if (ok && data) {
+                    capacity = {
+                      currentStudents: Number(data.currentStudents) || 0,
+                      maxStudents: Number(data.maxStudents) || 0,
+                      remaining: Number(data.remaining) || 0,
+                      canAdd: Boolean(data.canAdd),
+                    }
+                  }
+                }).catch(e => {
+                  console.warn('Failed to refresh subscription capacity:', e)
+                }).finally(() => { capacityLoading = false })
+              }">
+                تحديث
+              </VBtn>
+            </div>
+
+            <VAlert v-if="capacityError" type="error" variant="tonal" class="mb-3" density="comfortable">
+              {{ capacityError }}
+            </VAlert>
+
+            <div class="d-flex flex-wrap gap-4">
+              <div>
+                <div class="text-caption text-medium-emphasis">الطلاب الحاليون</div>
+                <div class="text-h6 font-weight-bold">
+                  {{ capacity.currentStudents }}
+                </div>
+              </div>
+              <div>
+                <div class="text-caption text-medium-emphasis">الحد الأقصى في الباقة</div>
+                <div class="text-h6 font-weight-bold">
+                  {{ capacity.maxStudents }}
+                </div>
+              </div>
+              <div>
+                <div class="text-caption text-medium-emphasis">المتبقّي</div>
+                <div class="text-h6 font-weight-bold">
+                  {{ capacity.remaining }}
+                </div>
+              </div>
+              <div>
+                <div class="text-caption text-medium-emphasis">إمكانية إضافة طلاب جدد</div>
+                <div class="text-subtitle-2 font-weight-bold" :class="capacity.canAdd ? 'text-success' : 'text-error'">
+                  {{ capacity.canAdd ? 'يمكن إضافة طلاب جدد' : 'لا يمكن إضافة طلاب جدد' }}
+                </div>
+              </div>
+            </div>
+          </VCard>
+        </VCol>
+
+        <!-- برنامج الإحالات للمعلم -->
+        <VCol cols="12" md="12">
+          <VCard class="pa-4" elevation="2">
+            <div class="d-flex align-center justify-space-between mb-3">
+              <div class="d-flex align-center gap-2">
+                <VIcon size="28" color="secondary">mdi-account-multiple-plus</VIcon>
+                <div>
+                  <div class="text-subtitle-1 fw-600">برنامج إحالة المعلمين</div>
+                  <div class="text-caption text-medium-emphasis">
+                    شارك كود الدعوة الخاص بك لتحصل على مقاعد إضافية عند اشتراك المعلمين المدعوين
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <VAlert v-if="referralError" type="error" variant="tonal" class="mb-3" density="comfortable">
+              {{ referralError }}
+            </VAlert>
+
+            <div v-if="referralLoading" class="d-flex justify-center py-4">
+              <VProgressCircular indeterminate color="primary" size="32" />
+            </div>
+
+            <template v-else>
+              <!-- كود الدعوة والرابط -->
+              <div class="d-flex flex-column flex-md-row gap-4 mb-4">
+                <div class="flex-grow-1">
+                  <div class="text-caption text-medium-emphasis mb-1">كود الدعوة الخاص بك</div>
+                  <div class="d-flex align-center gap-2 flex-wrap">
+                    <VBtn size="small" variant="tonal" color="primary"
+                      @click="() => copyToClipboard(referralDashboard.referralCode)">
+                      نسخ الكود
+                    </VBtn>
+                  </div>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="text-caption text-medium-emphasis mb-1">رابط الدعوة للمشاركة</div>
+                  <div class="d-flex align-center gap-2 flex-wrap">
+                    <VBtn size="small" variant="tonal" color="secondary"
+                      @click="() => copyToClipboard('https://mulhimiq.com' + referralDashboard.referralLink)">
+                      نسخ رابط الدعوة
+                    </VBtn>
+                  </div>
+                </div>
+              </div>
+
+              <!-- كروت الإحصائيات -->
+              <div class="d-flex flex-wrap gap-4 mb-4">
+                <div>
+                  <div class="text-caption text-medium-emphasis">إجمالي الإحالات</div>
+                  <div class="text-h6 font-weight-bold">
+                    {{ referralDashboard.referrals.total }}
+                  </div>
+                </div>
+                <div>
+                  <div class="text-caption text-medium-emphasis">الإحالات المكتملة</div>
+                  <div class="text-h6 font-weight-bold">
+                    {{ referralDashboard.referrals.completed }}
+                  </div>
+                </div>
+                <div>
+                  <div class="text-caption text-medium-emphasis">قيد الانتظار</div>
+                  <div class="text-h6 font-weight-bold">
+                    {{ referralDashboard.referrals.pending }}
+                  </div>
+                </div>
+                <div>
+                  <div class="text-caption text-medium-emphasis">إجمالي المقاعد الإضافية من الإحالات</div>
+                  <div class="text-h6 font-weight-bold">
+                    {{ referralDashboard.bonuses.totalBonusSeats }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- جدول المكافآت الفعّالة -->
+              <div>
+                <div class="text-subtitle-2 mb-2">المكافآت الفعّالة حالياً</div>
+                <VAlert v-if="!referralDashboard.bonuses.activeBonuses.length" type="info" variant="tonal"
+                  density="comfortable">
+                  لا توجد مكافآت إحالة فعّالة حالياً.
+                </VAlert>
+                <VTable v-else density="comfortable">
+                  <thead>
+                    <tr>
+                      <th class="text-start">نوع المكافأة</th>
+                      <th class="text-start">عدد المقاعد</th>
+                      <th class="text-start">ينتهي في</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="b in referralDashboard.bonuses.activeBonuses" :key="b.id">
+                      <td>
+                        {{ b.bonusType === 'referral_referrer' ? 'مقاعد إحالة' : (b.bonusType || 'مكافأة') }}
+                      </td>
+                      <td>{{ b.bonusValue }}</td>
+                      <td>
+                        {{ b.expiresAt ? new Date(b.expiresAt).toLocaleDateString('en-IQ') : '—' }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </VTable>
+              </div>
+            </template>
+          </VCard>
+        </VCol>
 
         <!-- المدفوعات والفواتير -->
         <VCol cols="12">
@@ -352,6 +653,11 @@ const printQr = () => {
           </VCol>
         </template>
       </VRow>
+
+      <!-- Snackbar للتنبيهات العامة (مثل نجاح/فشل النسخ) -->
+      <VSnackbar v-model="snackbar.show" :color="snackbar.color" location="bottom right" timeout="3000">
+        {{ snackbar.text }}
+      </VSnackbar>
     </VContainer>
   </div>
 </template>

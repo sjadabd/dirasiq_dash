@@ -32,6 +32,7 @@ declare module 'vue-router/auto-routes' {
     'student-profile-setup': RouteRecordInfo<'student-profile-setup', '/student/profile-setup', Record<never, never>, Record<never, never>>,
     'teacher-assignments-assignment-overview': RouteRecordInfo<'teacher-assignments-assignment-overview', '/teacher/assignments/assignment-overview', Record<never, never>, Record<never, never>>,
     'teacher-assignments-manage-assignments': RouteRecordInfo<'teacher-assignments-manage-assignments', '/teacher/assignments/manage-assignments', Record<never, never>, Record<never, never>>,
+    'teacher-billing': RouteRecordInfo<'teacher-billing', '/teacher/billing', Record<never, never>, Record<never, never>>,
     'teacher-billing-pricing': RouteRecordInfo<'teacher-billing-pricing', '/teacher/billing/pricing', Record<never, never>, Record<never, never>>,
     'teacher-bookings-show-bookings': RouteRecordInfo<'teacher-bookings-show-bookings', '/teacher/bookings/show-bookings', Record<never, never>, Record<never, never>>,
     'teacher-course-show-course': RouteRecordInfo<'teacher-course-show-course', '/teacher/course/show-course', Record<never, never>, Record<never, never>>,
