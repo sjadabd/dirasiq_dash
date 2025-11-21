@@ -224,6 +224,18 @@ export default {
             key: "createdAt",
           },
           {
+            title: "رسالة الطالب",
+            type: "strong",
+            sortable: true,
+            key: "studentMessage",
+          },
+          {
+            title: "رد الاستاذ",
+            type: "strong",
+            sortable: true,
+            key: "teacherResponse",
+          },
+          {
             title: "العمليات",
             type: "strong",
             sortable: false,

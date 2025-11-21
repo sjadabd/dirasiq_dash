@@ -252,7 +252,7 @@ const printQr = () => {
   if (!win) return;
 
   const html = `<!DOCTYPE html>
-  <html lang="ar" dir="rtl">
+  <html lang="en" dir="rtl">
   <head>
     <meta charset="utf-8" />
     <title>طباعة رمز الحضور</title>
@@ -326,9 +326,9 @@ const getStudentPaidPercentage = () => {
                       <p class="text-h6 mb-2 text-white" style="opacity: 0.95;">
                         {{ user?.email }}
                       </p>
-                      <VChip color="white" variant="flat" size="small" class="mt-1">
+                      <VChip color="white" variant="flat" size="small" class="mt-1" style="background-color: #f5f6f7;">
                         <VIcon start size="16">mdi-calendar-check</VIcon>
-                        عضو منذ {{ new Date(user?.createdAt).toLocaleDateString("ar-IQ") }}
+                        عضو منذ {{ new Date(user?.createdAt).toLocaleDateString("en-IQ") }}
                       </VChip>
                     </div>
                   </div>
@@ -606,7 +606,7 @@ const getStudentPaidPercentage = () => {
                       <div>
                         <div class="font-weight-bold">{{ b.bonusType === 'referral_referrer' ? 'مقاعد إحالة' : 'مكافأة'
                         }}</div>
-                        <div class="text-caption">{{ b.expiresAt ? new Date(b.expiresAt).toLocaleDateString('ar-IQ') :
+                        <div class="text-caption">{{ b.expiresAt ? new Date(b.expiresAt).toLocaleDateString('en-IQ') :
                           'بدون انتهاء' }}</div>
                       </div>
                       <VChip color="success" size="small">{{ b.bonusValue }} مقعد</VChip>
