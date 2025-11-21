@@ -28,8 +28,8 @@
               <v-btn variant="text" :to="{ path: '/privacy-policy' }">سياسة الخصوصية</v-btn>
               <v-btn variant="text" :to="{ path: '/terms-and-conditions' }">شروط الاستخدام</v-btn>
               <!-- 🔹 زر ديناميكي حسب حالة تسجيل الدخول -->
-              <v-btn v-if="!isLoggedIn" color="support" style="background-color: #1c324c !important;" variant="elevated"
-                to="/login">
+              <v-btn v-if="!isLoggedIn" color="support"
+                style="color: white !important;background-color: #1c324c !important;" variant="elevated" to="/login">
                 <v-icon start>mdi-rocket-launch</v-icon>
                 ابدأ الآن
               </v-btn>
@@ -129,87 +129,122 @@
 
     <v-main>
       <!-- 2️⃣ Hero Section -->
-      <!-- 2️⃣ Hero Section with Carousel -->
-      <section id="hero" class="hero-section">
-        <v-container>
-          <v-row align="center" class="min-height-screen responsive-row">
-            <!-- Left side: Text content and CTA buttons for teachers -->
-            <v-col cols="12" md="6" order="2" order-md="1">
+      <section id="hero" class="hero-section position-relative overflow-hidden">
+        <!-- Background Elements -->
+        <div class="hero-bg-glow"></div>
+        <div class="hero-shape-1"></div>
+        <div class="hero-shape-2"></div>
+
+        <v-container class="position-relative" style="z-index: 2;">
+          <v-row align="center" class="min-height-screen py-16">
+            <!-- Left side: Text content -->
+            <v-col cols="12" md="6" lg="6" class="text-center text-md-right">
               <v-slide-y-transition appear>
-                <div class="hero-content">
-                  <h1 class="text-h2 font-weight-bold mb-4 text-white text-balance">
-                    علّم، ألهم، وتواصل مع طلابك بسهولة
+                <div>
+                  <v-chip color="accent" variant="flat" class="mb-6 px-4 py-2" size="large"
+                    style="    color: white;font-weight: 700;">
+                    🚀 منصة التعليم الذكي الأولى
+                  </v-chip>
+
+                  <h1 class="text-h2 text-lg-h1 font-weight-black mb-6 text-white lh-tight">
+                    علّم، ألهم، <br />
+                    <span class="text-gradient">وتواصل بذكاء</span>
                   </h1>
-                  <p class="text-h6 text-white mb-6 text-pretty" style="opacity: 0.95;">
-                    منصة ملهم تمكّنك من إدارة الكورسات، الحضور، الدروس، والطلاب في مكان واحد بواجهة بسيطة وسهلة.
+
+                  <p class="text-h6 text-lg-h5 text-grey-lighten-3 mb-8 text-balance lh-relaxed"
+                    style="max-width: 600px; margin-inline: auto;">
+                    منصة ملهم تمكّنك من إدارة الكورسات، الحضور، والطلاب في مكان واحد.
+                    تجربة تعليمية متكاملة تبدأ من هنا.
                   </p>
 
-                  <div class="d-flex gap-3 flex-wrap mb-6">
-                    <v-btn size="x-large" color="white" variant="elevated" to="/login">
-                      <v-icon start>mdi-account-plus</v-icon>
-                      انضم كمدرس
+                  <div class="d-flex gap-4 flex-wrap justify-center justify-md-start mb-10">
+                    <v-btn size="x-large" color="white" class="text-primary px-8" height="56" rounded="xl" elevation="6"
+                      to="/login">
+                      <v-icon start size="24">mdi-rocket-launch</v-icon>
+                      ابدأ رحلتك مجاناً
                     </v-btn>
 
-                    <v-btn size="x-large" variant="outlined" color="white" to="/login">
-                      <v-icon start>mdi-login</v-icon>
+                    <v-btn size="x-large" variant="outlined" color="white" class="px-8" height="56" rounded="xl"
+                      to="/login">
+                      <v-icon start size="24">mdi-login</v-icon>
                       تسجيل الدخول
                     </v-btn>
                   </div>
 
-                  <!-- Student join info and download app section -->
-                  <div class="download-section mt-8 pa-4"
-                    style=" border-radius: 16px; backdrop-filter: blur(10px);background: rgba(255, 255, 255, 10%);">
-                    <h3 class="text-h6 font-weight-bold text-white mb-3">
-                      <v-icon start color="white">mdi-school</v-icon>
-                      انضم كطالب عبر التطبيق
-                    </h3>
-                    <p class="text-body-2 text-white mb-3" style="opacity: 0.9;">
-                      يمكن للطلاب الانضمام واستخدام ملهم فقط عن طريق تطبيق الجوال، وهذا زر تحميل التطبيق.
-                    </p>
-                    <h4 class="text-body-1 text-white mb-3" style="opacity: 0.9;">
-                      <v-icon start color="white">mdi-cellphone-download</v-icon>
-                      حمّل التطبيق للطلاب
-                    </h4>
-                    <div class="d-flex gap-2 flex-wrap">
-                      <v-btn color="white" variant="elevated" size="large"
-                        href="https://apps.apple.com/us/app/mulhimiq/id6754453929" target="_blank">
-                        <v-icon start>mdi-apple</v-icon>
-                        App Store
-                      </v-btn>
-                      <v-btn color="white" variant="elevated" size="large" href="#">
-                        <v-icon start>mdi-google-play</v-icon>
-                        Google Play
-                      </v-btn>
-                    </div>
+                  <!-- App Download Badges -->
+                  <div class="d-flex align-center gap-4 justify-center justify-md-start opacity-80">
+                    <span class="text-white text-body-2">متوفر الآن للطلاب على:</span>
+                    <v-btn icon variant="text" color="white" href="https://apps.apple.com/us/app/mulhimiq/id6754453929"
+                      target="_blank">
+                      <v-icon size="28">mdi-apple</v-icon>
+                    </v-btn>
+                    <v-btn icon variant="text" color="white" href="#">
+                      <v-icon size="28">mdi-google-play</v-icon>
+                    </v-btn>
                   </div>
                 </div>
               </v-slide-y-transition>
             </v-col>
 
-            <!-- Right side: Carousel showing mobile app screenshots -->
-            <v-col cols="12" md="6" order="1" order-md="2">
+            <!-- Right side: Phone Mockup -->
+            <v-col cols="12" md="6" lg="6" class="position-relative">
               <v-fade-transition appear>
-                <div class="hero-carousel-container">
-                  <v-carousel v-model="carouselModel" cycle :interval="4000" hide-delimiter-background
-                    show-arrows="hover" height="auto" class="hero-carousel">
-                    <v-carousel-item v-for="(screen, index) in appScreenshots" :key="index">
-                      <div class="d-flex justify-center align-center pa-4">
-                        <div style=" cursor: pointer; inline-size: 100%;max-inline-size: 800px;"
-                          @click="openNews(screen)">
-                          <v-img :src="screen.image" :alt="screen.title" cover aspect-ratio="16/9"
-                            class="elevation-4 rounded-lg" />
-                          <div class="text-center mt-4">
-                            <h3 class="text-h5 font-weight-bold text-white mb-2">
-                              {{ screen.title }}
-                            </h3>
-                            <p class="text-body-1 text-white" style="opacity: 0.9;">
+                <div class="phone-mockup-wrapper d-flex flex-column align-center">
+                  <div class="phone-frame">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen">
+                      <v-carousel v-model="carouselModel" cycle :interval="4000" hide-delimiters :show-arrows="false"
+                        height="100%" class="phone-carousel">
+                        <v-carousel-item v-for="(screen, index) in appScreenshots" :key="index" :src="screen.image"
+                          cover @click="openNews(screen)" class="cursor-pointer">
+                          <div class="d-flex flex-column justify-end h-100 pb-8 px-4 position-relative"
+                            style="background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%);">
+                            <h3 class="text-subtitle-1 font-weight-bold mb-1 text-truncate text-white"
+                              style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">{{ screen.title }}</h3>
+                            <p class="text-caption text-grey-lighten-3 text-truncate-2 lh-tight text-white"
+                              style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
                               {{ screen.description }}
                             </p>
                           </div>
-                        </div>
+                        </v-carousel-item>
+                      </v-carousel>
+                    </div>
+                  </div>
+                  <!-- Carousel Controls -->
+                  <div class="d-flex justify-center gap-4 mt-6 position-relative" style="z-index: 5;">
+                    <v-btn icon variant="tonal" color="white" @click="carouselModel = Math.max(carouselModel - 1, 0)"
+                      :disabled="carouselModel === 0">
+                      <v-icon>mdi-chevron-right</v-icon>
+                    </v-btn>
+                    <v-btn icon variant="tonal" color="white"
+                      @click="carouselModel = Math.min(carouselModel + 1, appScreenshots.length - 1)"
+                      :disabled="carouselModel === appScreenshots.length - 1">
+                      <v-icon>mdi-chevron-left</v-icon>
+                    </v-btn>
+                  </div>
+                  <!-- Floating Elements -->
+                  <v-card class="floating-card card-1 d-none d-sm-block" elevation="10">
+                    <div class="d-flex align-center gap-3">
+                      <v-avatar color="success" size="40">
+                        <v-icon color="white">mdi-check</v-icon>
+                      </v-avatar>
+                      <div>
+                        <div class="text-caption text-grey">تم الحضور</div>
+                        <div class="font-weight-bold">98% اليوم</div>
                       </div>
-                    </v-carousel-item>
-                  </v-carousel>
+                    </div>
+                  </v-card>
+                  <v-card class="floating-card card-2 d-none d-sm-block" elevation="10">
+                    <div class="d-flex align-center gap-3">
+                      <v-avatar color="primary" size="40">
+                        <v-icon color="white">mdi-school</v-icon>
+                      </v-avatar>
+                      <div>
+                        <div class="text-caption text-grey">الطلاب النشطين</div>
+                        <div class="font-weight-bold">+1,250 طالب</div>
+                      </div>
+                    </div>
+                  </v-card>
                 </div>
               </v-fade-transition>
             </v-col>
@@ -218,175 +253,208 @@
       </section>
 
       <!-- 3️⃣ Feature Section -->
-      <section id="features" class="features-section py-16">
+      <section id="features" class="features-section py-16 bg-grey-lighten-5 position-relative">
         <v-container>
-          <div class="text-center mb-12">
-            <h2 class="text-h3 font-weight-bold mb-4">المميزات الرئيسية</h2>
-            <p class="text-h6 text-medium-emphasis">كل ما تحتاجه لإدارة تعليمية ناجحة</p>
+          <div class="text-center mb-16">
+            <v-chip color="primary" variant="tonal" class="mb-4 font-weight-bold">مميزاتنا</v-chip>
+            <h2 class="text-h3 font-weight-bold mb-4 text-primary-dark">كل ما تحتاجه لإدارة تعليمية ناجحة</h2>
+            <p class="text-h6 text-medium-emphasis" style="max-width: 700px; margin: 0 auto;">
+              أدوات متكاملة صممت خصيصاً لتلبية احتياجات المعلمين والطلاب في بيئة تعليمية عصرية
+            </p>
           </div>
 
           <v-row>
-            <v-col cols="12" sm="6" md="4" v-for="(feature, index) in features" :key="feature.id">
-              <v-slide-y-transition :delay="index * 100" appear>
-                <v-card elevation="2" class="h-100 text-center pa-6 feature-card"
-                  :class="`feature-card-${feature.colorClass}`">
-                  <v-icon :size="64" :color="feature.color" class="mb-4">
-                    {{ feature.icon }}
-                  </v-icon>
-                  <h3 class="text-h5 font-weight-bold mb-3">
+            <v-col cols="12" sm="6" md="4" v-for="feature in features" :key="feature.id">
+              <v-hover v-slot="{ isHovering, props }">
+                <v-card v-bind="props" :elevation="isHovering ? 12 : 2"
+                  class="h-100 text-center pa-8 feature-card transition-swing"
+                  :class="[`feature-card-${feature.colorClass}`, { 'on-hover': isHovering }]">
+                  <div class="feature-icon-wrapper mb-6" :class="`bg-${feature.color}-lighten-5`">
+                    <v-icon :size="40" :color="feature.color">
+                      {{ feature.icon }}
+                    </v-icon>
+                  </div>
+                  <h3 class="text-h5 font-weight-bold mb-3 text-primary-dark">
                     {{ feature.title }}
                   </h3>
-                  <p class="text-body-1 text-medium-emphasis">
+                  <p class="text-body-1 text-medium-emphasis lh-relaxed">
                     {{ feature.description }}
                   </p>
                 </v-card>
-              </v-slide-y-transition>
+              </v-hover>
             </v-col>
           </v-row>
         </v-container>
       </section>
 
       <!-- 4️⃣ Dashboard Preview Section -->
-      <section class="dashboard-preview-section py-16">
-        <v-container>
-          <div class="text-center mb-12">
-            <h2 class="text-h3 font-weight-bold mb-4">شاهد كيف يدير المعلم دروسه بسهولة</h2>
-            <p class="text-h6 text-medium-emphasis">جرب واجهة المعلم التفاعلية مباشرة</p>
+      <section class="dashboard-preview-section py-16 position-relative overflow-hidden">
+        <div class="dashboard-bg-shape"></div>
+        <v-container class="position-relative" style="z-index: 2;">
+          <div class="text-center mb-16">
+            <v-chip color="secondary" variant="tonal" class="mb-4 font-weight-bold">لوحة التحكم</v-chip>
+            <h2 class="text-h3 font-weight-bold mb-4 text-primary-dark">تحكم كامل في العملية التعليمية</h2>
+            <p class="text-h6 text-medium-emphasis" style="max-width: 700px; margin: 0 auto;">
+              واجهة مستخدم بديهية وقوية تمنحك السيطرة الكاملة على كل تفاصيل صفوفك الدراسية
+            </p>
           </div>
 
           <v-row justify="center">
             <v-col cols="12" lg="11">
-              <v-card elevation="8" class="dashboard-demo-card">
-                <v-row no-gutters>
-                  <!-- Sidebar -->
-                  <v-col cols="auto" class="dashboard-sidebar">
-                    <v-list density="compact" class="py-4">
-                      <v-list-item v-for="item in sidebarItems" :key="item.id" :prepend-icon="item.icon"
-                        :title="item.title" :active="item.active" class="mb-2" />
-                    </v-list>
-                  </v-col>
+              <div class="dashboard-window elevation-24">
+                <div class="window-header d-flex align-center px-4 py-3 bg-grey-lighten-4 border-b">
+                  <div class="window-controls d-flex gap-2 me-4">
+                    <div class="control red"></div>
+                    <div class="control yellow"></div>
+                    <div class="control green"></div>
+                  </div>
+                  <div
+                    class="window-address-bar flex-grow-1 bg-white rounded px-3 py-1 text-caption text-grey text-center">
+                    mulhimiq.com/teacher/dashboard
+                  </div>
+                </div>
+                <v-card elevation="0" class="dashboard-demo-card rounded-0">
+                  <v-row no-gutters>
+                    <!-- Sidebar -->
+                    <v-col cols="auto" class="dashboard-sidebar bg-grey-lighten-5 border-e">
+                      <v-list density="compact" class="py-4 bg-transparent">
+                        <v-list-item v-for="item in sidebarItems" :key="item.id" :prepend-icon="item.icon"
+                          :title="item.title" :active="item.active" class="mb-2 rounded-e-xl" color="primary" />
+                      </v-list>
+                    </v-col>
 
-                  <!-- Main Content -->
-                  <v-col>
-                    <!-- Toolbar -->
-                    <v-toolbar color="surface" elevation="0" class="dashboard-toolbar">
-                      <v-toolbar-title class="text-h6 font-weight-bold">
-                        لوحة التحكم
-                      </v-toolbar-title>
-                      <v-spacer />
-                      <v-btn icon variant="text" @click="notificationsMenu = true">
-                        <v-badge v-if="unreadCount" color="error" :content="unreadCount" overlap>
-                          <v-icon>mdi-bell</v-icon>
-                        </v-badge>
-                        <template v-else>
-                          <v-icon>mdi-bell</v-icon>
-                        </template>
-                      </v-btn>
-                      <v-btn icon variant="text" @click="toggleDashboardTheme">
-                        <v-icon>{{ dashboardDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
-                      </v-btn>
-                      <v-avatar size="40" color="accent" class="ms-2">
-                        <v-icon color="white">mdi-account</v-icon>
-                      </v-avatar>
-                    </v-toolbar>
+                    <!-- Main Content -->
+                    <v-col>
+                      <!-- Toolbar -->
+                      <v-toolbar color="white" density="compact" class="border-b px-2">
+                        <v-toolbar-title class="text-subtitle-1 font-weight-bold">
+                          لوحة التحكم
+                        </v-toolbar-title>
+                        <v-spacer />
+                        <v-btn icon size="small" variant="text">
+                          <v-icon>mdi-magnify</v-icon>
+                        </v-btn>
+                        <v-btn icon size="small" variant="text" @click="notificationsMenu = true">
+                          <v-badge v-if="unreadCount" color="error" :content="unreadCount" dot>
+                            <v-icon>mdi-bell-outline</v-icon>
+                          </v-badge>
+                          <template v-else>
+                            <v-icon>mdi-bell-outline</v-icon>
+                          </template>
+                        </v-btn>
+                        <v-avatar size="32" color="accent" class="ms-2">
+                          <v-img
+                            src="https://avataaars.io/?avatarStyle=Circle&topType=ShortHairShortFlat&accessoriesType=Blank&hairColor=Black&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light" />
+                        </v-avatar>
+                      </v-toolbar>
 
-                    <!-- Dashboard Content -->
-                    <div class="dashboard-content pa-6">
-                      <v-row>
-                        <!-- Stats Cards -->
-                        <v-col cols="12" sm="6" md="3" v-for="stat in stats" :key="stat.id">
-                          <v-card elevation="1" class="pa-4 stat-card">
-                            <div class="d-flex align-center justify-space-between mb-2">
-                              <v-icon :color="stat.color" size="32">{{ stat.icon }}</v-icon>
-                              <v-chip :color="stat.color" size="small" variant="tonal">
-                                {{ stat.change }}
-                              </v-chip>
-                            </div>
-                            <h4 class="text-h4 font-weight-bold mb-1">{{ stat.value }}</h4>
-                            <p class="text-body-2 text-medium-emphasis">{{ stat.label }}</p>
-                          </v-card>
-                        </v-col>
-
-                        <!-- Upcoming Classes Table -->
-                        <v-col cols="12" md="8">
-                          <v-card elevation="1">
-                            <v-card-title class="d-flex align-center">
-                              <v-icon start color="primary">mdi-calendar-clock</v-icon>
-                              الدروس القادمة
-                            </v-card-title>
-                            <v-data-table :headers="tableHeaders" :items="upcomingClasses" density="comfortable"
-                              :items-per-page="5" hide-default-footer>
-                              <template #item.status="{ item }">
-                                <v-chip :color="item.statusColor" size="small" variant="tonal">
-                                  {{ item.status }}
+                      <!-- Dashboard Content -->
+                      <div class="dashboard-content pa-6 bg-grey-lighten-5 h-100">
+                        <v-row>
+                          <!-- Stats Cards -->
+                          <v-col cols="12" sm="6" md="3" v-for="stat in stats" :key="stat.id">
+                            <v-card elevation="0" class="pa-4 stat-card border">
+                              <div class="d-flex align-center justify-space-between mb-2">
+                                <v-avatar :color="stat.color" variant="tonal" rounded="lg">
+                                  <v-icon>{{ stat.icon }}</v-icon>
+                                </v-avatar>
+                                <v-chip :color="stat.color" size="x-small" variant="flat" class="font-weight-bold">
+                                  {{ stat.change }}
                                 </v-chip>
-                              </template>
-                              <template #item.actions>
-                                <v-btn icon size="small" variant="text">
-                                  <v-icon>mdi-pencil</v-icon>
-                                </v-btn>
-                              </template>
-                            </v-data-table>
-                          </v-card>
-                        </v-col>
+                              </div>
+                              <h4 class="text-h5 font-weight-bold mb-1">{{ stat.value }}</h4>
+                              <p class="text-caption text-medium-emphasis">{{ stat.label }}</p>
+                            </v-card>
+                          </v-col>
 
-                        <!-- Notifications -->
-                        <v-col cols="12" md="4">
-                          <v-card elevation="1">
-                            <v-card-title class="d-flex align-center">
-                              <v-icon start color="warning">mdi-bell</v-icon>
-                              الإشعارات
-                            </v-card-title>
-                            <v-list density="compact">
-                              <v-list-item v-for="notification in notifications" :key="notification.id"
-                                :prepend-icon="notification.icon" :title="notification.title"
-                                :subtitle="notification.time" class="notification-item"
-                                @click="onDemoNotificationClick(notification)">
-                                <template #prepend>
-                                  <v-avatar :color="notification.color" size="32">
-                                    <v-icon size="16" color="white">{{ notification.icon }}</v-icon>
-                                  </v-avatar>
+                          <!-- Upcoming Classes Table -->
+                          <v-col cols="12" md="8">
+                            <v-card elevation="0" class="border h-100">
+                              <v-card-title class="d-flex align-center text-subtitle-1 font-weight-bold px-4 pt-4">
+                                الدروس القادمة
+                                <v-spacer />
+                                <v-btn variant="text" size="small" color="primary">عرض الكل</v-btn>
+                              </v-card-title>
+                              <v-data-table :headers="tableHeaders" :items="upcomingClasses" density="compact"
+                                :items-per-page="5" hide-default-footer class="bg-transparent">
+                                <template #item.status="{ item }">
+                                  <v-chip :color="item.statusColor" size="x-small" variant="flat">
+                                    {{ item.status }}
+                                  </v-chip>
                                 </template>
-                              </v-list-item>
-                            </v-list>
-                          </v-card>
-                        </v-col>
-                      </v-row>
-                    </div>
-                  </v-col>
-                </v-row>
-              </v-card>
+                                <template #item.actions>
+                                  <v-btn icon size="x-small" variant="text" color="grey">
+                                    <v-icon>mdi-dots-vertical</v-icon>
+                                  </v-btn>
+                                </template>
+                              </v-data-table>
+                            </v-card>
+                          </v-col>
+
+                          <!-- Notifications -->
+                          <v-col cols="12" md="4">
+                            <v-card elevation="0" class="border h-100">
+                              <v-card-title class="d-flex align-center text-subtitle-1 font-weight-bold px-4 pt-4">
+                                آخر النشاطات
+                              </v-card-title>
+                              <v-list density="compact" class="bg-transparent">
+                                <v-list-item v-for="notification in notifications" :key="notification.id"
+                                  :title="notification.title" :subtitle="notification.time"
+                                  class="notification-item px-2">
+                                  <template #prepend>
+                                    <div class="me-3 position-relative">
+                                      <v-avatar :color="notification.color" size="8" variant="flat"
+                                        class="mb-4"></v-avatar>
+                                      <div class="vertical-line"
+                                        style="position: absolute; top: 12px; left: 3px; width: 2px; height: 100%; background: #eee;">
+                                      </div>
+                                    </div>
+                                  </template>
+                                </v-list-item>
+                              </v-list>
+                            </v-card>
+                          </v-col>
+                        </v-row>
+                      </div>
+                    </v-col>
+                  </v-row>
+                </v-card>
+              </div>
             </v-col>
           </v-row>
         </v-container>
       </section>
 
       <!-- 5️⃣ How It Works Section -->
-      <section id="how-it-works" class="how-it-works-section py-16">
+      <section id="how-it-works" class="how-it-works-section py-16 bg-white">
         <v-container>
-          <div class="text-center mb-12">
-            <h2 class="text-h3 font-weight-bold mb-4">كيف تعمل ملهم</h2>
-            <p class="text-h6 text-medium-emphasis">أربع خطوات بسيطة للبدء</p>
+          <div class="text-center mb-16">
+            <v-chip color="accent" variant="tonal" class="mb-4 font-weight-bold">خطوات العمل</v-chip>
+            <h2 class="text-h3 font-weight-bold mb-4 text-primary-dark">ابدأ رحلتك في دقائق</h2>
+            <p class="text-h6 text-medium-emphasis">نظام بسيط وفعال يضمن لك انطلاقة سريعة</p>
           </div>
 
           <v-row justify="center">
-            <v-col cols="12" md="10">
-              <div class="timeline-container">
-                <v-timeline side="end" align="start">
-                  <v-timeline-item v-for="(step, index) in steps" :key="step.id" :dot-color="step.color" size="large">
-                    <template #icon>
-                      <v-icon color="white">{{ step.icon }}</v-icon>
-                    </template>
-                    <v-card elevation="2" class="pa-6">
-                      <div class="d-flex align-center mb-3">
-                        <v-chip :color="step.color" class="me-3">خطوة {{ index + 1 }}</v-chip>
-                        <h3 class="text-h5 font-weight-bold">{{ step.title }}</h3>
-                      </div>
-                      <p class="text-body-1 text-medium-emphasis">{{ step.description }}</p>
-                    </v-card>
-                  </v-timeline-item>
-                </v-timeline>
-              </div>
+            <v-col cols="12" lg="10">
+              <v-timeline :side="$vuetify.display.mdAndDown ? 'end' : undefined"
+                :density="$vuetify.display.smAndDown ? 'compact' : 'default'" align="start" line-color="grey-lighten-2"
+                truncate-line="start">
+                <v-timeline-item v-for="(step, index) in steps" :key="step.id" :dot-color="step.color" size="large"
+                  fill-dot>
+                  <template #icon>
+                    <v-icon color="white" size="24">{{ step.icon }}</v-icon>
+                  </template>
+                  <v-card elevation="0" class="border pt-6 pb-6 px-6 rounded-xl" :class="`border-${step.color}`"
+                    style="border-width: 2px !important;">
+                    <div class="d-flex align-center mb-4">
+                      <v-chip :color="step.color" size="small" class="font-weight-bold me-3">خطوة {{ index + 1
+                        }}</v-chip>
+                      <h3 class="text-h5 font-weight-bold text-primary-dark">{{ step.title }}</h3>
+                    </div>
+                    <p class="text-body-1 text-medium-emphasis lh-relaxed">{{ step.description }}</p>
+                  </v-card>
+                </v-timeline-item>
+              </v-timeline>
             </v-col>
           </v-row>
         </v-container>
@@ -423,15 +491,16 @@
       </section> -->
 
       <!-- 7️⃣ Pricing Section -->
-      <section id="pricing" class="pricing-section py-16">
+      <section id="pricing" class="pricing-section py-16 bg-grey-lighten-5 position-relative">
         <v-container>
-          <div class="text-center mb-12">
-            <h2 class="text-h3 font-weight-bold mb-4">باقات الأشتراك</h2>
-            <p class="text-h6 text-medium-emphasis">اختر الخطة المناسبة لك</p>
+          <div class="text-center mb-16">
+            <v-chip color="success" variant="tonal" class="mb-4 font-weight-bold">الباقات والأسعار</v-chip>
+            <h2 class="text-h3 font-weight-bold mb-4 text-primary-dark">استثمر في مستقبل تعليمي أفضل</h2>
+            <p class="text-h6 text-medium-emphasis">اختر الباقة التي تناسب احتياجاتك وابدأ فوراً</p>
           </div>
 
-          <!-- تقرير سعة الاشتراك للمعلم (يظهر فقط عند تسجيل الدخول) -->
-          <v-row v-if="isLoggedIn" class="mb-6" justify="center">
+          <!-- Capacity Report -->
+          <v-row v-if="isLoggedIn" class="mb-12" justify="center">
             <v-col cols="12" md="8">
               <v-card elevation="2">
                 <v-card-title class="d-flex align-center justify-space-between">
@@ -482,50 +551,45 @@
             </v-col>
           </v-row>
 
-          <v-row justify="center">
-            <v-col cols="12" md="3" v-for="plan in pricingPlans" :key="plan.id">
+          <v-row justify="center" align="stretch">
+            <v-col cols="12" md="4" lg="3" v-for="plan in pricingPlans" :key="plan.id">
               <v-hover v-slot="{ isHovering, props }">
-                <v-card v-bind="props" elevation="2" class="pa-6 text-center pricing-card h-100"
-                  :class="{ 'pricing-card-hover': isHovering, 'pricing-featured': plan.featured }"
-                  :color="plan.featured ? 'accent' : undefined">
-                  <v-chip v-if="plan.featured" color="highlight" class="mb-4" variant="elevated">
-                    الأكثر شعبية
-                  </v-chip>
+                <v-card v-bind="props" :elevation="plan.featured ? 12 : (isHovering ? 6 : 2)"
+                  class="h-100 text-center pa-6 pricing-card d-flex flex-column position-relative transition-swing"
+                  :class="{ 'pricing-featured border-primary': plan.featured, 'mt-n4': plan.featured }"
+                  :variant="plan.featured ? 'elevated' : 'flat'" :color="plan.featured ? 'white' : 'white'">
 
-                  <v-icon :size="64" :color="plan.iconColor" class="mb-4">
-                    {{ plan.icon }}
-                  </v-icon>
-
-                  <h3 class="text-h4 font-weight-bold mb-2">
-                    {{ plan.name }}
-                  </h3>
-
-                  <div class="mb-4">
-                    <span class="text-h3 font-weight-bold">
-                      {{ plan.price }}
-                    </span>
-                    <span class="text-body-1">
-                      {{ plan.period }}
-                    </span>
+                  <div v-if="plan.featured" class="position-absolute top-0 left-0 right-0 text-center"
+                    style="transform: translateY(-50%);">
+                    <v-chip color="accent" variant="flat" class="font-weight-bold px-6" elevation="4">الأكثر
+                      طلباً</v-chip>
                   </div>
 
-                  <v-divider class="my-4" />
+                  <div class="mb-6">
+                    <v-avatar :color="plan.featured ? 'primary' : 'grey-lighten-4'" size="80" class="mb-4">
+                      <v-icon size="40" :color="plan.featured ? 'white' : 'primary'">{{ plan.icon }}</v-icon>
+                    </v-avatar>
+                    <h3 class="text-h5 font-weight-bold mb-2">{{ plan.name }}</h3>
+                    <div class="d-flex align-center justify-center">
+                      <span class="text-h4 font-weight-black text-primary-dark">{{ plan.price }}</span>
+                    </div>
+                    <span class="text-caption text-medium-emphasis">{{ plan.period }}</span>
+                  </div>
 
-                  <v-list density="compact" class="mb-6 bg-transparent">
-                    <v-list-item v-for="feature in plan.features" :key="feature" class="px-0">
+                  <v-divider class="mb-6"></v-divider>
+
+                  <v-list density="compact" class="mb-auto bg-transparent text-start">
+                    <v-list-item v-for="feature in plan.features" :key="feature" class="px-0 mb-2">
                       <template #prepend>
-                        <v-icon size="20">
-                          mdi-check-circle
-                        </v-icon>
+                        <v-icon color="success" size="20" class="me-2">mdi-check-circle</v-icon>
                       </template>
-                      <v-list-item-title>
-                        {{ feature }}
-                      </v-list-item-title>
+                      <v-list-item-title class="text-body-2 font-weight-medium">{{ feature }}</v-list-item-title>
                     </v-list-item>
                   </v-list>
 
-                  <v-btn :variant="plan.featured ? 'elevated' : 'outlined'" size="large" block
-                    @click="selectPlan(plan)">
+                  <v-btn :color="plan.featured ? 'primary' : 'primary'"
+                    :variant="plan.featured ? 'elevated' : 'outlined'" size="large" block rounded="xl"
+                    class="mt-6 font-weight-bold" height="48" @click="selectPlan(plan)">
                     {{ plan.buttonText }}
                   </v-btn>
                 </v-card>
@@ -558,114 +622,157 @@
       </section>
 
       <!-- 8️⃣ Contact Us -->
-      <section id="contact" class="py-12">
+      <section id="contact" class="py-16 bg-white">
         <v-container>
           <v-row>
-            <v-col cols="12" class="text-center mb-6">
-              <h2 class="text-h4 font-weight-bold">تواصل معنا</h2>
-              <p class="text-medium-emphasis">نرحب باستفساراتك وملاحظاتك دائمًا</p>
+            <v-col cols="12" md="5" class="mb-8 mb-md-0">
+              <h2 class="text-h3 font-weight-bold mb-6 text-primary-dark">تواصل معنا</h2>
+              <p class="text-h6 text-medium-emphasis mb-8 lh-relaxed">
+                فريقنا جاهز للإجابة على استفساراتك ومساعدتك في البدء. لا تتردد في التواصل معنا في أي وقت.
+              </p>
+
+              <div class="d-flex align-center mb-6">
+                <v-avatar color="primary-lighten-5" size="56" class="me-4">
+                  <v-icon color="primary" size="28">mdi-email</v-icon>
+                </v-avatar>
+                <div>
+                  <div class="text-caption text-medium-emphasis">البريد الإلكتروني</div>
+                  <div class="text-subtitle-1 font-weight-bold">support@mulhimiq.com</div>
+                </div>
+              </div>
+
+              <div class="d-flex align-center mb-6">
+                <v-avatar color="primary-lighten-5" size="56" class="me-4">
+                  <v-icon color="primary" size="28">mdi-phone</v-icon>
+                </v-avatar>
+                <div>
+                  <div class="text-caption text-medium-emphasis">الهاتف</div>
+                  <div class="text-subtitle-1 font-weight-bold">+964 770 000 0000</div>
+                </div>
+              </div>
+
+              <div class="d-flex align-center">
+                <v-avatar color="primary-lighten-5" size="56" class="me-4">
+                  <v-icon color="primary" size="28">mdi-map-marker</v-icon>
+                </v-avatar>
+                <div>
+                  <div class="text-caption text-medium-emphasis">العنوان</div>
+                  <div class="text-subtitle-1 font-weight-bold">بغداد، العراق</div>
+                </div>
+              </div>
             </v-col>
 
-            <v-col cols="12" md="8" class="mx-auto">
-              <v-alert v-if="contactError" type="error" variant="tonal" class="mb-4" closable
-                @click:close="contactError = ''">
-                {{ contactError }}
-              </v-alert>
-              <v-alert v-if="contactSuccess" type="success" variant="tonal" class="mb-4" closable
-                @click:close="contactSuccess = ''">
-                {{ contactSuccess }}
-              </v-alert>
+            <v-col cols="12" md="6" offset-md="1">
+              <v-card elevation="0" class="border pa-8 rounded-xl">
+                <h3 class="text-h5 font-weight-bold mb-6">أرسل لنا رسالة</h3>
+                <v-alert v-if="contactError" type="error" variant="tonal" class="mb-4" closable
+                  @click:close="contactError = ''">
+                  {{ contactError }}
+                </v-alert>
+                <v-alert v-if="contactSuccess" type="success" variant="tonal" class="mb-4" closable
+                  @click:close="contactSuccess = ''">
+                  {{ contactSuccess }}
+                </v-alert>
 
-              <v-form @submit.prevent="submitContact">
-                <v-row>
-                  <v-col cols="12" md="6">
-                    <v-text-field v-model="contactForm.name" label="الاسم الكامل" prepend-inner-icon="mdi-account" />
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-text-field v-model="contactForm.email" type="email" label="البريد الإلكتروني"
-                      prepend-inner-icon="mdi-email" />
-                  </v-col>
-                  <v-col cols="12">
-                    <v-text-field v-model="contactForm.subject" label="الموضوع" prepend-inner-icon="mdi-text-short" />
-                  </v-col>
-                  <v-col cols="12">
-                    <v-textarea v-model="contactForm.message" label="نص الرسالة" rows="5" auto-grow
-                      prepend-inner-icon="mdi-message-text" />
-                  </v-col>
-                  <v-col cols="12" class="d-flex justify-end">
-                    <v-btn type="submit" color="primary" :loading="contactLoading">
-                      <v-icon start>mdi-send</v-icon>
-                      إرسال الرسالة
-                    </v-btn>
-                  </v-col>
-                </v-row>
-              </v-form>
+                <v-form @submit.prevent="submitContact">
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-text-field v-model="contactForm.name" label="الاسم الكامل" variant="outlined"
+                        density="comfortable" color="primary" />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field v-model="contactForm.email" type="email" label="البريد الإلكتروني"
+                        variant="outlined" density="comfortable" color="primary" />
+                    </v-col>
+                    <v-col cols="12">
+                      <v-text-field v-model="contactForm.subject" label="الموضوع" variant="outlined"
+                        density="comfortable" color="primary" />
+                    </v-col>
+                    <v-col cols="12">
+                      <v-textarea v-model="contactForm.message" label="نص الرسالة" rows="4" auto-grow variant="outlined"
+                        density="comfortable" color="primary" />
+                    </v-col>
+                    <v-col cols="12">
+                      <v-btn type="submit" color="primary" size="large" block height="48" :loading="contactLoading"
+                        class="font-weight-bold rounded-lg">
+                        إرسال الرسالة
+                      </v-btn>
+                    </v-col>
+                  </v-row>
+                </v-form>
+              </v-card>
             </v-col>
           </v-row>
         </v-container>
       </section>
 
       <!-- 9️⃣ Footer -->
-      <v-footer id="footer" color="primary" class="footer-section">
+      <v-footer id="footer" class="footer-section text-white pt-16 pb-8">
         <v-container>
-          <v-row>
-            <v-col cols="12" md="4">
-              <div class="d-flex align-center mb-4">
-                <v-icon size="32" class="me-3" color="support">mdi-lightbulb-on</v-icon>
-                <h3 class="text-h5 font-weight-bold text-white">
+          <v-row class="mb-12">
+            <v-col cols="12" md="4" class="mb-8 mb-md-0">
+              <div class="d-flex align-center mb-6">
+                <v-img :src="logo" width="40" height="40" class="me-3 bg-white rounded-circle pa-1" />
+                <h3 class="text-h4 font-weight-bold">
                   <span>Mulhim</span><span class="text-accent">IQ</span>
                 </h3>
               </div>
-              <p class="text-body-2 text-white mb-4" style="opacity: 0.9;">
-                منصة تعليمية متكاملة تربط بين المعلمين والطلاب والإدارة في منظومة واحدة للتعليم الذكي
+              <p class="text-body-1 text-grey-lighten-3 mb-6 lh-relaxed" style="max-width: 300px;">
+                منصة تعليمية متكاملة تربط بين المعلمين والطلاب والإدارة في منظومة واحدة للتعليم الذكي.
               </p>
-            </v-col>
-
-            <v-col cols="12" md="4">
-              <h4 class="text-h6 font-weight-bold text-white mb-4">روابط سريعة</h4>
-              <div class="d-flex flex-column gap-2">
-                <v-btn variant="text" color="white" size="small" class="justify-start">
-                  عن المنصة
-                </v-btn>
-                <v-btn variant="text" color="white" size="small" class="justify-start"
-                  :to="{ path: '/privacy-policy' }">
-                  سياسة الخصوصية
-                </v-btn>
-                <v-btn variant="text" color="white" size="small" class="justify-start"
-                  :to="{ path: '/terms-and-conditions' }">
-                  شروط الاستخدام
-                </v-btn>
-                <v-btn variant="text" :to="{ path: '/contact' }" color="white" size="small" class="justify-start">
-                  الدعم الفني
-                </v-btn>
-              </div>
-            </v-col>
-
-            <v-col cols="12" md="4">
-              <h4 class="text-h6 font-weight-bold text-white mb-4">تواصل معنا</h4>
-              <div class="d-flex gap-2 mb-4">
-                <v-btn icon variant="outlined" color="white" size="small">
+              <div class="d-flex gap-2">
+                <v-btn icon variant="tonal" color="white" size="small" class="rounded-circle">
                   <v-icon>mdi-facebook</v-icon>
                 </v-btn>
-                <v-btn icon variant="outlined" color="white" size="small">
+                <v-btn icon variant="tonal" color="white" size="small" class="rounded-circle">
                   <v-icon>mdi-twitter</v-icon>
                 </v-btn>
-                <v-btn icon variant="outlined" color="white" size="small">
+                <v-btn icon variant="tonal" color="white" size="small" class="rounded-circle">
                   <v-icon>mdi-instagram</v-icon>
                 </v-btn>
-                <v-btn icon variant="outlined" color="white" size="small">
+                <v-btn icon variant="tonal" color="white" size="small" class="rounded-circle">
                   <v-icon>mdi-linkedin</v-icon>
                 </v-btn>
               </div>
             </v-col>
+
+            <v-col cols="6" md="2" offset-md="2">
+              <h4 class="text-h6 font-weight-bold mb-6">الروابط</h4>
+              <div class="d-flex flex-column gap-3">
+                <a href="#" class="text-grey-lighten-3 text-decoration-none hover-white">الرئيسية</a>
+                <a href="#features" class="text-grey-lighten-3 text-decoration-none hover-white">المميزات</a>
+                <a href="#pricing" class="text-grey-lighten-3 text-decoration-none hover-white">الأسعار</a>
+                <a href="#contact" class="text-grey-lighten-3 text-decoration-none hover-white">تواصل معنا</a>
+              </div>
+            </v-col>
+
+            <v-col cols="6" md="2">
+              <h4 class="text-h6 font-weight-bold mb-6">قانوني</h4>
+              <div class="d-flex flex-column gap-3">
+                <router-link to="/privacy-policy" class="text-grey-lighten-3 text-decoration-none hover-white">سياسة
+                  الخصوصية</router-link>
+                <router-link to="/terms-and-conditions"
+                  class="text-grey-lighten-3 text-decoration-none hover-white">شروط
+                  الاستخدام</router-link>
+              </div>
+            </v-col>
+
+            <v-col cols="12" md="2">
+              <h4 class="text-h6 font-weight-bold mb-6">حمل التطبيق</h4>
+              <v-btn color="white" variant="outlined" block class="mb-3"
+                href="https://apps.apple.com/us/app/mulhimiq/id6754453929" target="_blank">
+                <v-icon start>mdi-apple</v-icon> App Store
+              </v-btn>
+              <v-btn color="white" variant="outlined" block href="#">
+                <v-icon start>mdi-google-play</v-icon> Google Play
+              </v-btn>
+            </v-col>
           </v-row>
 
-          <v-divider class="my-6" color="white" opacity="0.3" />
+          <v-divider class="mb-8 border-opacity-25"></v-divider>
 
-          <div class="text-center">
-            <p class="text-body-2 text-white" style="opacity: 0.9;">
-              © 2025 MulhimIQ — جميع الحقوق محفوظة.
-            </p>
+          <div class="text-center text-body-2 text-grey-lighten-4">
+            © 2025 MulhimIQ — جميع الحقوق محفوظة.
           </div>
         </v-container>
       </v-footer>
@@ -1601,5 +1708,194 @@ definePage({
 
 .download-section {
   border: 2px solid rgba(255, 255, 255, 20%);
+}
+
+/* New Styles */
+.hero-bg-glow {
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(var(--v-theme-accent), 0.3) 0%, rgba(0, 0, 0, 0) 70%);
+  filter: blur(80px);
+  z-index: 1;
+}
+
+.hero-shape-1 {
+  position: absolute;
+  bottom: 10%;
+  left: -5%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.4) 0%, rgba(0, 0, 0, 0) 70%);
+  filter: blur(60px);
+  z-index: 1;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #fff 0%, rgb(var(--v-theme-accent)) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.phone-mockup-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.phone-frame {
+  width: 300px;
+  max-width: 100%;
+  height: 600px;
+  max-height: 80vh;
+  background: #1a1a1a;
+  border-radius: 48px;
+  border: 8px solid #2d2d2d;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.phone-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 24px;
+  background: #2d2d2d;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  z-index: 10;
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  border-radius: 38px;
+}
+
+.floating-card {
+  position: absolute;
+  padding: 12px 16px;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(10px);
+  z-index: 5;
+}
+
+.card-1 {
+  top: 20%;
+  left: 0;
+  animation: float 6s ease-in-out infinite;
+}
+
+.card-2 {
+  bottom: 20%;
+  right: 0;
+  animation: float 6s ease-in-out infinite 2s;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.feature-card {
+  border-radius: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: white;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card.on-hover {
+  transform: translateY(-10px);
+}
+
+.feature-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover .feature-icon-wrapper {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.dashboard-window {
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.window-controls .control {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.window-controls .red {
+  background: #ff5f56;
+}
+
+.window-controls .yellow {
+  background: #ffbd2e;
+}
+
+.window-controls .green {
+  background: #27c93f;
+}
+
+.dashboard-bg-shape {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.05) 0%, rgba(0, 0, 0, 0) 70%);
+  z-index: 1;
+}
+
+.pricing-card {
+  border-radius: 24px !important;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.pricing-card:hover {
+  transform: translateY(-5px);
+}
+
+.hover-white {
+  transition: color 0.2s ease;
+}
+
+.hover-white:hover {
+  color: white !important;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>
