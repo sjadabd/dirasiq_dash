@@ -7,37 +7,40 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-.DS_Store
-# dist
-dist-ssr
-*.local
+# Dependencies
+node_modules/
 
-/cypress/videos/
-/cypress/screenshots/
+# Build output (Don't upload dist to GitHub)
+dist/
+dist-ssr/
 
-# 👉 Custom Git ignores
+# Local env
+.env*
+!.env.example
 
-# Editor directories and files
+# IDE and editor folders
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
 !.vscode/*.code-snippets
 !.vscode/tours
-.idea
+
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# System files
+.DS_Store
+
+# Cypress cache
+/cypress/videos/
+/cypress/screenshots/
+
+# Optional local configs
+*.local
+
+# Yarn cache
 .yarn
-
-# iconify dist files
-# src/plugins/iconify/icons.css
-
-# Ignore MSW script
-public/mockServiceWorker.js
-
-# Env files
-.env*
-!.env.example
