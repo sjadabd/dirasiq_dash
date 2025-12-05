@@ -29,7 +29,7 @@
               <v-btn variant="text" :to="{ path: '/terms-and-conditions' }">شروط الاستخدام</v-btn>
               <!-- 🔹 زر ديناميكي حسب حالة تسجيل الدخول -->
               <v-btn v-if="!isLoggedIn" color="support"
-                style="color: white !important;background-color: #1c324c !important;" variant="elevated" to="/login">
+                style="background-color: #1c324c !important;color: white !important;" variant="elevated" to="/login">
                 <v-icon start>mdi-rocket-launch</v-icon>
                 ابدأ الآن
               </v-btn>
@@ -152,7 +152,7 @@
                   </h1>
 
                   <p class="text-h6 text-lg-h5 text-grey-lighten-3 mb-8 text-balance lh-relaxed"
-                    style="max-width: 600px; margin-inline: auto;">
+                    style=" margin-inline: auto;max-inline-size: 600px;">
                     منصة ملهم تمكّنك من إدارة الكورسات، الحضور، والطلاب في مكان واحد.
                     تجربة تعليمية متكاملة تبدأ من هنا.
                   </p>
@@ -178,7 +178,8 @@
                       target="_blank">
                       <v-icon size="28">mdi-apple</v-icon>
                     </v-btn>
-                    <v-btn icon variant="text" color="white" href="#">
+                    <v-btn icon variant="text" color="white" target="_blank"
+                      href="https://play.google.com/store/apps/details?id=com.mulhimiq.app">
                       <v-icon size="28">mdi-google-play</v-icon>
                     </v-btn>
                   </div>
@@ -198,11 +199,11 @@
                         <v-carousel-item v-for="(screen, index) in appScreenshots" :key="index" :src="screen.image"
                           cover @click="openNews(screen)" class="cursor-pointer">
                           <div class="d-flex flex-column justify-end h-100 pb-8 px-4 position-relative"
-                            style="background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%);">
+                            style="background: linear-gradient(to top, rgba(0, 0, 0, 95%) 0%, rgba(0, 0, 0, 60%) 50%, rgba(0, 0, 0, 0%) 100%);">
                             <h3 class="text-subtitle-1 font-weight-bold mb-1 text-truncate text-white"
-                              style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">{{ screen.title }}</h3>
+                              style="text-shadow: 0 2px 4px rgba(0, 0, 0, 50%);">{{ screen.title }}</h3>
                             <p class="text-caption text-grey-lighten-3 text-truncate-2 lh-tight text-white"
-                              style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
+                              style="display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; text-shadow: 0 1px 2px rgba(0, 0, 0, 50%);">
                               {{ screen.description }}
                             </p>
                           </div>
@@ -258,7 +259,8 @@
           <div class="text-center mb-16">
             <v-chip color="primary" variant="tonal" class="mb-4 font-weight-bold">مميزاتنا</v-chip>
             <h2 class="text-h3 font-weight-bold mb-4 text-primary-dark">كل ما تحتاجه لإدارة تعليمية ناجحة</h2>
-            <p class="text-h6 text-medium-emphasis" style="max-width: 700px; margin: 0 auto;">
+            <p class="text-h6 text-medium-emphasis"
+              style=" margin-block: 0; margin-inline: auto;max-inline-size: 700px;">
               أدوات متكاملة صممت خصيصاً لتلبية احتياجات المعلمين والطلاب في بيئة تعليمية عصرية
             </p>
           </div>
@@ -294,7 +296,8 @@
           <div class="text-center mb-16">
             <v-chip color="secondary" variant="tonal" class="mb-4 font-weight-bold">لوحة التحكم</v-chip>
             <h2 class="text-h3 font-weight-bold mb-4 text-primary-dark">تحكم كامل في العملية التعليمية</h2>
-            <p class="text-h6 text-medium-emphasis" style="max-width: 700px; margin: 0 auto;">
+            <p class="text-h6 text-medium-emphasis"
+              style=" margin-block: 0; margin-inline: auto;max-inline-size: 700px;">
               واجهة مستخدم بديهية وقوية تمنحك السيطرة الكاملة على كل تفاصيل صفوفك الدراسية
             </p>
           </div>
@@ -406,7 +409,7 @@
                                       <v-avatar :color="notification.color" size="8" variant="flat"
                                         class="mb-4"></v-avatar>
                                       <div class="vertical-line"
-                                        style="position: absolute; top: 12px; left: 3px; width: 2px; height: 100%; background: #eee;">
+                                        style="position: absolute; background: #eee; block-size: 100%; inline-size: 2px; inset-block-start: 12px; inset-inline-start: 3px;">
                                       </div>
                                     </div>
                                   </template>
@@ -717,7 +720,7 @@
                   <span>Mulhim</span><span class="text-accent">IQ</span>
                 </h3>
               </div>
-              <p class="text-body-1 text-grey-lighten-3 mb-6 lh-relaxed" style="max-width: 300px;">
+              <p class="text-body-1 text-grey-lighten-3 mb-6 lh-relaxed" style="max-inline-size: 300px;">
                 منصة تعليمية متكاملة تربط بين المعلمين والطلاب والإدارة في منظومة واحدة للتعليم الذكي.
               </p>
               <div class="d-flex gap-2">
@@ -763,7 +766,8 @@
                 href="https://apps.apple.com/us/app/mulhimiq/id6754453929" target="_blank">
                 <v-icon start>mdi-apple</v-icon> App Store
               </v-btn>
-              <v-btn color="white" variant="outlined" block href="#">
+              <v-btn color="white" variant="outlined" target="_blank" block
+                href="https://play.google.com/store/apps/details?id=com.mulhimiq.app">
                 <v-icon start>mdi-google-play</v-icon> Google Play
               </v-btn>
             </v-col>
@@ -1713,29 +1717,28 @@ definePage({
 /* New Styles */
 .hero-bg-glow {
   position: absolute;
-  top: -20%;
-  right: -10%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(var(--v-theme-accent), 0.3) 0%, rgba(0, 0, 0, 0) 70%);
-  filter: blur(80px);
   z-index: 1;
+  background: radial-gradient(circle, rgba(var(--v-theme-accent), 0.3) 0%, rgba(0, 0, 0, 0%) 70%);
+  block-size: 600px;
+  filter: blur(80px);
+  inline-size: 600px;
+  inset-block-start: -20%;
+  inset-inline-end: -10%;
 }
 
 .hero-shape-1 {
   position: absolute;
-  bottom: 10%;
-  left: -5%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.4) 0%, rgba(0, 0, 0, 0) 70%);
-  filter: blur(60px);
   z-index: 1;
+  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.4) 0%, rgba(0, 0, 0, 0%) 70%);
+  block-size: 400px;
+  filter: blur(60px);
+  inline-size: 400px;
+  inset-block-end: 10%;
+  inset-inline-start: -5%;
 }
 
 .text-gradient {
   background: linear-gradient(90deg, #fff 0%, rgb(var(--v-theme-accent)) 100%);
-  -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1743,64 +1746,65 @@ definePage({
 .phone-mockup-wrapper {
   position: relative;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   padding: 40px;
 }
 
 .phone-frame {
-  width: 300px;
-  max-width: 100%;
-  height: 600px;
-  max-height: 80vh;
-  background: #1a1a1a;
-  border-radius: 48px;
-  border: 8px solid #2d2d2d;
   position: relative;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   overflow: hidden;
+  border: 8px solid #2d2d2d;
+  border-radius: 48px;
+  background: #1a1a1a;
+  block-size: 600px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 50%);
+  inline-size: 300px;
+  max-block-size: 80vh;
+  max-inline-size: 100%;
 }
 
 .phone-notch {
   position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120px;
-  height: 24px;
-  background: #2d2d2d;
-  border-bottom-left-radius: 16px;
-  border-bottom-right-radius: 16px;
   z-index: 10;
+  background: #2d2d2d;
+  block-size: 24px;
+  border-end-end-radius: 16px;
+  border-end-start-radius: 16px;
+  inline-size: 120px;
+  inset-block-start: 0;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
 }
 
 .phone-screen {
-  width: 100%;
-  height: 100%;
-  background: #000;
   overflow: hidden;
   border-radius: 38px;
+  background: #000;
+  block-size: 100%;
+  inline-size: 100%;
 }
 
 .floating-card {
   position: absolute;
-  padding: 12px 16px;
-  border-radius: 16px !important;
-  background: rgba(255, 255, 255, 0.9) !important;
-  backdrop-filter: blur(10px);
   z-index: 5;
+  border-radius: 16px !important;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 90%) !important;
+  padding-block: 12px;
+  padding-inline: 16px;
 }
 
 .card-1 {
-  top: 20%;
-  left: 0;
   animation: float 6s ease-in-out infinite;
+  inset-block-start: 20%;
+  inset-inline-start: 0;
 }
 
 .card-2 {
-  bottom: 20%;
-  right: 0;
   animation: float 6s ease-in-out infinite 2s;
+  inset-block-end: 20%;
+  inset-inline-end: 0;
 }
 
 @keyframes float {
@@ -1816,8 +1820,8 @@ definePage({
 }
 
 .feature-card {
+  border: 1px solid rgba(0, 0, 0, 5%);
   border-radius: 24px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
   background: white;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1827,13 +1831,14 @@ definePage({
 }
 
 .feature-icon-wrapper {
-  width: 80px;
-  height: 80px;
-  border-radius: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto;
+  border-radius: 24px;
+  block-size: 80px;
+  inline-size: 80px;
+  margin-block: 0;
+  margin-inline: auto;
   transition: transform 0.3s ease;
 }
 
@@ -1842,16 +1847,16 @@ definePage({
 }
 
 .dashboard-window {
-  border-radius: 12px;
   overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 10%);
+  border-radius: 12px;
   background: white;
-  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .window-controls .control {
-  width: 12px;
-  height: 12px;
   border-radius: 50%;
+  block-size: 12px;
+  inline-size: 12px;
 }
 
 .window-controls .red {
@@ -1868,18 +1873,18 @@ definePage({
 
 .dashboard-bg-shape {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 120%;
-  height: 100%;
-  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.05) 0%, rgba(0, 0, 0, 0) 70%);
   z-index: 1;
+  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.05) 0%, rgba(0, 0, 0, 0%) 70%);
+  block-size: 100%;
+  inline-size: 120%;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .pricing-card {
+  border: 1px solid rgba(0, 0, 0, 5%);
   border-radius: 24px !important;
-  border: 1px solid rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 
