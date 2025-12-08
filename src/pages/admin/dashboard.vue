@@ -1,5 +1,6 @@
 <script setup>
 import { useAuth } from "@/composables/useAuth";
+import axiosInstance from "@/utils/axios.js";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
@@ -19,25 +20,30 @@ const stats = ref({
   pendingApprovals: 0,
 });
 
-onMounted(() => {
+onMounted(async () => {
   // التحقق من صلاحية المستخدم
-  if (!hasPermission("any_admin")) {
+  if (!hasPermission("super_admin")) {
     router.push("/login");
     return;
   }
 
   // محاكاة جلب الإحصائيات
-  setTimeout(() => {
+  try {
+    const response = await axiosInstance.get("/super-admin/dashboard/stats");
+    const data = response?.data?.data || {};
+
     stats.value = {
-      totalUsers: 1250,
-      totalTeachers: 85,
-      totalStudents: 1165,
-      activeCourses: 45,
-      totalRevenue: 125000,
-      pendingApprovals: 12,
+      ...stats.value,
+      totalUsers: data.totalUsers ?? 0,
+      totalTeachers: data.totalTeachers ?? 0,
+      totalStudents: data.totalStudents ?? 0,
+      activeCourses: data.activeCourses ?? 0,
     };
+  } catch (error) {
+    console.error("Failed to load super admin stats", error);
+  } finally {
     isLoading.value = false;
-  }, 1000);
+  }
 });
 
 // دالة تحديث الملف الشخصي
@@ -102,9 +108,7 @@ const openSettings = () => {
 
         <VCol cols="12" sm="6" md="4" lg="2">
           <VCard class="pa-4 text-center" elevation="2">
-            <VIcon size="48" color="primary" class="mb-2"
-              >mdi-account-group</VIcon
-            >
+            <VIcon size="48" color="primary" class="mb-2">mdi-account-group</VIcon>
             <h3 class="text-h4">{{ stats.totalUsers }}</h3>
             <p class="text-body-2 text-medium-emphasis">إجمالي المستخدمين</p>
           </VCard>
@@ -136,9 +140,7 @@ const openSettings = () => {
 
         <VCol cols="12" sm="6" md="4" lg="2">
           <VCard class="pa-4 text-center" elevation="2">
-            <VIcon size="48" color="success" class="mb-2"
-              >mdi-currency-usd</VIcon
-            >
+            <VIcon size="48" color="success" class="mb-2">mdi-currency-usd</VIcon>
             <h3 class="text-h4">{{ stats.totalRevenue.toLocaleString() }}</h3>
             <p class="text-body-2 text-medium-emphasis">إجمالي الإيرادات</p>
           </VCard>
@@ -166,9 +168,7 @@ const openSettings = () => {
               <VList>
                 <VListItem @click="manageUsers">
                   <VListItemTitle>إدارة المستخدمين</VListItemTitle>
-                  <VListItemSubtitle
-                    >عرض وإدارة جميع المستخدمين</VListItemSubtitle
-                  >
+                  <VListItemSubtitle>عرض وإدارة جميع المستخدمين</VListItemSubtitle>
                   <template #append>
                     <VBtn icon variant="text">
                       <VIcon>mdi-account-group</VIcon>
@@ -188,9 +188,7 @@ const openSettings = () => {
 
                 <VListItem @click="viewReports">
                   <VListItemTitle>التقارير والإحصائيات</VListItemTitle>
-                  <VListItemSubtitle
-                    >عرض تقارير مفصلة عن النظام</VListItemSubtitle
-                  >
+                  <VListItemSubtitle>عرض تقارير مفصلة عن النظام</VListItemSubtitle>
                   <template #append>
                     <VBtn icon variant="text">
                       <VIcon>mdi-chart-line</VIcon>
@@ -234,12 +232,8 @@ const openSettings = () => {
                 <VListItem>
                   <VListItemTitle>نوع المستخدم</VListItemTitle>
                   <VListItemSubtitle>
-                    <VChip
-                      :color="
-                        user?.userType === 'super_admin' ? 'warning' : 'info'
-                      "
-                      size="small"
-                    >
+                    <VChip :color="user?.userType === 'super_admin' ? 'warning' : 'info'
+                      " size="small">
                       {{
                         user?.userType === "super_admin" ? "سوبر أدمن" : "أدمن"
                       }}
@@ -250,10 +244,7 @@ const openSettings = () => {
                 <VListItem>
                   <VListItemTitle>الحالة</VListItemTitle>
                   <VListItemSubtitle>
-                    <VChip
-                      :color="user?.status === 'active' ? 'success' : 'warning'"
-                      size="small"
-                    >
+                    <VChip :color="user?.status === 'active' ? 'success' : 'warning'" size="small">
                       {{ user?.status === "active" ? "نشط" : "غير نشط" }}
                     </VChip>
                   </VListItemSubtitle>
@@ -263,7 +254,7 @@ const openSettings = () => {
                   <VListItemTitle>تاريخ الإنشاء</VListItemTitle>
                   <VListItemSubtitle>{{
                     new Date(user?.createdAt).toLocaleDateString("ar-SA")
-                  }}</VListItemSubtitle>
+                    }}</VListItemSubtitle>
                 </VListItem>
               </VList>
             </VCardText>
@@ -292,8 +283,8 @@ const openSettings = () => {
 }
 
 .v-list-item {
-  border-block-end: 1px solid
-    rgba(var(--v-border-color), var(--v-border-opacity));
+  border-block-end:
+    1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   cursor: pointer;
 }
 

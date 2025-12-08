@@ -52,6 +52,18 @@ const buildInternalRoute = (raw) => {
 
 const fetchNotifications = async (page = 1, append = false) => {
   try {
+    const token = localStorage.getItem('accessToken')
+    const rawUser = localStorage.getItem('user')
+    let parsedUser = null
+    try { parsedUser = rawUser ? JSON.parse(rawUser) : null } catch { parsedUser = null }
+
+    if (!token || !parsedUser || parsedUser?.userType === 'super_admin') {
+      notificationsList.value = []
+      unreadCount.value = 0
+      notificationsHasMore.value = false
+      return
+    }
+
     notificationsLoading.value = true
     const res = await teacher_api.getNotifications({ page, limit: notificationsLimit.value })
     const payload = res?.data?.data ? res.data : res
@@ -122,8 +134,12 @@ const markNotificationAsRead = async (id) => {
 
 onMounted(() => {
   const token = localStorage.getItem('accessToken')
-  const user = localStorage.getItem('user')
-  isLoggedIn.value = !!(token && user)
+  const rawUser = localStorage.getItem('user')
+  let parsedUser = null
+  try { parsedUser = rawUser ? JSON.parse(rawUser) : null } catch { parsedUser = null }
+  const userType = parsedUser?.userType
+
+  isLoggedIn.value = !!(token && parsedUser && userType !== 'super_admin')
   if (isLoggedIn.value) refreshNotifications()
   const qid = route.query?.notificationId
   if (qid) markNotificationAsRead(String(qid)).then(() => { }).catch(() => { })

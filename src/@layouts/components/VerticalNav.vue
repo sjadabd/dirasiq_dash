@@ -61,9 +61,10 @@ const filteredNavItems = computed(() => {
   // فلترة العناصر مع الأخذ بالحسبان المجموعات والعناوين
   return props.navItems
     .map((item) => {
-      // إذا كان عنوان قسم (heading)، أظهره دائمًا
+      // إذا كان عنوان قسم (heading)
       if ("heading" in item) {
-        return item;
+        // إذا لم يكن له نوع، نعرضه للجميع، وإن كان له نوع فيجب أن يكون مسموحًا للمستخدم الحالي
+        return isAllowed(item.type) ? item : null;
       }
 
       // إذا كان مجموعة تحتوي على عناصر فرعية

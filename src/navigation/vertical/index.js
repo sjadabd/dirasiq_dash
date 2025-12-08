@@ -1,8 +1,7 @@
 export default [
   // super_admin
   {
-    type: 'super_admin',
-    heading: 'لوحة التحكم',
+    heading: 'لوحة التحكم', type: 'super_admin'
   },
   {
     title: 'الصفحة الرئيسية',
@@ -28,10 +27,17 @@ export default [
     type: 'super_admin',
     icon: { icon: 'ri-file-text-line' },
   },
+  {
+    title: 'المعلمين',
+    to: { name: 'admin-teachers-show-teachers' },
+    type: 'super_admin',
+    icon: { icon: 'ri-team-line' },
+  },
   // super_admin
 
   // teacher
   // ── الرئيسية ─────────────────────────────────────────────
+  { heading: 'الرئيسية', type: 'teacher' },
   {
     title: 'الصفحة الرئيسية',
     to: { name: 'teacher-dashboard' },
@@ -40,7 +46,7 @@ export default [
   },
 
   // ── الحسابات والفوترة ────────────────────────────────────
-  { heading: 'الحسابات والفوترة' },
+  { heading: 'الحسابات والفوترة', type: 'teacher' },
   {
     title: 'فواتير العربون',
     to: { name: 'teacher-payments-reservations-show-reservation-payments' },
@@ -53,21 +59,9 @@ export default [
     type: 'teacher',
     icon: { icon: 'ri-bill-line' }, // فواتير
   },
-  {
-    title: 'المصاريف',
-    to: { name: 'teacher-expenses-manage-expenses' },
-    type: 'teacher',
-    icon: { icon: 'ri-money-dollar-circle-line' }, // مصاريف
-  },
-  {
-    title: 'التقارير المالية',
-    to: { name: 'teacher-reports-financial' },
-    type: 'teacher',
-    icon: { icon: 'ri-bar-chart-2-line' }, // مصاريف
-  },
 
   // ── المحتوى الدراسي والحجوزات ────────────────────────────
-  { heading: 'المحتوى الدراسي والحجوزات' },
+  { heading: 'المحتوى الدراسي والحجوزات', type: 'teacher' },
   {
     title: 'المواد الدراسية',
     to: { name: 'teacher-subjects-show-subjects' },
@@ -88,7 +82,7 @@ export default [
   },
 
   // ── الجدول والمتابعة ─────────────────────────────────────
-  { heading: 'الجدول والمتابعة' },
+  { heading: 'الجدول والمتابعة', type: 'teacher' },
   {
     title: 'الجدول الأسبوعي',
     to: { name: 'teacher-sessions-manage-sessions' },
@@ -103,7 +97,7 @@ export default [
   },
 
   // ── التواصل والمهام ──────────────────────────────────────
-  { heading: 'التواصل والمهام' },
+  { heading: 'التواصل والمهام', type: 'teacher' },
   {
     title: 'الإشعارات',
     to: { name: 'teacher-notifications-show-notifications' },
@@ -118,7 +112,7 @@ export default [
   },
 
   // ── الاختبارات والنتائج ──────────────────────────────────
-  { heading: 'الاختبارات والنتائج' },
+  { heading: 'الاختبارات والنتائج', type: 'teacher' },
   {
     title: 'الامتحانات والدرجات',
     to: { name: 'teacher-exams-manage-exams' },
