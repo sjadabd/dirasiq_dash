@@ -212,6 +212,12 @@ export default {
             key: "student.name",
           },
           {
+            title: "الصف",
+            type: "strong",
+            sortable: true,
+            key: "course.gradeName",
+          },
+          {
             title: "الحالة",
             type: "status",
             sortable: true,

@@ -3,71 +3,46 @@
     <VCard rounded="lg" elevation="10">
       <!-- Dialog Header -->
       <VCardTitle class="d-flex align-center pa-4 bg-error-lighten-5">
-        <VIcon color="error" size="36" class="mr-3" v-if="!hideIcon"
-          >mdi-alert-octagon</VIcon
-        >
+        <VIcon color="error" size="36" class="mr-3" v-if="!hideIcon">mdi-alert-octagon</VIcon>
         <span class="text-h6 font-weight-bold text-error">{{ title }}</span>
       </VCardTitle>
 
       <!-- Dialog Content -->
       <VCardText class="pa-6">
-        <v-card
-          class="pa-4 text-center"
-          style="
+        <v-card class="pa-4 text-center" style="
             background-color: #f5a0111f;
             border-inline-start: 4px solid rgb(var(--v-theme-warning));
-          "
-          elevation="2"
-          rounded="lg"
-        >
-          <div
-            style="
+" elevation="2" rounded="lg">
+          <div style="
               display: flex;
               flex-direction: column;
               align-items: flex-start;
-            "
-          >
+">
             <v-icon size="48" color="warning" class="mb-2">mdi-alert</v-icon>
-            <ul
-              class="pl-4"
-              style="list-style-type: disclosure-closed; margin-inline: 15px"
-            >
-              <li
-                v-for="(msg, index) in messages"
-                :key="index"
-                class="text-body-3 mb-1"
-              >
+            <ul class="pl-4" style="list-style-type: disclosure-closed; margin-inline: 15px;">
+              <li v-for="(msg, index) in messages" :key="index" class="text-body-3 mb-1">
                 {{ msg }}
               </li>
             </ul>
           </div>
         </v-card>
 
-        <!-- Confirm Checkbox -->
-        <VCheckbox
-          v-model="confirmChecked"
-          :label="checkboxLabel"
-          :color="checkboxColor"
-          density="compact"
-          hide-details
-          class="mt-4"
-        />
+        <!-- Confirm Checkbox (اختياري) -->
+        <VCheckbox v-if="showCheckbox" v-model="confirmChecked" :label="checkboxLabel" :color="checkboxColor"
+          density="compact" hide-details class="mt-4" />
       </VCardText>
 
       <!-- Dialog Actions -->
       <VCardActions class="pa-4 border-t d-flex justify-end">
         <VBtn variant="text" @click="closeDialog">اغلاق</VBtn>
-        <VBtn
-          color="error"
-          :disabled="!confirmChecked || isDeleting"
-          @click="confirmDelete"
-        >
+        <VBtn color="error" :disabled="(showCheckbox && !confirmChecked) || isDeleting" @click="confirmDelete">
           <Transition name="delete-icon-transition" mode="out-in">
-            <VIcon
-              :key="isDeleting ? 'empty' : 'full'"
-              class="mr-2 delete-icon-animated"
-            >
-              {{ isDeleting ? "mdi-delete-empty" : "mdi-delete" }}
+            <VIcon :key="isDeleting ? 'empty' : 'full'" class="mr-2 delete-icon-animated">
+              {{
+                isDeleting
+                  ? confirmIconActive || "mdi-delete-empty"
+                  : confirmIcon || "mdi-delete"
+              }}
             </VIcon>
           </Transition>
           {{ confirmButtonText }}
@@ -87,10 +62,13 @@ const props = defineProps({
   confirmButtonText: { type: String, default: "Delete Permanently" },
   hideIcon: { type: Boolean, default: false },
   checkboxColor: { type: String, default: "error" },
+  showCheckbox: { type: Boolean, default: true },
   checkboxLabel: {
     type: String,
     default: "أفهم التحذير وأؤكد الحذف",
   },
+  confirmIcon: { type: String, default: "" },
+  confirmIconActive: { type: String, default: "" },
 });
 const emit = defineEmits(["update:modelValue", "confirm"]);
 
@@ -132,8 +110,8 @@ async function confirmDelete() {
 <style scoped>
 /* تصميم عام للحوار */
 .v-card-title {
-  border-block-end: 1px solid
-    rgba(var(--v-border-color), var(--v-border-opacity));
+  border-block-end:
+    1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
 /* انتقال أيقونة زر الحذف */
@@ -144,12 +122,14 @@ async function confirmDelete() {
 
 .delete-icon-transition-enter-from {
   opacity: 0;
-  transform: translateY(-10px) scale(0.8); /* حركة دخول من الأعلى مع تصغير */
+  transform: translateY(-10px) scale(0.8);
+  /* حركة دخول من الأعلى مع تصغير */
 }
 
 .delete-icon-transition-leave-to {
   opacity: 0;
-  transform: translateY(10px) scale(0.8); /* حركة خروج للأسفل مع تصغير */
+  transform: translateY(10px) scale(0.8);
+  /* حركة خروج للأسفل مع تصغير */
 }
 
 /* الأيقونة المتحركة (لا تحتاج @keyframes منفصلة هنا لأن Transition تتعامل معها) */

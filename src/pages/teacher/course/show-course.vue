@@ -63,7 +63,7 @@
         <SmartTable :headers="table.headers" :items="table.Data" :actions="table.actions" :loading="table.loading"
           :totalItems="table.totalItems" :tableOptions="table.tableSettings.options"
           @updateTableOptions="updateTableOptions" @deleteItem="deleteItem" @editItem="editItem"
-          @enableItem="enableItem" class="reservation-table" />
+          @enableItem="enableItem" @showItem="handleShowCourseStudents" class="reservation-table" />
       </VCardItem>
     </VCard>
     <!-- SmartTable -->
@@ -136,6 +136,12 @@ export default {
             type: "link",
             sortable: true,
             key: "course_name",
+          },
+          {
+            title: "الصف",
+            type: "strong",
+            sortable: true,
+            key: "grade_name",
           },
           {
             title: "التفاصيل",
@@ -465,6 +471,17 @@ export default {
       Object.assign(this.alert, { type, message, open: true });
     },
     // Alert
+
+    handleShowCourseStudents(item) {
+      if (!item?.id) return;
+      this.$router.push({
+        path: "/teacher/course/students",
+        query: {
+          courseId: item.id,
+          courseName: item.course_name,
+        },
+      });
+    },
   },
 };
 </script>

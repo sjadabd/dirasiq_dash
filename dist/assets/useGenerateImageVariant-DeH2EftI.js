@@ -1,0 +1,1 @@
+import{I as u,b1 as i,z as f}from"./index-Dmazqufq.js";const c="/assets/tree1-BgCqMC4A.png",m=(e,n,a,o,r=!1)=>{const t=u(),{global:s}=i();return f(()=>s.name.value==="light"?t.skin==="bordered"&&r?a:e:s.name.value==="dark"?t.skin==="bordered"&&r?o:n:e)};export{c as t,m as u};

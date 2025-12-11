@@ -382,6 +382,22 @@
                     </template>
                     <span>طباعة</span>
                   </VTooltip>
+                  <!-- تسديد عربون -->
+                  <VTooltip v-if="actions.includes('تسديد عربون') && item.status === 'pending'" location="top">
+                    <template #activator="{ props }">
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        color="success"
+                        size="small"
+                        @click="markReservationPaidItem(item)"
+                      >
+                        <VIcon size="18">ri-money-dollar-circle-line</VIcon>
+                      </VBtn>
+                    </template>
+                    <span>تسديد العربون</span>
+                  </VTooltip>
                 </div>
               </template>
 
@@ -640,6 +656,9 @@ export default {
     recreateItem(item) {
       this.$emit("recreateItem", item);
     },
+    markReservationPaidItem(item) {
+      this.$emit("markReservationPaidItem", item);
+    },
   },
 };
 </script>
@@ -649,14 +668,14 @@ export default {
   text-align: start !important;
 }
 
-.v-table .v-table__wrapper>table>tbody>tr:not(:last-child)>td,
-.v-table .v-table__wrapper>table>tbody>tr:not(:last-child)>th {
+.v-table .v-table__wrapper > table > tbody > tr:not(:last-child) > td,
+.v-table .v-table__wrapper > table > tbody > tr:not(:last-child) > th {
   padding-inline: 0 !important;
 }
 
-.v-table>.v-table__wrapper>table>tbody>tr>td,
-.v-table>.v-table__wrapper>table>thead>tr>td,
-.v-table>.v-table__wrapper>table>tfoot>tr>td {
+.v-table > .v-table__wrapper > table > tbody > tr > td,
+.v-table > .v-table__wrapper > table > thead > tr > td,
+.v-table > .v-table__wrapper > table > tfoot > tr > td {
   text-align: center !important;
 }
 
@@ -832,7 +851,6 @@ body .v-btn--icon.v-btn--density-default {
 
 /* ⚡ تحسين تجاوب الجدول على الشاشات الصغيرة */
 @media (max-width: 768px) {
-
   /* نسمح بالتمرير الأفقي إذا الجدول عريض */
   .table-card {
     -webkit-overflow-scrolling: touch;

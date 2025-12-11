@@ -44,9 +44,15 @@
       <VCardItem>
         <SmartTable :headers="table.headers" :items="table.Data" :actions="table.actions" :loading="table.loading"
           :totalItems="table.totalItems" :tableOptions="table.tableSettings.options"
-          @updateTableOptions="updateTableOptions" @showItem="goToDetails" class="reservation-payments-table" />
+          @updateTableOptions="updateTableOptions" @showItem="goToDetails"
+          @markReservationPaidItem="handleMarkReservationPaid" class="reservation-payments-table" />
       </VCardItem>
     </VCard>
+
+    <ConfirmDangerDialog v-if="confirmDialog.open" v-model="confirmDialog.open" :messages="confirmDialog.messages"
+      :title="confirmDialog.title" :confirmButtonText="confirmDialog.confirmButtonText" :showCheckbox="true"
+      checkboxLabel="أفهم وأؤكد تسديد هذا العربون" confirmIcon="mdi-cash-multiple" confirmIconActive="mdi-cash-check"
+      @confirm="confirmMarkReservationPaid" />
   </div>
 </template>
 
@@ -75,7 +81,7 @@ export default {
       table: {
         totalItems: 0,
         Data: [],
-        actions: [],
+        actions: ['تسديد عربون'],
         loading: false,
         headers: [
           { title: '#', type: 'strong', sortable: false, key: 'num' },
@@ -85,6 +91,7 @@ export default {
           { title: 'الحالة', type: 'status', sortable: true, key: 'status' },
           { title: 'تاريخ الدفع', type: 'date', sortable: true, key: 'paidAt' },
           { title: 'تفاصيل', type: 'link', sortable: false, key: 'reportText' },
+          { title: 'العمليات', type: 'strong', sortable: false, key: 'actions' },
         ],
         tableSettings: {
           options: {
@@ -105,6 +112,14 @@ export default {
       reportChartsData: null,
 
       alert: { open: false, message: null, type: 'success' },
+
+      confirmDialog: {
+        open: false,
+        item: null,
+        messages: [],
+        title: null,
+        confirmButtonText: null,
+      },
     }
   },
   created() {
@@ -180,6 +195,7 @@ export default {
           discountCount: 0,
         }
         this.table.Data = items.map((it, idx) => ({
+          bookingId: it.bookingId || it.booking_id,
           num: (this.table.tableSettings.options.page - 1) * this.table.tableSettings.options.limit + idx + 1,
           studentName: it.studentName,
           courseName: it.courseName,
@@ -202,6 +218,37 @@ export default {
       const to = item?.reportLink || (item?.report && item.report.to) || null
       if (!to) return
       this.$router.push(to)
+    },
+    handleMarkReservationPaid(item) {
+      if (!item?.bookingId) return
+
+      this.confirmDialog.item = item
+      this.confirmDialog.messages = [
+        'هل أنت متأكد من تسديد عربون هذا الحجز؟',
+        item.studentName ? `الطالب: ${item.studentName}` : '',
+        item.courseName ? `الكورس: ${item.courseName}` : '',
+      ].filter(Boolean)
+      this.confirmDialog.title = 'تأكيد تسديد العربون'
+      this.confirmDialog.confirmButtonText = 'تسديد العربون'
+      this.confirmDialog.open = true
+    },
+
+    async confirmMarkReservationPaid() {
+      const item = this.confirmDialog.item
+      if (!item?.bookingId) return
+
+      this.loading = true
+      try {
+        const res = await TeacherApi.markReservationPaymentPaid(item.bookingId)
+        const msg = res?.data?.message || 'تم تسديد عربون الحجز بنجاح'
+        this.showAlert('success', msg)
+        this.getDataAxios()
+      } catch (error) {
+        this.showAlert('error', error?.response?.data?.message || 'حدث خطأ أثناء تسديد عربون الحجز')
+      } finally {
+        this.loading = false
+        this.confirmDialog.open = false
+      }
     },
     showAlert(type, message) {
       Object.assign(this.alert, { type, message, open: true })

@@ -304,6 +304,14 @@ class TeacherApi {
     const response = await axiosInstance.get(`/teacher/students/by-course/${encodeURIComponent(courseId)}`);
     return response;
   }
+  async getStudentsByCoursePaginated(courseId, options = {}) {
+    const page = options.page ?? 1;
+    const limit = options.limit ?? 10;
+    const q = options.q ?? "";
+    const url = `/teacher/students/by-course/${encodeURIComponent(courseId)}/paginated?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}&q=${encodeURIComponent(q)}`;
+    const response = await axiosInstance.get(url);
+    return response;
+  }
   async getStudentsBySession(sessionId) {
     const response = await axiosInstance.get(`/teacher/students/by-session/${encodeURIComponent(sessionId)}`);
     return response;
@@ -427,6 +435,10 @@ class TeacherApi {
   }
   async getReservationPaymentByBooking(bookingId) {
     const response = await axiosInstance.get(`/teacher/payments/reservations/${encodeURIComponent(bookingId)}`);
+    return response;
+  }
+  async markReservationPaymentPaid(bookingId) {
+    const response = await axiosInstance.patch(`/teacher/payments/reservations/${encodeURIComponent(bookingId)}/mark-paid`);
     return response;
   }
 
