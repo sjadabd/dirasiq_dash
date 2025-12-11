@@ -12,140 +12,78 @@
             <VRow>
               <!-- Course Name -->
               <VCol cols="12" md="6">
-                <VTextField
-                  v-model="formData.course_name"
-                  :rules="rules.required"
-                  label="اسم الكورس"
-                  outlined
-                />
+                <VTextField v-model="formData.course_name" :rules="rules.required" label="اسم الكورس" outlined />
               </VCol>
 
               <!-- Grade Selection -->
               <VCol cols="12" md="6">
-                <VSelect
-                  v-model="formData.grade_id"
-                  :items="grades"
-                  :rules="rules.required"
-                  item-title="gradeName"
-                  item-value="gradeId"
-                  label="المرحلة الدراسية"
-                  outlined
-                  :loading="loadingGrades"
-                />
+                <VSelect v-model="formData.grade_id" :items="grades" :rules="rules.required" item-title="gradeName"
+                  item-value="gradeId" label="المرحلة الدراسية" outlined :loading="loadingGrades" />
               </VCol>
 
               <!-- Subject Selection -->
               <VCol cols="12" md="6">
-                <VSelect
-                  v-model="formData.subject_id"
-                  :items="subjects"
-                  :rules="rules.required"
-                  item-title="name"
-                  item-value="id"
-                  label="المادة"
-                  outlined
-                  :loading="loadingSubjects"
-                />
+                <VSelect v-model="formData.subject_id" :items="subjects" :rules="rules.required" item-title="name"
+                  item-value="id" label="المادة" outlined :loading="loadingSubjects" />
               </VCol>
 
               <!-- Price -->
               <VCol cols="12" md="6">
-                <VTextField
-                  :model-value="formatMoney(formData.price)"
-                  @update:model-value="val => onFormatMoney('price', val)"
-                  :rules="rules.price"
-                  label="السعر (دينار عراقي)"
-                  outlined
-                />
+                <VTextField :model-value="formatMoney(formData.price)"
+                  @update:model-value="val => onFormatMoney('price', val)" :rules="rules.price"
+                  label="السعر (دينار عراقي)" hint="رجاءً اكتب المبلغ كاملاً مع الأصفار، مثال: 250,000 وليس 250"
+                  persistent-hint outlined />
               </VCol>
 
               <!-- Start Date -->
               <VCol cols="12" md="6">
-                <AppDateTimePicker
-                  v-model="formData.start_date"
-                  :rules="rules.required"
-                  label="تاريخ البداية"
-                  variant="outlined"
-                />
+                <AppDateTimePicker v-model="formData.start_date" :rules="rules.required" label="تاريخ البداية"
+                  variant="outlined" />
               </VCol>
 
               <!-- End Date -->
               <VCol cols="12" md="6">
-                <AppDateTimePicker
-                  v-model="formData.end_date"
-                  :rules="rules.required"
-                  label="تاريخ النهاية"
-                  variant="outlined"
-                />
+                <AppDateTimePicker v-model="formData.end_date" :rules="rules.required" label="تاريخ النهاية"
+                  variant="outlined" />
               </VCol>
 
               <!-- Seats Count -->
               <VCol cols="12" md="6">
-                <VTextField
-                  v-model.number="formData.seats_count"
-                  :rules="rules.seats"
-                  label="عدد المقاعد"
-                  type="number"
-                  outlined
-                />
+                <VTextField v-model.number="formData.seats_count" :rules="rules.seats" label="عدد المقاعد" type="number"
+                  outlined />
               </VCol>
 
               <!-- Has Reservation -->
               <VCol cols="12" md="6">
-                <VSwitch
-                  v-model="formData.has_reservation"
-                  inset
-                  color="primary"
-                  :true-value="true"
-                  :false-value="false"
-                  label="هل يوجد عربون؟"
-                />
+                <VSwitch v-model="formData.has_reservation" inset color="primary" :true-value="true"
+                  :false-value="false" label="هل يوجد عربون؟" />
               </VCol>
 
               <!-- Reservation Amount (only when has_reservation) -->
               <VCol cols="12" md="6" v-if="formData.has_reservation">
-                <VTextField
-                  :model-value="formatMoney(formData.reservation_amount)"
-                  @update:model-value="val => onFormatMoney('reservation_amount', val)"
-                  :rules="rules.reservation"
+                <VTextField :model-value="formatMoney(formData.reservation_amount)"
+                  @update:model-value="val => onFormatMoney('reservation_amount', val)" :rules="rules.reservation"
                   label="مبلغ العربون (دينار عراقي)"
-                  outlined
-                />
+                  hint="رجاءً اكتب مبلغ العربون كاملاً مع الأصفار، مثال: 100,000 وليس 100" persistent-hint outlined />
               </VCol>
 
               <!-- Description -->
               <VCol cols="12">
-                <VTextarea
-                  v-model="formData.description"
-                  :rules="rules.required"
-                  label="وصف الكورس"
-                  outlined
-                  rows="3"
-                />
+                <VTextarea v-model="formData.description" :rules="rules.required" label="وصف الكورس" outlined
+                  rows="3" />
               </VCol>
 
               <!-- Image Upload -->
               <VCol cols="12">
-                <VCard
-                  class="pa-4"
-                  :class="{ 'drag-over': isDragOver }"
-                  @dragover.prevent="isDragOver = true"
-                  @dragleave.prevent="isDragOver = false"
-                  @drop.prevent="handleDrop"
-                >
+                <VCard class="pa-4" :class="{ 'drag-over': isDragOver }" @dragover.prevent="isDragOver = true"
+                  @dragleave.prevent="isDragOver = false" @drop.prevent="handleDrop">
                   <VCardTitle class="text-subtitle-1 pb-2">
                     <VIcon icon="ri-image-line" class="me-2" />
                     صور الكورس
                   </VCardTitle>
 
-                  <VFileInput
-                    v-model="selectedFiles"
-                    accept="image/*"
-                    multiple
-                    label="اختر صور جديدة (اختياري)"
-                    prepend-icon="ri-camera-line"
-                    variant="outlined"
-                  />
+                  <VFileInput v-model="selectedFiles" accept="image/*" multiple label="اختر صور جديدة (اختياري)"
+                    prepend-icon="ri-camera-line" variant="outlined" />
 
                   <!-- Existing Images Preview -->
                   <VRow v-if="existingImages.length > 0" class="mt-4">
@@ -154,27 +92,11 @@
                         الصور الحالية:
                       </div>
                     </VCol>
-                    <VCol
-                      v-for="(image, index) in existingImages"
-                      :key="`existing-${index}`"
-                      cols="6"
-                      md="3"
-                    >
+                    <VCol v-for="(image, index) in existingImages" :key="`existing-${index}`" cols="6" md="3">
                       <VCard class="position-relative">
-                        <VImg
-                          :src="'https://api.mulhimiq.com' + image"
-                          height="120"
-                          cover
-                          class="rounded"
-                        />
-                        <VBtn
-                          icon
-                          size="small"
-                          color="error"
-                          class="position-absolute"
-                          style="inset-block-start: 8px; inset-inline-end: 8px;"
-                          @click="removeExistingImage(index)"
-                        >
+                        <VImg :src="'https://api.mulhimiq.com' + image" height="120" cover class="rounded" />
+                        <VBtn icon size="small" color="error" class="position-absolute"
+                          style="inset-block-start: 8px; inset-inline-end: 8px;" @click="removeExistingImage(index)">
                           <VIcon size="16">ri-close-line</VIcon>
                         </VBtn>
                       </VCard>
@@ -186,27 +108,11 @@
                     <VCol cols="12">
                       <div class="text-subtitle-1 px-0 mb-2">صور جديدة:</div>
                     </VCol>
-                    <VCol
-                      v-for="(preview, index) in imagesPreviews"
-                      :key="`new-${index}`"
-                      cols="6"
-                      md="3"
-                    >
+                    <VCol v-for="(preview, index) in imagesPreviews" :key="`new-${index}`" cols="6" md="3">
                       <VCard class="position-relative">
-                        <VImg
-                          :src="preview.url"
-                          height="120"
-                          cover
-                          class="rounded"
-                        />
-                        <VBtn
-                          icon
-                          size="small"
-                          color="error"
-                          class="position-absolute"
-                          style="inset-block-start: 8px; inset-inline-end: 8px;"
-                          @click="removeNewImage(index)"
-                        >
+                        <VImg :src="preview.url" height="120" cover class="rounded" />
+                        <VBtn icon size="small" color="error" class="position-absolute"
+                          style="inset-block-start: 8px; inset-inline-end: 8px;" @click="removeNewImage(index)">
                           <VIcon size="16">ri-close-line</VIcon>
                         </VBtn>
                       </VCard>
@@ -220,21 +126,11 @@
       </VCardText>
       <VCardActions class="px-6 pb-4">
         <VSpacer />
-        <VBtn
-          color="grey"
-          variant="outlined"
-          @click="closeDialog"
-          :disabled="loading"
-        >
+        <VBtn color="grey" variant="outlined" @click="closeDialog" :disabled="loading">
           <VIcon start>ri-close-line</VIcon>
           الغاء
         </VBtn>
-        <VBtn
-          color="primary"
-          :loading="loading"
-          @click="updateCourse"
-          variant="elevated"
-        >
+        <VBtn color="primary" :loading="loading" @click="updateCourse" variant="elevated">
           <VIcon start>ri-save-line</VIcon>
           تحديث الكورس
         </VBtn>
@@ -304,7 +200,7 @@ export default {
         required: [(value) => !!value || "هذا الحقل مطلوب"],
         price: [
           (value) => parseMoneySafely(value) != null || "هذا الحقل مطلوب",
-          (value) => (parseMoneySafely(value) ?? 0) > 0 || "السعر يجب أن يكون أكبر من صفر",
+          (value) => (parseMoneySafely(value) ?? 0) >= 10000 || "السعر يجب أن لا يقل عن 10000 دينار",
         ],
         seats: [
           (value) => !!value || "هذا الحقل مطلوب",
@@ -314,8 +210,8 @@ export default {
           (value) =>
             !this.formData.has_reservation || parseMoneySafely(value) != null || "هذا الحقل مطلوب",
           (value) =>
-            !this.formData.has_reservation || (parseMoneySafely(value) ?? 0) > 0 ||
-            "مبلغ العربون يجب أن يكون رقمًا أكبر من صفر",
+            !this.formData.has_reservation || (parseMoneySafely(value) ?? 0) >= 10000 ||
+            "مبلغ العربون يجب أن لا يقل عن 10000 دينار",
         ],
       };
     },
