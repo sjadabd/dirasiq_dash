@@ -118,6 +118,71 @@ const copyToClipboard = async (text) => {
   }
 }
 
+const refreshDashboardAndCapacity = async () => {
+  try {
+    const res = await teacher_api.getDashboard();
+    const payload = res?.data?.data ?? res?.data ?? {};
+    stats.value = {
+      totalStudents: Number(payload.totalStudents ?? 0),
+      totalCourses: Number(payload.totalCourses ?? 0),
+      activeStudents: Number(payload.activeStudents ?? 0),
+      activeCourses: Number(payload.activeCourses ?? 0),
+      sessionsToday: Number(payload.sessionsToday ?? 0),
+      totalDeposit: Number(payload.totalDeposit ?? payload?.depositInvoices?.totalAmount ?? 0),
+      receivedDeposit: Number(payload.receivedDeposit ?? payload?.depositInvoices?.receivedAmount ?? 0),
+      remainingDeposit: Number(payload.remainingDeposit ?? payload?.depositInvoices?.remainingAmount ?? 0),
+      studentTotalDue: Number(payload?.studentInvoices?.totalDue ?? 0),
+      studentAmountPaid: Number(payload?.studentInvoices?.amountPaid ?? 0),
+      studentAmountRemaining: Number(payload?.studentInvoices?.amountRemaining ?? 0),
+    };
+  } catch (e) {
+    // ignore
+  }
+
+  try {
+    const resCap = await teacher_api.getRemainingStudents()
+    const ok = resCap?.data?.success || resCap?.success
+    const data = resCap?.data?.data || resCap?.data || resCap
+
+    if (ok && data) {
+      capacity.value = {
+        currentStudents: Number(data.currentStudents) || 0,
+        maxStudents: Number(data.maxStudents) || 0,
+        remaining: Number(data.remaining) || 0,
+        canAdd: Boolean(data.canAdd),
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
+const pollAfterWaylReturnIfNeeded = () => {
+  let pending = null
+  try {
+    pending = JSON.parse(localStorage.getItem('pending_wayl_action') || 'null')
+  } catch {
+    pending = null
+  }
+
+  if (!pending?.createdAt) return
+
+  const ageMs = Date.now() - Number(pending.createdAt)
+  if (Number.isNaN(ageMs) || ageMs > 2 * 60 * 1000) return
+
+  const intervalMs = 4000
+  const durationMs = 45000
+  const startedAt = Date.now()
+
+  const timer = setInterval(async () => {
+    await refreshDashboardAndCapacity()
+    if (Date.now() - startedAt >= durationMs) {
+      clearInterval(timer)
+      localStorage.removeItem('pending_wayl_action')
+    }
+  }, intervalMs)
+}
+
 onMounted(async () => {
   // جلب بيانات المستخدم من localStorage
   const userData = localStorage.getItem("user");
@@ -228,6 +293,8 @@ onMounted(async () => {
   } finally {
     referralLoading.value = false
   }
+
+  pollAfterWaylReturnIfNeeded()
 });
 
 // دالة تسجيل الخروج
@@ -605,7 +672,7 @@ const getStudentPaidPercentage = () => {
                     <div class="d-flex justify-space-between align-center">
                       <div>
                         <div class="font-weight-bold">{{ b.bonusType === 'referral_referrer' ? 'مقاعد إحالة' : 'مكافأة'
-                        }}</div>
+                          }}</div>
                         <div class="text-caption">{{ b.expiresAt ? new Date(b.expiresAt).toLocaleDateString('en-IQ') :
                           'بدون انتهاء' }}</div>
                       </div>
@@ -735,7 +802,7 @@ const getStudentPaidPercentage = () => {
                       <span class="text-body-2">المتبقي</span>
                     </div>
                     <span class="text-h6 font-weight-bold text-warning">{{ formatIQD(stats.studentAmountRemaining)
-                    }}</span>
+                      }}</span>
                   </div>
                 </VCol>
               </VRow>

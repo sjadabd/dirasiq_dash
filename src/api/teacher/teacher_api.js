@@ -47,6 +47,34 @@ class TeacherApi {
     return response;
   }
 
+  // wallet (Teacher)
+  async getWallet() {
+    const response = await axiosInstance.get(`/teacher/wallet`)
+    return response
+  }
+
+  async getWalletTransactions(page = 1, limit = 20) {
+    const response = await axiosInstance.get(`/teacher/wallet/transactions`, {
+      params: { page, limit },
+    })
+    return response
+  }
+
+  // wayl payments (Teacher)
+  async createWaylTopupLink(amount) {
+    const response = await axiosInstance.post(`/teacher/payments/wayl/wallet-topup-link`, {
+      amount,
+    })
+    return response
+  }
+
+  async createWaylSubscriptionLink(packageId) {
+    const response = await axiosInstance.post(`/teacher/payments/wayl/subscription-link`, {
+      packageId,
+    })
+    return response
+  }
+
   // Subscription packages (Teacher)
   async activateSubscriptionPackage(id) {
     const safeId = encodeURIComponent(id)

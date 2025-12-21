@@ -1,6 +1,7 @@
 <script setup>
 import teacher_api from '@/api/teacher/teacher_api';
 import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 // Props
 const props = defineProps({
@@ -20,6 +21,8 @@ const snackbar = ref({
   message: '',
   color: 'error',
 });
+
+const router = useRouter()
 
 // 🔹 جلب بيانات الباقات من API
 async function fetchPricingPlans() {
@@ -93,25 +96,49 @@ async function handlePlanClick(plan) {
   if (plan.current) return;
 
   try {
-    const res = await teacher_api.activateSubscriptionPackage(plan.id);
-    const ok = res?.data?.success || res?.success;
-    const msg =
-      res?.data?.message ||
-      res?.message ||
-      `تم تفعيل باقة ${plan.name} بنجاح`;
+    const isFree = plan.monthlyPrice === 0
 
-    snackbar.value = {
-      show: true,
-      message: msg,
-      color: ok ? 'success' : 'error',
-    };
+    if (isFree) {
+      const res = await teacher_api.activateSubscriptionPackage(plan.id);
+      const ok = res?.data?.success || res?.success;
+      const msg =
+        res?.data?.message ||
+        res?.message ||
+        `تم تفعيل باقة ${plan.name} بنجاح`;
 
-    if (ok) {
-      pricingPlans.value = pricingPlans.value.map((p) => ({
-        ...p,
-        current: p.id === plan.id,
-      }));
+      snackbar.value = {
+        show: true,
+        message: msg,
+        color: ok ? 'success' : 'error',
+      };
+
+      if (ok) {
+        pricingPlans.value = pricingPlans.value.map((p) => ({
+          ...p,
+          current: p.id === plan.id,
+        }));
+      }
+
+      return
     }
+
+    const res = await teacher_api.createWaylSubscriptionLink(plan.id)
+    const ok = res?.data?.success || res?.success
+    const data = res?.data?.data || res?.data || res
+
+    if (!ok || !data?.url) {
+      throw new Error(res?.data?.message || 'تعذر إنشاء رابط الدفع')
+    }
+
+    localStorage.setItem(
+      'pending_wayl_action',
+      JSON.stringify({ type: 'subscription', createdAt: Date.now(), packageId: plan.id }),
+    )
+
+    router.push({
+      path: '/teacher/payment/redirecting',
+      query: { url: data.url },
+    })
   } catch (err) {
     console.warn('Failed to activate subscription package:', err);
     const msg =

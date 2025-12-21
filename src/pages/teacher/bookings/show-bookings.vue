@@ -148,6 +148,22 @@
     <ConfirmDangerDialog v-if="deleteDialog.open" v-model="deleteDialog.open" :messages="deleteDialog.messages"
       :title="deleteDialog.title" :confirmButtonText="deleteDialog.confirmButtonText" @confirm="handleDelete" />
 
+    <v-dialog v-model="insufficientBalanceDialog.open" max-width="520">
+      <v-card title="رصيد المحفظة غير كافي">
+        <v-card-text>
+          <div>رصيد محفظتك غير كافي لتأكيد الطلب.</div>
+          <div class="text-caption text-medium-emphasis mt-2">
+            يمكنك شحن المحفظة ثم العودة وإعادة المحاولة. (سيتم تأكيد الدفع من خلال الـ webhook وقد يتأخر ثواني)
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="insufficientBalanceDialog.open = false">إغلاق</v-btn>
+          <v-btn color="primary" @click="goToWalletTopup">شحن المحفظة</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- BaseAlert -->
     <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true"
       close-text="موافق" @close="alert.open = false" />
@@ -338,6 +354,10 @@ export default {
       // alert
       alert: { open: false, message: null, type: "success" },
       // alert
+
+      insufficientBalanceDialog: {
+        open: false,
+      },
     };
   },
   created() {
@@ -519,10 +539,20 @@ export default {
         this.showAlert("success", response.data.message || "تم الحذف بنجاح");
         this.getDataAxios();
       } catch (error) {
-        this.showAlert(
-          "error",
-          error?.response?.data?.message || "حدث خطأ أثناء عملية الحذف"
-        );
+        const msg = error?.response?.data?.message || error?.message || "حدث خطأ أثناء العملية";
+        const lower = String(msg || '').toLowerCase();
+        const isInsufficient =
+          lower.includes('insufficient') ||
+          lower.includes('wallet') ||
+          lower.includes('balance') ||
+          String(msg).includes('رصيد') ||
+          String(msg).includes('غير كافي');
+
+        if (isInsufficient) {
+          this.insufficientBalanceDialog.open = true;
+        } else {
+          this.showAlert("error", msg);
+        }
       } finally {
         clearInterval(fakeProgress);
         this.progress = 100;
@@ -536,6 +566,11 @@ export default {
       }
     },
     // consentItem
+
+    goToWalletTopup() {
+      this.insufficientBalanceDialog.open = false
+      this.$router.push({ path: '/teacher/wallet', query: { poll: '1' } })
+    },
 
     // rejectItem
     rejectItem(item) {

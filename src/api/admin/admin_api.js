@@ -61,5 +61,17 @@ class Admin {
     return response;
   }
   // subscription-packages
+
+  // super-admin settings
+  async getBookingConfirmFee() {
+    const response = await axiosInstance.get(`/super-admin/settings/booking-confirm-fee`)
+    return response
+  }
+
+  async setBookingConfirmFee(feeIqd) {
+    const response = await axiosInstance.put(`/super-admin/settings/booking-confirm-fee`, { feeIqd })
+    return response
+  }
+  // super-admin settings
 }
 export default new Admin();
