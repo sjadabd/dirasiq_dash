@@ -25,7 +25,6 @@
       </VCardItem>
     </VCard>
 
-
     <!-- Filter Card -->
     <VCard class="my-4" elevation="3" rounded="lg">
       <VCardTitle class="d-flex align-center py-4 px-6">
@@ -48,8 +47,115 @@
       </VCardItem>
     </VCard>
 
-    <!-- Table Card -->
+    <!-- Weekly Calendar Card -->
     <VCard class="my-4" elevation="3" rounded="lg">
+      <VCardTitle class="py-4 px-6">
+        <VRow class="align-center">
+          <VCol>
+            <h3 class="text-h6 font-weight-bold text-center">الروزمانة الأسبوعية</h3>
+          </VCol>
+          <VCol cols="auto">
+            <VSwitch v-model="showTable" inset color="primary" :true-value="true" :false-value="false"
+              label="عرض كجدول" />
+          </VCol>
+        </VRow>
+      </VCardTitle>
+      <VDivider />
+      <VCardItem>
+        <VAlert v-if="!weeklyCalendar.rows.length" type="info" variant="tonal">
+          لا توجد جلسات لعرضها في الروزنامة.
+        </VAlert>
+
+        <div v-else class="week-calendar" dir="rtl">
+          <!-- Desktop (lg+) -->
+          <div class="d-none d-lg-block">
+            <div class="week-calendar__grid">
+              <div class="week-calendar__corner">الوقت</div>
+              <div v-for="d in weeklyCalendar.days" :key="d.value" class="week-calendar__day">
+                {{ d.text }}
+              </div>
+
+              <template v-for="row in weeklyCalendar.rows" :key="row.slotKey">
+                <div class="week-calendar__time">
+                  {{ row.label }}
+                </div>
+                <div v-for="d in weeklyCalendar.days" :key="`${row.slotKey}-${d.value}`" class="week-calendar__cell">
+                  <div v-if="row.byDay[d.value]?.length" class="week-calendar__cellStack">
+                    <div v-for="s in row.byDay[d.value]" :key="s.__calendarKey" class="week-calendar__session"
+                      role="button" tabindex="0" @click="editItem(s)" @keydown.enter.prevent="editItem(s)"
+                      @keydown.space.prevent="editItem(s)">
+                      <div class="week-calendar__sessionTitle">
+                        {{ s.title || "جلسة" }}
+                      </div>
+                      <div class="week-calendar__sessionMeta">
+                        {{ s.course_name || s.course?.name || "" }}
+                        <span v-if="s.grade_name || s.grade?.name"> • {{ s.grade_name || s.grade?.name }}</span>
+                      </div>
+                      <div class="week-calendar__sessionBadges">
+                        <VChip v-if="s.attendees_count !== undefined && s.attendees_count !== null" size="x-small"
+                          color="primary" variant="tonal">
+                          {{ s.attendees_count }} طالب
+                        </VChip>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else class="week-calendar__empty">—</div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Mobile/Tablet (md and below) no horizontal scroll -->
+          <div class="d-block d-lg-none">
+            <VExpansionPanels variant="accordion" class="week-calendar__mobile">
+              <VExpansionPanel v-for="d in weeklyCalendarMobile" :key="d.dayValue">
+                <VExpansionPanelTitle>
+                  {{ d.dayText }}
+                  <template #actions>
+                    <VChip size="x-small" color="primary" variant="tonal">
+                      {{ d.count }}
+                    </VChip>
+                  </template>
+                </VExpansionPanelTitle>
+                <VExpansionPanelText>
+                  <VAlert v-if="!d.rows.length" type="info" variant="tonal">
+                    لا توجد جلسات في هذا اليوم.
+                  </VAlert>
+
+                  <div v-else class="week-calendar__mobileList">
+                    <div v-for="r in d.rows" :key="`${d.dayValue}-${r.slotKey}`" class="week-calendar__mobileSlot">
+                      <div class="week-calendar__mobileTime">{{ r.label }}</div>
+                      <div class="week-calendar__mobileSessions">
+                        <div v-for="s in r.sessions" :key="s.__calendarKey" class="week-calendar__session" role="button"
+                          tabindex="0" @click="editItem(s)" @keydown.enter.prevent="editItem(s)"
+                          @keydown.space.prevent="editItem(s)">
+                          <div class="week-calendar__sessionTitle">
+                            {{ s.title || "جلسة" }}
+                          </div>
+                          <div class="week-calendar__sessionMeta">
+                            {{ s.course_name || s.course?.name || "" }}
+                            <span v-if="s.grade_name || s.grade?.name"> • {{ s.grade_name || s.grade?.name }}</span>
+                          </div>
+                          <div class="week-calendar__sessionBadges">
+                            <VChip v-if="s.attendees_count !== undefined && s.attendees_count !== null" size="x-small"
+                              color="primary" variant="tonal">
+                              {{ s.attendees_count }} طالب
+                            </VChip>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </VExpansionPanelText>
+              </VExpansionPanel>
+            </VExpansionPanels>
+          </div>
+        </div>
+      </VCardItem>
+    </VCard>
+
+    <!-- Table Card -->
+    <VCard v-if="showTable" class="my-4" elevation="3" rounded="lg">
       <VCardTitle class="py-4 px-6">
         <VRow class="align-center">
           <VCol cols="auto">
@@ -234,6 +340,7 @@ export default {
       ],
       loading: false,
       progress: 0,
+      showTable: false,
 
       weekdays: [
         { text: "الكل", value: null },
@@ -359,11 +466,85 @@ export default {
       ],
     };
   },
+  computed: {
+    weeklyCalendar() {
+      const days = this.weekdays.filter((d) => d.value !== null);
+      const rowsMap = new Map();
+
+      const items = Array.isArray(this.table?.Data) ? this.table.Data : [];
+      for (const item of items) {
+        const rawDays = Array.isArray(item.weekdays)
+          ? item.weekdays
+          : item.weekday !== undefined && item.weekday !== null
+            ? [item.weekday]
+            : [];
+
+        const start = item.start_time ?? "";
+        const end = item.end_time ?? "";
+        const slotKey = `${start}-${end}`;
+        const label = start && end ? `${start} - ${end}` : start || end || "";
+
+        for (const day of rawDays) {
+          if (!Number.isInteger(day) || day < 0 || day > 6) continue;
+          if (!rowsMap.has(slotKey)) {
+            rowsMap.set(slotKey, {
+              slotKey,
+              label,
+              start,
+              byDay: { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] },
+            });
+          }
+          const row = rowsMap.get(slotKey);
+          row.byDay[day].push({
+            ...item,
+            __calendarKey: `${item.id ?? item.title ?? "x"}-${day}-${slotKey}`,
+          });
+        }
+      }
+
+      const rows = Array.from(rowsMap.values()).sort((a, b) =>
+        String(a.start || "").localeCompare(String(b.start || ""))
+      );
+      // Ensure stable order inside cells
+      for (const r of rows) {
+        for (const d of days) {
+          r.byDay[d.value].sort((a, b) =>
+            String(a.title || "").localeCompare(String(b.title || ""))
+          );
+        }
+      }
+
+      return { days, rows };
+    },
+    weeklyCalendarMobile() {
+      const days = this.weekdays.filter((d) => d.value !== null);
+      const rows = this.weeklyCalendar?.rows || [];
+
+      return days.map((day) => {
+        const dayRows = rows
+          .map((r) => ({
+            slotKey: r.slotKey,
+            label: r.label,
+            sessions: (r.byDay?.[day.value] || []).slice(),
+          }))
+          .filter((x) => x.sessions.length > 0);
+
+        const count = dayRows.reduce((acc, x) => acc + x.sessions.length, 0);
+        return {
+          dayValue: day.value,
+          dayText: day.text,
+          count,
+          rows: dayRows,
+        };
+      });
+    },
+  },
   created() {
     const stored = JSON.parse(localStorage.getItem(this.keyName));
     this.table.tableSettings = stored || this.table.tableSettings;
     this.tempScrollTop = stored?.scrollTop || 0;
     this.loadCourseNames();
+    this.getDataAxios()
   },
   mounted() {
     window.addEventListener("scroll", this.handleScroll);
@@ -804,3 +985,130 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.week-calendar {
+  overflow-x: hidden;
+}
+
+.week-calendar__grid {
+  display: grid;
+  align-items: start;
+  gap: 8px;
+  grid-template-columns: 140px repeat(7, minmax(0, 1fr));
+}
+
+.week-calendar__day {
+  position: sticky;
+  z-index: 2;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  border-radius: 10px;
+  background: rgba(var(--v-theme-surface), 1);
+  font-weight: 700;
+  inset-block-start: 0;
+  padding-block: 10px;
+  padding-inline: 12px;
+  text-align: center;
+}
+
+.week-calendar__corner {
+  position: sticky;
+  z-index: 3;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  border-radius: 10px;
+  background: rgba(var(--v-theme-surface), 1);
+  font-weight: 700;
+  inset-block-start: 0;
+  padding-block: 10px;
+  padding-inline: 12px;
+  text-align: center;
+}
+
+.week-calendar__time {
+  position: sticky;
+  z-index: 1;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  border-radius: 10px;
+  background: rgba(var(--v-theme-surface), 1);
+  font-weight: 600;
+  inset-inline-end: 0;
+  padding-block: 10px;
+  padding-inline: 12px;
+  text-align: center;
+}
+
+.week-calendar__cell {
+  border: 1px dashed rgba(var(--v-theme-on-surface), 0.15);
+  border-radius: 10px;
+  background: rgba(var(--v-theme-surface), 0.6);
+  min-block-size: 86px;
+  padding-block: 10px;
+  padding-inline: 10px;
+}
+
+.week-calendar__cellStack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.week-calendar__empty {
+  color: rgba(var(--v-theme-on-surface), 0.45);
+  padding-block-start: 22px;
+  text-align: center;
+}
+
+.week-calendar__session {
+  border: 1px solid rgba(var(--v-theme-primary), 0.18);
+  border-radius: 12px;
+  background: rgba(var(--v-theme-primary), 0.06);
+  cursor: pointer;
+  padding-block: 10px;
+  padding-inline: 10px;
+}
+
+.week-calendar__session:hover {
+  background: rgba(var(--v-theme-primary), 0.1);
+}
+
+.week-calendar__sessionTitle {
+  font-weight: 800;
+  line-height: 1.2;
+  margin-block-end: 4px;
+}
+
+.week-calendar__sessionMeta {
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-size: 12px;
+}
+
+.week-calendar__mobileList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.week-calendar__mobileSlot {
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  border-radius: 12px;
+  padding-block: 10px;
+  padding-inline: 12px;
+}
+
+.week-calendar__mobileTime {
+  font-weight: 800;
+  margin-block-end: 10px;
+}
+
+.week-calendar__mobileSessions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.week-calendar__sessionBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+</style>
