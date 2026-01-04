@@ -59,6 +59,18 @@ export default [
     type: 'teacher',
     icon: { icon: 'ri-bill-line' }, // فواتير
   },
+  {
+    title: 'المصاريف',
+    to: { name: 'teacher-expenses-manage-expenses' },
+    type: 'teacher',
+    icon: { icon: 'ri-hand-coin-line' }, // مصاريف
+  },
+  {
+    title: 'التقارير',
+    to: { name: 'teacher-reports-financial' },
+    type: 'teacher',
+    icon: { icon: 'ri-bar-chart-line' }, // مصاريف
+  },
 
   // ── المحتوى الدراسي والحجوزات ────────────────────────────
   { heading: 'المحتوى الدراسي والحجوزات', type: 'teacher' },
