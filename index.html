@@ -5,6 +5,40 @@
     <link rel="icon" href="./src/assets/images/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mulhim IQ</title>
+
+    <!--
+      Content Security Policy
+      ------------------------
+      Phase 0 security hardening (2026-05-15). Restricts what the browser may
+      execute, fetch, and embed.
+
+      Notes:
+        * 'unsafe-inline' is currently required for the loader-theming inline
+          script (around line 122 of this file) and for Vuetify's dynamic
+          style injection. Future hardening: move the inline script to a
+          dedicated file and switch to a nonce-based policy.
+        * 'unsafe-eval' is needed for Vite dev mode and Vue's runtime
+          template compiler. A production-only build with full SFC compilation
+          can drop it; we keep it for now to avoid a dev-only break.
+        * SRI is NOT applied to the OneSignal and Google Sign-In scripts
+          because both providers rotate their CDN bytes without versioning.
+          A pinned hash would break the dashboard the next time they update.
+          The explicit script-src allowlist below is the substitute defence:
+          only those two specific hostnames may serve script tags.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.onesignal.com https://accounts.google.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      img-src 'self' data: blob: http://localhost:3000 https://api.mulhimiq.com https://*.onesignal.com https://*.googleusercontent.com;
+      font-src 'self' data: https://fonts.gstatic.com;
+      connect-src 'self' http://localhost:3000 https://api.mulhimiq.com https://*.onesignal.com https://accounts.google.com wss://*.onesignal.com;
+      frame-src https://*.onesignal.com https://accounts.google.com;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+    " />
+
     <link rel="stylesheet" type="text/css" href="/loader.css" />
 
     <!-- Cairo Font from Google Fonts -->
@@ -14,6 +48,15 @@
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+    <!--
+      OneSignal SDK. Loaded in the default no-CORS mode for a classic <script>
+      tag — OneSignal's CDN does not return Access-Control-Allow-Origin
+      headers, so adding crossorigin="anonymous" would force CORS mode and
+      the browser would block the script. The CSP script-src allowlist above
+      restricts which origin may serve scripts; that's the substitute defence.
+      SRI is intentionally omitted: OneSignal rotates this CDN URL without
+      version pinning, so a pinned hash would break on the next update.
+    -->
     <script
       src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
       defer
@@ -60,7 +103,19 @@
       }
     </style>
 
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!--
+      Google Sign-In (GSI). Loaded in the default no-CORS mode for a classic
+      <script> tag — accounts.google.com/gsi/client does not return CORS
+      headers, so crossorigin="anonymous" would cause the browser to block
+      the script. The CSP script-src allowlist above limits which hosts may
+      serve scripts; that's the substitute defence. SRI is intentionally
+      omitted: Google rotates this URL without version pinning.
+    -->
+    <script
+      src="https://accounts.google.com/gsi/client"
+      async
+      defer
+    ></script>
   </head>
 
   <body>

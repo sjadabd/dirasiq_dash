@@ -2,8 +2,8 @@ import { router } from "@/plugins/1.router/index";
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "https://api.mulhimiq.com/api",
-  // baseURL: "http://localhost:3000/api",
+  // baseURL: "https://api.mulhimiq.com/api",
+  baseURL: "http://localhost:3000/api",
   timeout: 100000,
 });
 
