@@ -33,6 +33,38 @@ export default [
     type: 'super_admin',
     icon: { icon: 'ri-team-line' },
   },
+  {
+    title: 'الأخبار',
+    to: { name: 'admin-news-show-news' },
+    type: 'super_admin',
+    icon: { icon: 'ri-newspaper-line' },
+  },
+  {
+    title: 'الإشعارات',
+    to: { name: 'admin-notifications-show-notifications' },
+    type: 'super_admin',
+    icon: { icon: 'ri-notification-3-line' },
+  },
+  {
+    title: 'الإعدادات',
+    to: { name: 'admin-settings' },
+    type: 'super_admin',
+    icon: { icon: 'ri-settings-3-line' },
+  },
+  // Phase 8 — chat admin (super_admin view)
+  { heading: 'المحادثات', type: 'super_admin' },
+  {
+    title: 'كل المحادثات',
+    to: { name: 'chat-conversations' },
+    type: 'super_admin',
+    icon: { icon: 'ri-chat-3-line' },
+  },
+  {
+    title: 'سجلات الإشراف',
+    to: { name: 'chat-moderation-logs' },
+    type: 'super_admin',
+    icon: { icon: 'ri-shield-keyhole-line' },
+  },
   // super_admin
 
   // teacher
@@ -110,6 +142,14 @@ export default [
 
   // ── التواصل والمهام ──────────────────────────────────────
   { heading: 'التواصل والمهام', type: 'teacher' },
+  {
+    title: 'المحادثات',
+    to: { name: 'chat-conversations' },
+    type: 'teacher',
+    icon: { icon: 'ri-chat-3-line' },
+  },
+  // سجلات الإشراف admin-only — المعلم يعرف عمليات مجموعاته فعلياً لأنه هو من يقوم
+  // بها؛ السجلات للمراجعة من قبل الـ super_admin.
   {
     title: 'الإشعارات',
     to: { name: 'teacher-notifications-show-notifications' },

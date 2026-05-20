@@ -94,7 +94,7 @@
                     </VCol>
                     <VCol v-for="(image, index) in existingImages" :key="`existing-${index}`" cols="6" md="3">
                       <VCard class="position-relative">
-                        <VImg :src="'https://api.mulhimiq.com' + image" height="120" cover class="rounded" />
+                        <VImg :src="resolveImageUrl(image)" height="120" cover class="rounded" />
                         <VBtn icon size="small" color="error" class="position-absolute"
                           style="inset-block-start: 8px; inset-inline-end: 8px;" @click="removeExistingImage(index)">
                           <VIcon size="16">ri-close-line</VIcon>
@@ -250,6 +250,16 @@ export default {
     this.fetchSubjects();
   },
   methods: {
+    // Resolve a relative backend asset path (/uploads/...) to an absolute URL
+    // using the content_url stored on login. Handles already-absolute URLs and
+    // normalizes slashes so we never produce "//uploads/...".
+    resolveImageUrl(path) {
+      if (!path) return '';
+      if (/^(https?:|data:|blob:)/i.test(path)) return path;
+      const base = (localStorage.getItem('content_url') || '').replace(/\/$/, '');
+      const rel = path.startsWith('/') ? path : `/${path}`;
+      return `${base}${rel}`;
+    },
     formatMoney(val) {
       if (val === '' || val === null || typeof val === 'undefined') return ''
       const num = Number(val)

@@ -361,6 +361,9 @@
     "watchWithFilter": true,
     "whenever": true,
     "axios": true,
-    "useAuth": true
+    "useAuth": true,
+    "chatAxios": true,
+    "chatSocket": true,
+    "useChatRealtime": true
   }
 }

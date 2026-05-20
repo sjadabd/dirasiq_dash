@@ -96,14 +96,19 @@ export default {
     },
   },
   watch: {
-    modelValue(newVal) {
-      if (newVal) {
-        this.resetForm();
-      }
+    // Re-clone whenever the parent passes a different row in (covers the rare
+    // case where the dialog stays mounted across edits).
+    data: {
+      handler(newData) {
+        if (newData) this.formData = { ...newData };
+      },
+      immediate: false,
     },
   },
   created() {
-    this.formData = this.data;
+    // Shallow-clone the prop so v-model edits don't leak back into the parent's
+    // table row before the user clicks "حفظ".
+    this.formData = { ...this.data };
   },
   methods: {
     resetForm() {

@@ -17,6 +17,8 @@ declare global {
   const avatarText: typeof import('./src/@core/utils/formatters.js')['avatarText']
   const axios: typeof import('./src/utils/axios.js')['default']
   const betweenValidator: typeof import('./src/@core/utils/validators.js')['betweenValidator']
+  const chatAxios: typeof import('./src/utils/chat-axios.js')['default']
+  const chatSocket: typeof import('./src/utils/chat-socket.js')['default']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('@vueuse/core')['computedAsync']
   const computedEager: typeof import('@vueuse/core')['computedEager']
@@ -185,6 +187,7 @@ declare global {
   const useBrowserLocation: typeof import('@vueuse/core')['useBrowserLocation']
   const useCached: typeof import('@vueuse/core')['useCached']
   const useCeil: typeof import('@vueuse/math')['useCeil']
+  const useChatRealtime: typeof import('./src/composables/useChatRealtime.js')['useChatRealtime']
   const useClamp: typeof import('@vueuse/math')['useClamp']
   const useClipboard: typeof import('@vueuse/core')['useClipboard']
   const useClipboardItems: typeof import('@vueuse/core')['useClipboardItems']
@@ -377,6 +380,8 @@ declare module 'vue' {
     readonly avatarText: UnwrapRef<typeof import('./src/@core/utils/formatters.js')['avatarText']>
     readonly axios: UnwrapRef<typeof import('./src/utils/axios.js')['default']>
     readonly betweenValidator: UnwrapRef<typeof import('./src/@core/utils/validators.js')['betweenValidator']>
+    readonly chatAxios: UnwrapRef<typeof import('./src/utils/chat-axios.js')['default']>
+    readonly chatSocket: UnwrapRef<typeof import('./src/utils/chat-socket.js')['default']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
     readonly computedEager: UnwrapRef<typeof import('@vueuse/core')['computedEager']>
@@ -545,6 +550,7 @@ declare module 'vue' {
     readonly useBrowserLocation: UnwrapRef<typeof import('@vueuse/core')['useBrowserLocation']>
     readonly useCached: UnwrapRef<typeof import('@vueuse/core')['useCached']>
     readonly useCeil: UnwrapRef<typeof import('@vueuse/math')['useCeil']>
+    readonly useChatRealtime: UnwrapRef<typeof import('./src/composables/useChatRealtime.js')['useChatRealtime']>
     readonly useClamp: UnwrapRef<typeof import('@vueuse/math')['useClamp']>
     readonly useClipboard: UnwrapRef<typeof import('@vueuse/core')['useClipboard']>
     readonly useClipboardItems: UnwrapRef<typeof import('@vueuse/core')['useClipboardItems']>

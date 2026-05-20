@@ -1,287 +1,365 @@
 <template>
-  <v-app :rtl="true">
-    <!-- 1️⃣ Header / Navigation -->
-    <v-app-bar color="primary" elevation="0" app fixed class="navbar-glass"
-      style=" position: fixed; z-index: 1000;background-color: white !important; inset-block-start: 0; inset-inline: 0;">
-      <v-container>
-        <v-row align="center" no-gutters>
-          <v-col cols="auto">
-            <div class="d-flex align-center">
-              <v-img :src="logo" width="50" height="50" />
-              <h1 class="text-h5 font-weight-bold">
-                <span class="text-primary-dark">Mulhim</span>
-                <span class="text-accent">IQ</span>
-              </h1>
-            </div>
-          </v-col>
+  <v-app>
+    <!-- =====================================================
+       Mulhim IQ — Landing v2 (smart platform redesign)
+       Single-file landing rebuilt 2026-05-16.
+       Data-driven sections wired to live Phase-1 APIs:
+         /health, /api/public/news,
+         /api/teacher-search/governorates,
+         /api/teacher/subscription-packages/active.
+    ===================================================== -->
 
-          <v-spacer />
+    <!-- 1. NAVBAR ============================================ -->
+    <v-app-bar
+      app
+      fixed
+      elevation="0"
+      :scroll-behavior="'hide'"
+      class="navbar-glass"
+      :class="{ 'navbar-scrolled': isScrolled }"
+    >
+      <v-container class="d-flex align-center" style="max-width:1280px;">
+        <!-- Brand -->
+        <router-link to="/" class="d-flex align-center text-decoration-none brand-link">
+          <v-img :src="logo" width="44" height="44" class="me-3 brand-logo" />
+          <div class="d-flex flex-column lh-1">
+            <span class="brand-text">
+              <span class="text-primary">Mulhim</span><span class="text-accent">IQ</span>
+            </span>
+            <span class="brand-sub d-none d-sm-block">منصة التعليم الذكي</span>
+          </div>
+        </router-link>
 
-          <v-col cols="auto" class="d-none d-md-flex">
-            <div class="d-flex align-center gap-2">
-              <v-btn variant="text" @click="scrollToSection('hero')">الرئيسية</v-btn>
-              <v-btn variant="text" @click="scrollToSection('features')">للمعلمين</v-btn>
-              <v-btn variant="text" @click="scrollToSection('how-it-works')">للطلاب</v-btn>
-              <v-btn variant="text" @click="scrollToSection('pricing')">باقات الأشتراك</v-btn>
-              <v-btn variant="text" :to="{ path: '/contact' }">تواصل معنا</v-btn>
-              <v-divider vertical class="mx-2" inset />
-              <v-btn variant="text" :to="{ path: '/privacy-policy' }">سياسة الخصوصية</v-btn>
-              <v-btn variant="text" :to="{ path: '/terms-and-conditions' }">شروط الاستخدام</v-btn>
-              <!-- 🔹 زر ديناميكي حسب حالة تسجيل الدخول -->
-              <v-btn v-if="!isLoggedIn" color="support"
-                style="background-color: #1c324c !important;color: white !important;" variant="elevated" to="/login">
-                <v-icon start>mdi-rocket-launch</v-icon>
-                ابدأ الآن
+        <v-spacer />
+
+        <!-- Desktop menu -->
+        <div class="d-none d-md-flex align-center nav-links">
+          <v-btn variant="text" class="nav-link" @click="scrollToSection('hero')">الرئيسية</v-btn>
+          <v-btn variant="text" class="nav-link" @click="scrollToSection('features')">المميزات</v-btn>
+          <v-btn variant="text" class="nav-link" @click="scrollToSection('preview')">النظام</v-btn>
+          <v-btn variant="text" class="nav-link" @click="scrollToSection('how-it-works')">كيف يعمل</v-btn>
+          <v-btn variant="text" class="nav-link" @click="scrollToSection('pricing')">الباقات</v-btn>
+          <v-btn variant="text" class="nav-link" :to="{ path: '/contact' }">تواصل</v-btn>
+        </div>
+
+        <v-spacer />
+
+        <!-- Right actions -->
+        <div class="d-flex align-center gap-2">
+          <v-menu v-if="isLoggedIn" v-model="notificationsMenu" location="bottom end" :close-on-content-click="false">
+            <template #activator="{ props }">
+              <v-btn icon variant="text" v-bind="props" class="notif-trigger">
+                <v-badge v-if="unreadCount" color="error" :content="unreadCount" overlap>
+                  <v-icon>mdi-bell-outline</v-icon>
+                </v-badge>
+                <v-icon v-else>mdi-bell-outline</v-icon>
               </v-btn>
-
-              <v-btn v-else color="success" variant="elevated" to="/teacher/dashboard">
-                <v-icon start>mdi-view-dashboard</v-icon>
-                لوحة التحكم
-              </v-btn>
-
-            </div>
-          </v-col>
-
-          <!-- Mobile navigation -->
-          <v-col cols="auto" class="d-flex d-md-none">
-            <v-menu location="bottom end">
-              <template #activator="{ props }">
-                <v-btn icon variant="text" v-bind="props" aria-label="فتح القائمة">
-                  <v-icon>mdi-menu</v-icon>
-                </v-btn>
-              </template>
-              <v-list density="compact">
-                <v-list-item @click="scrollToSection('hero')" title="الرئيسية" prepend-icon="mdi-home" />
-                <v-list-item @click="scrollToSection('features')" title="للمعلمين" prepend-icon="mdi-account-tie" />
-                <v-list-item @click="scrollToSection('how-it-works')" title="للطلاب" prepend-icon="mdi-school" />
-                <v-list-item @click="scrollToSection('pricing')" title="باقات الأشتراك" prepend-icon="mdi-cash" />
-                <v-list-item :to="{ path: '/contact' }" title="تواصل معنا" prepend-icon="mdi-email" />
-                <v-divider class="my-1" />
-                <v-list-item :to="{ path: '/privacy-policy' }" title="سياسة الخصوصية"
-                  prepend-icon="mdi-shield-account" />
-                <v-list-item :to="{ path: '/terms-and-conditions' }" title="شروط الاستخدام"
-                  prepend-icon="mdi-file-document" />
-                <!-- 🔹 زر ديناميكي حسب حالة تسجيل الدخول -->
-                <v-btn v-if="!isLoggedIn" color="white" class="ss" variant="elevated" to="/login">
-                  <v-icon start>mdi-rocket-launch</v-icon>
-                  ابدأ الآن
-                </v-btn>
-
-                <v-btn v-else color="success" variant="elevated" to="/teacher/dashboard">
-                  <v-icon start>mdi-view-dashboard</v-icon>
-                  لوحة التحكم
-                </v-btn>
-
+            </template>
+            <v-card min-width="380" class="notif-card">
+              <v-card-title class="d-flex align-center pb-2">
+                <v-icon start class="me-2 text-primary">mdi-bell</v-icon>
+                <span class="text-subtitle-1 font-weight-bold">الإشعارات</span>
+                <v-spacer />
+                <v-btn size="small" variant="text" :loading="notificationsLoading" @click="refreshNotifications">تحديث</v-btn>
+              </v-card-title>
+              <v-divider />
+              <v-list v-if="notificationsList.length" density="compact" max-height="420" class="overflow-y-auto">
+                <v-list-item
+                  v-for="n in notificationsList"
+                  :key="n.id"
+                  :title="n.title"
+                  :subtitle="formatDate(n.sentAt)"
+                  class="notif-item"
+                  @click="openNotification(n)"
+                >
+                  <template #prepend>
+                    <v-avatar size="36" :color="n.is_read ? 'grey-lighten-2' : 'primary'">
+                      <v-img v-if="n.image" :src="n.image" cover />
+                      <v-icon v-else :color="n.is_read ? 'grey' : 'white'" size="18">mdi-bell</v-icon>
+                    </v-avatar>
+                  </template>
+                </v-list-item>
               </v-list>
-            </v-menu>
-          </v-col>
+              <div v-else class="text-center pa-6 text-medium-emphasis">
+                <v-icon size="40" color="grey-lighten-1" class="mb-2">mdi-bell-off-outline</v-icon>
+                <div>لا توجد إشعارات</div>
+              </div>
+              <v-divider v-if="notificationsHasMore" />
+              <div v-if="notificationsHasMore" class="d-flex justify-center pa-2">
+                <v-btn size="small" :loading="notificationsLoading" variant="text" @click="loadMoreNotifications">عرض المزيد</v-btn>
+              </div>
+            </v-card>
+          </v-menu>
 
-          <v-col cols="auto">
-            <div class="d-flex align-center gap-2">
-              <v-menu v-if="isLoggedIn" v-model="notificationsMenu" location="bottom" :close-on-content-click="false">
-                <template #activator="{ props }">
-                  <v-btn icon variant="text" v-bind="props">
-                    <v-badge color="error" :content="unreadCount" overlap v-if="unreadCount">
-                      <v-icon>mdi-bell</v-icon>
-                    </v-badge>
-                    <template v-else>
-                      <v-icon>mdi-bell</v-icon>
-                    </template>
-                  </v-btn>
-                </template>
-                <v-card min-width="360">
-                  <v-card-title class="d-flex align-center">
-                    <v-icon start class="me-2">mdi-bell</v-icon>
-                    <span class="text-subtitle-1">الإشعارات</span>
-                    <v-spacer />
-                    <v-btn size="small" variant="text" @click="refreshNotifications">تحديث</v-btn>
-                  </v-card-title>
-                  <v-divider />
-                  <v-list v-if="notificationsList.length" density="compact">
-                    <v-list-item v-for="n in notificationsList" :key="n.id" @click="openNotification(n)"
-                      :title="n.title" :subtitle="formatDate(n.sentAt)" class="notification-item">
-                      <template #prepend>
-                        <v-avatar size="36" :color="n.is_read ? 'grey' : 'primary'">
-                          <v-img v-if="n.image" :src="n.image" cover />
-                          <v-icon v-else color="white" size="18">mdi-bell</v-icon>
-                        </v-avatar>
-                      </template>
-                    </v-list-item>
-                  </v-list>
-                  <div v-else class="text-center pa-6 text-medium-emphasis">لا توجد إشعارات</div>
-                  <v-divider v-if="notificationsHasMore" />
-                  <div v-if="notificationsHasMore" class="d-flex justify-center pa-2">
-                    <v-btn size="small" :loading="notificationsLoading" variant="text"
-                      @click="loadMoreNotifications">عرض
-                      المزيد</v-btn>
-                  </div>
-                  <v-card-actions class="justify-end">
-                    <v-btn variant="text" @click="notificationsMenu = false">إغلاق</v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-menu>
+          <!-- Primary CTA -->
+          <v-btn v-if="!isLoggedIn" class="d-none d-sm-flex cta-btn" color="primary" variant="elevated" rounded="lg" to="/login">
+            <v-icon start>mdi-rocket-launch-outline</v-icon>
+            ابدأ الآن
+          </v-btn>
+          <v-btn v-else class="d-none d-sm-flex cta-btn" color="success" variant="elevated" rounded="lg" to="/teacher/dashboard">
+            <v-icon start>mdi-view-dashboard-outline</v-icon>
+            لوحة التحكم
+          </v-btn>
 
-            </div>
-          </v-col>
-        </v-row>
+          <!-- Mobile menu -->
+          <v-menu location="bottom end" class="d-md-none">
+            <template #activator="{ props }">
+              <v-btn icon variant="text" v-bind="props" class="d-md-none">
+                <v-icon>mdi-menu</v-icon>
+              </v-btn>
+            </template>
+            <v-list density="compact" min-width="220">
+              <v-list-item @click="scrollToSection('hero')" title="الرئيسية" prepend-icon="mdi-home-outline" />
+              <v-list-item @click="scrollToSection('features')" title="المميزات" prepend-icon="mdi-star-outline" />
+              <v-list-item @click="scrollToSection('preview')" title="النظام" prepend-icon="mdi-monitor-dashboard" />
+              <v-list-item @click="scrollToSection('how-it-works')" title="كيف يعمل" prepend-icon="mdi-stairs" />
+              <v-list-item @click="scrollToSection('pricing')" title="الباقات" prepend-icon="mdi-tag-outline" />
+              <v-list-item :to="{ path: '/contact' }" title="تواصل" prepend-icon="mdi-email-outline" />
+              <v-divider class="my-1" />
+              <v-list-item v-if="!isLoggedIn" to="/login" title="ابدأ الآن" prepend-icon="mdi-rocket-launch-outline" />
+              <v-list-item v-else to="/teacher/dashboard" title="لوحة التحكم" prepend-icon="mdi-view-dashboard-outline" />
+            </v-list>
+          </v-menu>
+        </div>
       </v-container>
     </v-app-bar>
 
     <v-main>
-      <!-- 2️⃣ Hero Section -->
-      <section id="hero" class="hero-section position-relative overflow-hidden">
-        <!-- Background Elements -->
-        <div class="hero-bg-glow"></div>
-        <div class="hero-shape-1"></div>
-        <div class="hero-shape-2"></div>
+      <!-- 2. HERO ============================================== -->
+      <section id="hero" class="hero-section">
+        <!-- Layered backgrounds: gradient mesh + grain + animated orbs -->
+        <div class="hero-mesh" />
+        <div class="hero-orb orb-1" />
+        <div class="hero-orb orb-2" />
+        <div class="hero-orb orb-3" />
+        <div class="hero-grain" />
 
-        <v-container class="position-relative" style="z-index: 2;">
-          <v-row align="center" class="min-height-screen py-16">
-            <!-- Left side: Text content -->
-            <v-col cols="12" md="6" lg="6" class="text-center text-md-right">
+        <v-container class="hero-inner" style="max-width:1280px;">
+          <v-row align="center" class="hero-row">
+            <!-- Left: copy + CTAs + trust -->
+            <v-col cols="12" md="6" lg="7" class="hero-copy">
               <v-slide-y-transition appear>
                 <div>
-                  <v-chip color="accent" variant="flat" class="mb-6 px-4 py-2" size="large"
-                    style="    color: white;font-weight: 700;">
-                    🚀 منصة التعليم الذكي الأولى
-                  </v-chip>
+                  <div class="hero-eyebrow">
+                    <span class="live-dot" :class="{ ok: apiHealthy, down: apiHealthy === false }" />
+                    <span class="eyebrow-text">
+                      {{ apiHealthy ? 'النظام يعمل بكفاءة الآن' : (apiHealthy === false ? 'تحقق من الاتصال' : 'جاري التحقق…') }}
+                    </span>
+                  </div>
 
-                  <h1 class="text-h2 text-lg-h1 font-weight-black mb-6 text-white lh-tight">
-                    علّم، ألهم، <br />
-                    <span class="text-gradient">وتواصل بذكاء</span>
+                  <h1 class="hero-title">
+                    منصة تعليمية ذكية،<br>
+                    <span class="hero-title-accent">إدارة كاملة بنقرة واحدة.</span>
                   </h1>
 
-                  <p class="text-h6 text-lg-h5 text-grey-lighten-3 mb-8 text-balance lh-relaxed"
-                    style=" margin-inline: auto;max-inline-size: 600px;">
-                    منصة ملهم تمكّنك من إدارة الكورسات، الحضور، والطلاب في مكان واحد.
-                    تجربة تعليمية متكاملة تبدأ من هنا.
+                  <p class="hero-sub">
+                    ملهم IQ توحّد لك كل العملية التعليمية — الكورسات، الجداول، الحضور، الفواتير، والإشعارات —
+                    في نظام واحد عربي بالكامل، مصمم خصيصاً للسوق العراقي.
                   </p>
 
-                  <div class="d-flex gap-4 flex-wrap justify-center justify-md-start mb-10">
-                    <v-btn size="x-large" color="white" class="text-primary px-8" height="56" rounded="xl" elevation="6"
-                      to="/login">
-                      <v-icon start size="24">mdi-rocket-launch</v-icon>
-                      ابدأ رحلتك مجاناً
+                  <div class="hero-ctas">
+                    <!-- Primary CTA = accent (orange) so it pops on the navy hero -->
+                    <v-btn size="x-large" color="warning" variant="elevated" rounded="lg" class="cta-primary" to="/login">
+                      <v-icon start size="22" color="white">mdi-rocket-launch-outline</v-icon>
+                      <span class="cta-text">ابدأ مجاناً</span>
                     </v-btn>
-
-                    <v-btn size="x-large" variant="outlined" color="white" class="px-8" height="56" rounded="xl"
-                      to="/login">
-                      <v-icon start size="24">mdi-login</v-icon>
-                      تسجيل الدخول
+                    <!-- Secondary CTA = outlined white, with explicit text color override -->
+                    <v-btn size="x-large" variant="outlined" rounded="lg" color="white" class="cta-secondary" @click="scrollToSection('preview')">
+                      <v-icon start size="22" color="white">mdi-play-circle-outline</v-icon>
+                      <span class="cta-text">شاهد النظام</span>
                     </v-btn>
                   </div>
 
-                  <!-- App Download Badges -->
-                  <div class="d-flex align-center gap-4 justify-center justify-md-start opacity-80">
-                    <span class="text-white text-body-2">متوفر الآن للطلاب على:</span>
-                    <v-btn icon variant="text" color="white" href="https://apps.apple.com/us/app/mulhimiq/id6754453929"
-                      target="_blank">
-                      <v-icon size="28">mdi-apple</v-icon>
-                    </v-btn>
-                    <v-btn icon variant="text" color="white" target="_blank"
-                      href="https://play.google.com/store/apps/details?id=com.mulhimiq.app">
-                      <v-icon size="28">mdi-google-play</v-icon>
-                    </v-btn>
+                  <!-- Trust signals -->
+                  <div class="hero-trust">
+                    <div class="trust-item">
+                      <v-icon size="20" class="me-2 trust-icon">mdi-shield-check-outline</v-icon>
+                      <span>بيانات آمنة ومشفّرة</span>
+                    </div>
+                    <div class="trust-item">
+                      <v-icon size="20" class="me-2 trust-icon">mdi-translate</v-icon>
+                      <span>عربي بالكامل · RTL</span>
+                    </div>
+                    <div class="trust-item">
+                      <v-icon size="20" class="me-2 trust-icon">mdi-cellphone-link</v-icon>
+                      <span>تطبيق طالب على iOS و Android</span>
+                    </div>
+                  </div>
+
+                  <div class="hero-stores">
+                    <span class="stores-label">تطبيق الطلاب:</span>
+                    <a href="https://apps.apple.com/us/app/mulhimiq/id6754453929" target="_blank" rel="noopener" class="store-pill">
+                      <v-icon size="22">mdi-apple</v-icon>
+                      App Store
+                    </a>
+                    <a href="https://play.google.com/store/apps/details?id=com.mulhimiq.app" target="_blank" rel="noopener" class="store-pill">
+                      <v-icon size="22">mdi-google-play</v-icon>
+                      Google Play
+                    </a>
                   </div>
                 </div>
               </v-slide-y-transition>
             </v-col>
 
-            <!-- Right side: Phone Mockup -->
-            <v-col cols="12" md="6" lg="6" class="position-relative">
+            <!-- Right: phone mockup + floating widgets -->
+            <v-col cols="12" md="6" lg="5" class="hero-visual">
               <v-fade-transition appear>
-                <div class="phone-mockup-wrapper d-flex flex-column align-center">
+                <div class="phone-wrap">
+                  <div class="phone-glow" />
                   <div class="phone-frame">
-                    <div class="phone-notch"></div>
+                    <div class="phone-notch" />
                     <div class="phone-screen">
-                      <v-carousel v-model="carouselModel" cycle :interval="4000" hide-delimiters :show-arrows="false"
-                        height="100%" class="phone-carousel">
-                        <v-carousel-item v-for="(screen, index) in appScreenshots" :key="index" :src="screen.image"
-                          cover @click="openNews(screen)" class="cursor-pointer">
-                          <div class="d-flex flex-column justify-end h-100 pb-8 px-4 position-relative"
-                            style="background: linear-gradient(to top, rgba(0, 0, 0, 95%) 0%, rgba(0, 0, 0, 60%) 50%, rgba(0, 0, 0, 0%) 100%);">
-                            <h3 class="text-subtitle-1 font-weight-bold mb-1 text-truncate text-white"
-                              style="text-shadow: 0 2px 4px rgba(0, 0, 0, 50%);">{{ screen.title }}</h3>
-                            <p class="text-caption text-grey-lighten-3 text-truncate-2 lh-tight text-white"
-                              style="display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; text-shadow: 0 1px 2px rgba(0, 0, 0, 50%);">
-                              {{ screen.description }}
-                            </p>
-                          </div>
-                        </v-carousel-item>
-                      </v-carousel>
-                    </div>
-                  </div>
-                  <!-- Carousel Controls -->
-                  <div class="d-flex justify-center gap-4 mt-6 position-relative" style="z-index: 5;">
-                    <v-btn icon variant="tonal" color="white" @click="carouselModel = Math.max(carouselModel - 1, 0)"
-                      :disabled="carouselModel === 0">
-                      <v-icon>mdi-chevron-right</v-icon>
-                    </v-btn>
-                    <v-btn icon variant="tonal" color="white"
-                      @click="carouselModel = Math.min(carouselModel + 1, appScreenshots.length - 1)"
-                      :disabled="carouselModel === appScreenshots.length - 1">
-                      <v-icon>mdi-chevron-left</v-icon>
-                    </v-btn>
-                  </div>
-                  <!-- Floating Elements -->
-                  <v-card class="floating-card card-1 d-none d-sm-block" elevation="10">
-                    <div class="d-flex align-center gap-3">
-                      <v-avatar color="success" size="40">
-                        <v-icon color="white">mdi-check</v-icon>
-                      </v-avatar>
-                      <div>
-                        <div class="text-caption text-grey">تم الحضور</div>
-                        <div class="font-weight-bold">98% اليوم</div>
+                      <template v-if="appScreenshots.length">
+                        <v-carousel
+                          v-model="carouselModel"
+                          cycle
+                          :interval="4500"
+                          hide-delimiters
+                          :show-arrows="false"
+                          height="100%"
+                          class="phone-carousel"
+                        >
+                          <v-carousel-item v-for="(screen) in appScreenshots" :key="screen.id" :src="screen.image" cover @click="openNews(screen)" class="cursor-pointer">
+                            <div class="phone-caption">
+                              <h4>{{ screen.title }}</h4>
+                              <p>{{ screen.description }}</p>
+                            </div>
+                          </v-carousel-item>
+                        </v-carousel>
+                      </template>
+                      <!-- Skeleton / empty state -->
+                      <div v-else class="phone-empty">
+                        <v-img :src="logo" width="80" height="80" class="mb-4 phone-empty-logo" />
+                        <div class="phone-empty-title">Mulhim<span class="text-accent">IQ</span></div>
+                        <div class="phone-empty-sub">منصة التعليم الذكي</div>
                       </div>
                     </div>
-                  </v-card>
-                  <v-card class="floating-card card-2 d-none d-sm-block" elevation="10">
-                    <div class="d-flex align-center gap-3">
-                      <v-avatar color="primary" size="40">
-                        <v-icon color="white">mdi-school</v-icon>
-                      </v-avatar>
-                      <div>
-                        <div class="text-caption text-grey">الطلاب النشطين</div>
-                        <div class="font-weight-bold">+1,250 طالب</div>
-                      </div>
+                  </div>
+
+                  <!-- Floating data widgets (real numbers) -->
+                  <div class="float-card float-1" :class="{ 'is-loading': platformStatsLoading }">
+                    <v-avatar color="primary" size="40" class="float-avatar">
+                      <v-icon color="white">mdi-map-marker-outline</v-icon>
+                    </v-avatar>
+                    <div>
+                      <div class="float-label">محافظات مغطّاة</div>
+                      <div class="float-value">{{ platformStatsLoading ? '…' : platformStats.governoratesCount }}</div>
                     </div>
-                  </v-card>
+                  </div>
+
+                  <div class="float-card float-2" :class="{ 'is-loading': platformStatsLoading }">
+                    <v-avatar color="warning" size="40" class="float-avatar">
+                      <v-icon color="white">mdi-newspaper-variant-outline</v-icon>
+                    </v-avatar>
+                    <div>
+                      <div class="float-label">منشورات نشطة</div>
+                      <div class="float-value">{{ platformStatsLoading ? '…' : platformStats.newsCount }}</div>
+                    </div>
+                  </div>
+
+                  <div class="float-card float-3" :class="{ 'is-loading': platformStatsLoading }">
+                    <v-avatar color="success" size="40" class="float-avatar">
+                      <v-icon color="white">mdi-package-variant</v-icon>
+                    </v-avatar>
+                    <div>
+                      <div class="float-label">باقات متاحة</div>
+                      <div class="float-value">{{ platformStatsLoading ? '…' : platformStats.packagesCount }}</div>
+                    </div>
+                  </div>
                 </div>
               </v-fade-transition>
             </v-col>
           </v-row>
         </v-container>
+
+        <div class="hero-fade-bottom" />
       </section>
 
-      <!-- 3️⃣ Feature Section -->
-      <section id="features" class="features-section py-16 bg-grey-lighten-5 position-relative">
-        <v-container>
-          <div class="text-center mb-16">
-            <v-chip color="primary" variant="tonal" class="mb-4 font-weight-bold">مميزاتنا</v-chip>
-            <h2 class="text-h3 font-weight-bold mb-4 text-primary-dark">كل ما تحتاجه لإدارة تعليمية ناجحة</h2>
-            <p class="text-h6 text-medium-emphasis"
-              style=" margin-block: 0; margin-inline: auto;max-inline-size: 700px;">
-              أدوات متكاملة صممت خصيصاً لتلبية احتياجات المعلمين والطلاب في بيئة تعليمية عصرية
+      <!-- 3. LIVE STATS STRIP ================================== -->
+      <section class="stats-strip">
+        <v-container style="max-width:1280px;">
+          <div class="stats-grid">
+            <div class="stat-cell">
+              <div class="stat-icon stat-icon-primary">
+                <v-icon color="primary">mdi-pulse</v-icon>
+              </div>
+              <div>
+                <div class="stat-cell-label">حالة الخادم</div>
+                <div class="stat-cell-value">
+                  <span class="live-dot" :class="{ ok: apiHealthy, down: apiHealthy === false }" />
+                  {{ apiHealthy ? 'نشط' : (apiHealthy === false ? 'خارج الخدمة' : 'جارٍ الفحص') }}
+                </div>
+              </div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-icon stat-icon-accent">
+                <v-icon color="warning">mdi-map-marker-radius-outline</v-icon>
+              </div>
+              <div>
+                <div class="stat-cell-label">محافظات</div>
+                <div class="stat-cell-value">{{ platformStatsLoading ? '…' : platformStats.governoratesCount }}</div>
+              </div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-icon stat-icon-success">
+                <v-icon color="success">mdi-package-variant-closed</v-icon>
+              </div>
+              <div>
+                <div class="stat-cell-label">باقات اشتراك</div>
+                <div class="stat-cell-value">{{ platformStatsLoading ? '…' : platformStats.packagesCount }}</div>
+              </div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-icon stat-icon-warning">
+                <v-icon color="warning">mdi-newspaper-variant</v-icon>
+              </div>
+              <div>
+                <div class="stat-cell-label">منشورات</div>
+                <div class="stat-cell-value">{{ platformStatsLoading ? '…' : platformStats.newsCount }}</div>
+              </div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-icon stat-icon-secondary">
+                <v-icon color="secondary">mdi-translate</v-icon>
+              </div>
+              <div>
+                <div class="stat-cell-label">واجهة</div>
+                <div class="stat-cell-value">عربي · RTL</div>
+              </div>
+            </div>
+          </div>
+        </v-container>
+      </section>
+
+      <!-- 4. FEATURES ========================================== -->
+      <section id="features" class="features-section">
+        <v-container style="max-width:1280px;">
+          <div class="section-head">
+            <span class="section-chip">لماذا Mulhim IQ</span>
+            <h2 class="section-title">كل ما يحتاجه المعلم لإدارة عمل متكامل</h2>
+            <p class="section-sub">
+              أدوات مصمّمة لتعمل معاً — لا حاجة لربط 5 برامج. كل وحدة تتكامل مع الأخرى وتشاركها البيانات اللحظية.
             </p>
           </div>
 
-          <v-row>
-            <v-col cols="12" sm="6" md="4" v-for="feature in features" :key="feature.id">
+          <v-row class="g-3">
+            <v-col v-for="feature in features" :key="feature.id" cols="12" sm="6" lg="4">
               <v-hover v-slot="{ isHovering, props }">
-                <v-card v-bind="props" :elevation="isHovering ? 12 : 2"
-                  class="h-100 text-center pa-8 feature-card transition-swing"
-                  :class="[`feature-card-${feature.colorClass}`, { 'on-hover': isHovering }]">
-                  <div class="feature-icon-wrapper mb-6" :class="`bg-${feature.color}-lighten-5`">
-                    <v-icon :size="40" :color="feature.color">
-                      {{ feature.icon }}
-                    </v-icon>
+                <v-card
+                  v-bind="props"
+                  :elevation="isHovering ? 8 : 0"
+                  class="feature-card-v2 h-100"
+                  :class="{ 'is-hovered': isHovering }"
+                >
+                  <div class="feature-glow" :style="{ '--feature-color': feature.colorHex }" />
+                  <div class="feature-icon-v2" :style="{ '--feature-color': feature.colorHex }">
+                    <v-icon size="28" :color="feature.color">{{ feature.icon }}</v-icon>
                   </div>
-                  <h3 class="text-h5 font-weight-bold mb-3 text-primary-dark">
-                    {{ feature.title }}
-                  </h3>
-                  <p class="text-body-1 text-medium-emphasis lh-relaxed">
-                    {{ feature.description }}
-                  </p>
+                  <h3 class="feature-title">{{ feature.title }}</h3>
+                  <p class="feature-desc">{{ feature.description }}</p>
+                  <div class="feature-tags">
+                    <span v-for="tag in feature.tags" :key="tag" class="feature-tag">{{ tag }}</span>
+                  </div>
                 </v-card>
               </v-hover>
             </v-col>
@@ -289,310 +367,263 @@
         </v-container>
       </section>
 
-      <!-- 4️⃣ Dashboard Preview Section -->
-      <section class="dashboard-preview-section py-16 position-relative overflow-hidden">
-        <div class="dashboard-bg-shape"></div>
-        <v-container class="position-relative" style="z-index: 2;">
-          <div class="text-center mb-16">
-            <v-chip color="secondary" variant="tonal" class="mb-4 font-weight-bold">لوحة التحكم</v-chip>
-            <h2 class="text-h3 font-weight-bold mb-4 text-primary-dark">تحكم كامل في العملية التعليمية</h2>
-            <p class="text-h6 text-medium-emphasis"
-              style=" margin-block: 0; margin-inline: auto;max-inline-size: 700px;">
-              واجهة مستخدم بديهية وقوية تمنحك السيطرة الكاملة على كل تفاصيل صفوفك الدراسية
+      <!-- 5. SMART DASHBOARD PREVIEW =========================== -->
+      <section id="preview" class="preview-section">
+        <v-container style="max-width:1280px;">
+          <div class="section-head">
+            <span class="section-chip section-chip-accent">معاينة النظام</span>
+            <h2 class="section-title text-white">لوحة تحكم ذكية ومرتّبة</h2>
+            <p class="section-sub text-white" style="opacity:.85;">
+              كل ما يهمّ المعلم في صفحة واحدة — إحصائيات لحظية، تنبيهات تلقائية، وإجراءات سريعة.
+              نموذج توضيحي مبني على البيانات الفعلية لمنصتك.
             </p>
           </div>
 
-          <v-row justify="center">
-            <v-col cols="12" lg="11">
-              <div class="dashboard-window elevation-24">
-                <div class="window-header d-flex align-center px-4 py-3 bg-grey-lighten-4 border-b">
-                  <div class="window-controls d-flex gap-2 me-4">
-                    <div class="control red"></div>
-                    <div class="control yellow"></div>
-                    <div class="control green"></div>
-                  </div>
-                  <div
-                    class="window-address-bar flex-grow-1 bg-white rounded px-3 py-1 text-caption text-grey text-center">
-                    mulhimiq.com/teacher/dashboard
-                  </div>
-                </div>
-                <v-card elevation="0" class="dashboard-demo-card rounded-0">
-                  <v-row no-gutters>
-                    <!-- Sidebar -->
-                    <v-col cols="auto" class="dashboard-sidebar bg-grey-lighten-5 border-e">
-                      <v-list density="compact" class="py-4 bg-transparent">
-                        <v-list-item v-for="item in sidebarItems" :key="item.id" :prepend-icon="item.icon"
-                          :title="item.title" :active="item.active" class="mb-2 rounded-e-xl" color="primary" />
-                      </v-list>
-                    </v-col>
-
-                    <!-- Main Content -->
-                    <v-col>
-                      <!-- Toolbar -->
-                      <v-toolbar color="white" density="compact" class="border-b px-2">
-                        <v-toolbar-title class="text-subtitle-1 font-weight-bold">
-                          لوحة التحكم
-                        </v-toolbar-title>
-                        <v-spacer />
-                        <v-btn icon size="small" variant="text">
-                          <v-icon>mdi-magnify</v-icon>
-                        </v-btn>
-                        <v-btn icon size="small" variant="text" @click="notificationsMenu = true">
-                          <v-badge v-if="unreadCount" color="error" :content="unreadCount" dot>
-                            <v-icon>mdi-bell-outline</v-icon>
-                          </v-badge>
-                          <template v-else>
-                            <v-icon>mdi-bell-outline</v-icon>
-                          </template>
-                        </v-btn>
-                        <v-avatar size="32" color="accent" class="ms-2">
-                          <v-img
-                            src="https://avataaars.io/?avatarStyle=Circle&topType=ShortHairShortFlat&accessoriesType=Blank&hairColor=Black&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light" />
-                        </v-avatar>
-                      </v-toolbar>
-
-                      <!-- Dashboard Content -->
-                      <div class="dashboard-content pa-6 bg-grey-lighten-5 h-100">
-                        <v-row>
-                          <!-- Stats Cards -->
-                          <v-col cols="12" sm="6" md="3" v-for="stat in stats" :key="stat.id">
-                            <v-card elevation="0" class="pa-4 stat-card border">
-                              <div class="d-flex align-center justify-space-between mb-2">
-                                <v-avatar :color="stat.color" variant="tonal" rounded="lg">
-                                  <v-icon>{{ stat.icon }}</v-icon>
-                                </v-avatar>
-                                <v-chip :color="stat.color" size="x-small" variant="flat" class="font-weight-bold">
-                                  {{ stat.change }}
-                                </v-chip>
-                              </div>
-                              <h4 class="text-h5 font-weight-bold mb-1">{{ stat.value }}</h4>
-                              <p class="text-caption text-medium-emphasis">{{ stat.label }}</p>
-                            </v-card>
-                          </v-col>
-
-                          <!-- Upcoming Classes Table -->
-                          <v-col cols="12" md="8">
-                            <v-card elevation="0" class="border h-100">
-                              <v-card-title class="d-flex align-center text-subtitle-1 font-weight-bold px-4 pt-4">
-                                الدروس القادمة
-                                <v-spacer />
-                                <v-btn variant="text" size="small" color="primary">عرض الكل</v-btn>
-                              </v-card-title>
-                              <v-data-table :headers="tableHeaders" :items="upcomingClasses" density="compact"
-                                :items-per-page="5" hide-default-footer class="bg-transparent">
-                                <template #item.status="{ item }">
-                                  <v-chip :color="item.statusColor" size="x-small" variant="flat">
-                                    {{ item.status }}
-                                  </v-chip>
-                                </template>
-                                <template #item.actions>
-                                  <v-btn icon size="x-small" variant="text" color="grey">
-                                    <v-icon>mdi-dots-vertical</v-icon>
-                                  </v-btn>
-                                </template>
-                              </v-data-table>
-                            </v-card>
-                          </v-col>
-
-                          <!-- Notifications -->
-                          <v-col cols="12" md="4">
-                            <v-card elevation="0" class="border h-100">
-                              <v-card-title class="d-flex align-center text-subtitle-1 font-weight-bold px-4 pt-4">
-                                آخر النشاطات
-                              </v-card-title>
-                              <v-list density="compact" class="bg-transparent">
-                                <v-list-item v-for="notification in notifications" :key="notification.id"
-                                  :title="notification.title" :subtitle="notification.time"
-                                  class="notification-item px-2">
-                                  <template #prepend>
-                                    <div class="me-3 position-relative">
-                                      <v-avatar :color="notification.color" size="8" variant="flat"
-                                        class="mb-4"></v-avatar>
-                                      <div class="vertical-line"
-                                        style="position: absolute; background: #eee; block-size: 100%; inline-size: 2px; inset-block-start: 12px; inset-inline-start: 3px;">
-                                      </div>
-                                    </div>
-                                  </template>
-                                </v-list-item>
-                              </v-list>
-                            </v-card>
-                          </v-col>
-                        </v-row>
-                      </div>
-                    </v-col>
-                  </v-row>
-                </v-card>
+          <div class="preview-shell">
+            <!-- Window chrome -->
+            <div class="preview-chrome">
+              <div class="chrome-dots">
+                <span class="dot dot-red" />
+                <span class="dot dot-amber" />
+                <span class="dot dot-green" />
               </div>
-            </v-col>
-          </v-row>
-        </v-container>
-      </section>
+              <div class="chrome-address">app.mulhimiq.com / dashboard</div>
+              <div class="chrome-spacer" />
+            </div>
 
-      <!-- 5️⃣ How It Works Section -->
-      <section id="how-it-works" class="how-it-works-section py-16 bg-white">
-        <v-container>
-          <div class="text-center mb-16">
-            <v-chip color="accent" variant="tonal" class="mb-4 font-weight-bold">خطوات العمل</v-chip>
-            <h2 class="text-h3 font-weight-bold mb-4 text-primary-dark">ابدأ رحلتك في دقائق</h2>
-            <p class="text-h6 text-medium-emphasis">نظام بسيط وفعال يضمن لك انطلاقة سريعة</p>
-          </div>
+            <!-- Layout -->
+            <div class="preview-body">
+              <!-- Sidebar -->
+              <aside class="preview-sidebar d-none d-md-flex">
+                <div class="d-flex align-center gap-2 mb-6">
+                  <v-img :src="logo" width="32" height="32" />
+                  <span class="font-weight-bold text-white">Mulhim<span class="text-accent">IQ</span></span>
+                </div>
+                <div
+                  v-for="(item, idx) in previewNav"
+                  :key="item.title"
+                  class="preview-nav-item"
+                  :class="{ active: idx === 0 }"
+                >
+                  <v-icon size="18" class="me-2">{{ item.icon }}</v-icon>
+                  {{ item.title }}
+                </div>
+              </aside>
 
-          <v-row justify="center">
-            <v-col cols="12" lg="10">
-              <v-timeline :side="$vuetify.display.mdAndDown ? 'end' : undefined"
-                :density="$vuetify.display.smAndDown ? 'compact' : 'default'" align="start" line-color="grey-lighten-2"
-                truncate-line="start">
-                <v-timeline-item v-for="(step, index) in steps" :key="step.id" :dot-color="step.color" size="large"
-                  fill-dot>
-                  <template #icon>
-                    <v-icon color="white" size="24">{{ step.icon }}</v-icon>
-                  </template>
-                  <v-card elevation="0" class="border pt-6 pb-6 px-6 rounded-xl" :class="`border-${step.color}`"
-                    style="border-width: 2px !important;">
-                    <div class="d-flex align-center mb-4">
-                      <v-chip :color="step.color" size="small" class="font-weight-bold me-3">خطوة {{ index + 1
-                        }}</v-chip>
-                      <h3 class="text-h5 font-weight-bold text-primary-dark">{{ step.title }}</h3>
+              <!-- Content -->
+              <div class="preview-content">
+                <!-- Top bar -->
+                <div class="preview-topbar">
+                  <div class="topbar-search">
+                    <v-icon size="18" class="me-2">mdi-magnify</v-icon>
+                    ابحث عن طالب، كورس، أو فاتورة…
+                  </div>
+                  <div class="d-flex align-center gap-3">
+                    <div class="topbar-pill">
+                      <v-icon size="16" color="success">mdi-circle-medium</v-icon>
+                      كل الأنظمة تعمل
                     </div>
-                    <p class="text-body-1 text-medium-emphasis lh-relaxed">{{ step.description }}</p>
-                  </v-card>
-                </v-timeline-item>
-              </v-timeline>
-            </v-col>
-          </v-row>
-        </v-container>
-      </section>
-
-      <!-- 6️⃣ Testimonials Section -->
-      <!-- <section class="testimonials-section py-16">
-        <v-container>
-          <div class="text-center mb-12">
-            <h2 class="text-h3 font-weight-bold mb-4 text-white">آراء المستخدمين</h2>
-            <p class="text-h6 text-white" style="opacity: 0.95;">ماذا يقول معلمونا وطلابنا</p>
-          </div>
-
-          <v-row>
-            <v-col cols="12" md="4" v-for="testimonial in testimonials" :key="testimonial.id">
-              <v-card elevation="4" class="pa-6 h-100 testimonial-card">
-                <div class="d-flex align-center mb-4">
-                  <v-avatar size="56" :color="testimonial.color">
-                    <v-icon color="white" size="32">{{ testimonial.avatar }}</v-icon>
-                  </v-avatar>
-                  <div class="mr-3">
-                    <h4 class="text-h6 font-weight-bold">{{ testimonial.name }}</h4>
-                    <p class="text-body-2 text-medium-emphasis">{{ testimonial.role }}</p>
+                    <v-avatar size="32" color="primary">
+                      <span class="text-white font-weight-bold">M</span>
+                    </v-avatar>
                   </div>
                 </div>
 
-                <p class="text-body-1 mb-4">"{{ testimonial.comment }}"</p>
+                <!-- Stat row -->
+                <div class="preview-stats">
+                  <div v-for="s in previewStats" :key="s.label" class="preview-stat">
+                    <div class="stat-top">
+                      <span class="stat-label">{{ s.label }}</span>
+                      <v-chip size="x-small" :color="s.trendUp ? 'success' : 'error'" variant="tonal" class="px-2">
+                        <v-icon size="12" start>{{ s.trendUp ? 'mdi-trending-up' : 'mdi-trending-down' }}</v-icon>
+                        {{ s.trend }}
+                      </v-chip>
+                    </div>
+                    <div class="stat-num">{{ s.value }}</div>
+                    <div class="stat-spark">
+                      <div
+                        v-for="(h, i) in s.spark"
+                        :key="i"
+                        class="spark-bar"
+                        :style="{ height: h + '%', background: s.color }"
+                      />
+                    </div>
+                  </div>
+                </div>
 
-                <v-rating :model-value="5" color="amber" density="compact" readonly size="small" />
-              </v-card>
-            </v-col>
-          </v-row>
+                <!-- Lower split: activity + insights -->
+                <div class="preview-split">
+                  <div class="preview-panel">
+                    <div class="panel-head">
+                      <div class="d-flex align-center gap-2">
+                        <v-icon color="primary" size="18">mdi-pulse</v-icon>
+                        <span class="font-weight-bold">النشاط الأخير</span>
+                      </div>
+                      <span class="text-caption text-medium-emphasis">آخر 5 أحداث</span>
+                    </div>
+                    <div v-for="a in previewActivity" :key="a.id" class="activity-row">
+                      <v-avatar size="32" :color="a.color" class="me-3">
+                        <v-icon size="16" color="white">{{ a.icon }}</v-icon>
+                      </v-avatar>
+                      <div class="flex-grow-1">
+                        <div class="activity-title">{{ a.title }}</div>
+                        <div class="activity-time">{{ a.time }}</div>
+                      </div>
+                      <v-chip size="x-small" variant="tonal" :color="a.color">{{ a.tag }}</v-chip>
+                    </div>
+                  </div>
+
+                  <div class="preview-panel">
+                    <div class="panel-head">
+                      <div class="d-flex align-center gap-2">
+                        <v-icon color="warning" size="18">mdi-lightbulb-on-outline</v-icon>
+                        <span class="font-weight-bold">إحصائيات ذكية</span>
+                      </div>
+                    </div>
+                    <div v-for="i in previewInsights" :key="i.id" class="insight-row" :class="`insight-${i.tone}`">
+                      <v-icon :color="i.tone" size="22" class="me-3">{{ i.icon }}</v-icon>
+                      <div>
+                        <div class="insight-title">{{ i.title }}</div>
+                        <div class="insight-sub">{{ i.sub }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </v-container>
-      </section> -->
+      </section>
 
-      <!-- 7️⃣ Pricing Section -->
-      <section id="pricing" class="pricing-section py-16 bg-grey-lighten-5 position-relative">
-        <v-container>
-          <div class="text-center mb-16">
-            <v-chip color="success" variant="tonal" class="mb-4 font-weight-bold">الباقات والأسعار</v-chip>
-            <h2 class="text-h3 font-weight-bold mb-4 text-primary-dark">استثمر في مستقبل تعليمي أفضل</h2>
-            <p class="text-h6 text-medium-emphasis">اختر الباقة التي تناسب احتياجاتك وابدأ فوراً</p>
+      <!-- 6. HOW IT WORKS ====================================== -->
+      <section id="how-it-works" class="how-section">
+        <v-container style="max-width:1280px;">
+          <div class="section-head">
+            <span class="section-chip">خطوات البداية</span>
+            <h2 class="section-title">من التسجيل إلى أول كورس في أقل من 5 دقائق</h2>
+            <p class="section-sub">عملية بسيطة ومباشرة، بدون تعقيدات تقنية أو معدّات إضافية.</p>
           </div>
 
-          <!-- Capacity Report -->
-          <v-row v-if="isLoggedIn" class="mb-12" justify="center">
-            <v-col cols="12" md="8">
-              <v-card elevation="2">
-                <v-card-title class="d-flex align-center justify-space-between">
-                  <div class="d-flex align-center gap-2">
-                    <v-icon color="primary">mdi-account-group</v-icon>
-                    <span>سعة اشتراك الطلاب</span>
-                  </div>
-                  <v-btn variant="text" size="small" :loading="subscriptionCapacityLoading"
-                    @click="fetchSubscriptionCapacity">
+          <div class="steps-rail">
+            <div v-for="(step, idx) in steps" :key="step.id" class="step-card">
+              <div class="step-num">{{ idx + 1 }}</div>
+              <div class="step-icon" :style="{ background: step.bg }">
+                <v-icon :color="step.color" size="28">{{ step.icon }}</v-icon>
+              </div>
+              <h3 class="step-title">{{ step.title }}</h3>
+              <p class="step-desc">{{ step.description }}</p>
+            </div>
+          </div>
+        </v-container>
+      </section>
+
+      <!-- 7. PRICING =========================================== -->
+      <section id="pricing" class="pricing-section">
+        <v-container style="max-width:1280px;">
+          <div class="section-head">
+            <span class="section-chip section-chip-success">باقات بأسعار عراقية</span>
+            <h2 class="section-title">اختَر ما يناسب حجم عملك</h2>
+            <p class="section-sub">جرّب مجاناً ثم ترقّى متى احتجت — بدون التزام طويل.</p>
+          </div>
+
+          <!-- Capacity (logged-in teacher only) -->
+          <v-row v-if="isLoggedIn" justify="center" class="mb-6">
+            <v-col cols="12" md="9">
+              <v-card class="capacity-card pa-5" elevation="0">
+                <div class="d-flex align-center mb-3">
+                  <v-icon color="primary" class="me-2">mdi-account-multiple-outline</v-icon>
+                  <span class="font-weight-bold">سعة اشتراكك الحالية</span>
+                  <v-spacer />
+                  <v-btn size="small" variant="text" :loading="subscriptionCapacityLoading" @click="fetchSubscriptionCapacity">
                     تحديث
                   </v-btn>
-                </v-card-title>
-                <v-card-text>
-                  <v-alert v-if="subscriptionCapacityError" type="error" variant="tonal" class="mb-4"
-                    density="comfortable">
-                    {{ subscriptionCapacityError }}
-                  </v-alert>
-
-                  <div class="d-flex flex-wrap gap-4">
-                    <div>
-                      <div class="text-caption text-medium-emphasis">الطلاب الحاليون</div>
-                      <div class="text-h6 font-weight-bold">
-                        {{ subscriptionCapacity.currentStudents }}
-                      </div>
-                    </div>
-                    <div>
-                      <div class="text-caption text-medium-emphasis">الحد الأقصى في الباقة</div>
-                      <div class="text-h6 font-weight-bold">
-                        {{ subscriptionCapacity.maxStudents }}
-                      </div>
-                    </div>
-                    <div>
-                      <div class="text-caption text-medium-emphasis">المتبقّي</div>
-                      <div class="text-h6 font-weight-bold">
-                        {{ subscriptionCapacity.remaining }}
-                      </div>
-                    </div>
-                    <div>
-                      <div class="text-caption text-medium-emphasis">إمكانية إضافة طلاب جدد</div>
-                      <div class="text-subtitle-2 font-weight-bold"
-                        :class="subscriptionCapacity.canAdd ? 'text-success' : 'text-error'">
-                        {{ subscriptionCapacity.canAdd ? 'يمكن إضافة طلاب جدد' : 'لا يمكن إضافة طلاب جدد' }}
-                      </div>
+                </div>
+                <v-alert v-if="subscriptionCapacityError" type="error" variant="tonal" density="compact" class="mb-3">
+                  {{ subscriptionCapacityError }}
+                </v-alert>
+                <div class="capacity-row">
+                  <div class="cap-cell">
+                    <div class="cap-label">الطلاب الحاليون</div>
+                    <div class="cap-value">{{ subscriptionCapacity.currentStudents }}</div>
+                  </div>
+                  <div class="cap-cell">
+                    <div class="cap-label">الحد الأقصى</div>
+                    <div class="cap-value">{{ subscriptionCapacity.maxStudents }}</div>
+                  </div>
+                  <div class="cap-cell">
+                    <div class="cap-label">المتبقّي</div>
+                    <div class="cap-value text-success">{{ subscriptionCapacity.remaining }}</div>
+                  </div>
+                  <div class="cap-cell">
+                    <div class="cap-label">الحالة</div>
+                    <div class="cap-value" :class="subscriptionCapacity.canAdd ? 'text-success' : 'text-error'">
+                      {{ subscriptionCapacity.canAdd ? 'يمكن إضافة طلاب' : 'الباقة ممتلئة' }}
                     </div>
                   </div>
-                </v-card-text>
+                </div>
+                <v-progress-linear
+                  v-if="subscriptionCapacity.maxStudents > 0"
+                  :model-value="capacityPct"
+                  :color="capacityPct >= 90 ? 'error' : capacityPct >= 70 ? 'warning' : 'success'"
+                  height="8"
+                  rounded
+                  class="mt-3"
+                />
               </v-card>
             </v-col>
           </v-row>
 
-          <v-row justify="center" align="stretch">
-            <v-col cols="12" md="4" lg="3" v-for="plan in pricingPlans" :key="plan.id">
+          <!-- Skeleton while pricing loads -->
+          <v-row v-if="pricingLoading" justify="center">
+            <v-col v-for="n in 3" :key="n" cols="12" md="4" lg="3">
+              <v-skeleton-loader type="card" />
+            </v-col>
+          </v-row>
+
+          <!-- Empty state -->
+          <div v-else-if="!pricingPlans.length" class="empty-block text-center">
+            <v-icon size="48" color="grey-lighten-1">mdi-package-variant-closed-remove</v-icon>
+            <h3 class="mt-3">لا توجد باقات منشورة حالياً</h3>
+            <p class="text-medium-emphasis">يتم تحديث الباقات قريباً.</p>
+          </div>
+
+          <!-- Pricing grid -->
+          <v-row v-else justify="center" align="stretch" class="g-3">
+            <v-col v-for="plan in pricingPlans" :key="plan.id" cols="12" md="4" lg="3">
               <v-hover v-slot="{ isHovering, props }">
-                <v-card v-bind="props" :elevation="plan.featured ? 12 : (isHovering ? 6 : 2)"
-                  class="h-100 text-center pa-6 pricing-card d-flex flex-column position-relative transition-swing"
-                  :class="{ 'pricing-featured border-primary': plan.featured, 'mt-n4': plan.featured }"
-                  :variant="plan.featured ? 'elevated' : 'flat'" :color="plan.featured ? 'white' : 'white'">
-
-                  <div v-if="plan.featured" class="position-absolute top-0 left-0 right-0 text-center"
-                    style="transform: translateY(-50%);">
-                    <v-chip color="accent" variant="flat" class="font-weight-bold px-6" elevation="4">الأكثر
-                      طلباً</v-chip>
-                  </div>
-
-                  <div class="mb-6">
-                    <v-avatar :color="plan.featured ? 'primary' : 'grey-lighten-4'" size="80" class="mb-4">
-                      <v-icon size="40" :color="plan.featured ? 'white' : 'primary'">{{ plan.icon }}</v-icon>
-                    </v-avatar>
-                    <h3 class="text-h5 font-weight-bold mb-2">{{ plan.name }}</h3>
-                    <div class="d-flex align-center justify-center">
-                      <span class="text-h4 font-weight-black text-primary-dark">{{ plan.price }}</span>
+                <v-card
+                  v-bind="props"
+                  :elevation="plan.featured ? 12 : (isHovering ? 8 : 0)"
+                  class="pricing-card-v2 h-100"
+                  :class="{ featured: plan.featured, 'is-hovered': isHovering }"
+                >
+                  <div v-if="plan.featured" class="featured-flag">الأكثر طلباً</div>
+                  <div class="pricing-head">
+                    <div class="pricing-icon-wrap" :class="{ 'is-featured': plan.featured }">
+                      <v-icon size="28" :color="plan.featured ? 'white' : 'primary'">{{ plan.icon }}</v-icon>
                     </div>
-                    <span class="text-caption text-medium-emphasis">{{ plan.period }}</span>
+                    <h3 class="pricing-name">{{ plan.name }}</h3>
+                    <div class="pricing-price">
+                      <span class="price-amount">{{ plan.price }}</span>
+                    </div>
+                    <div class="pricing-period">{{ plan.period }}</div>
                   </div>
-
-                  <v-divider class="mb-6"></v-divider>
-
-                  <v-list density="compact" class="mb-auto bg-transparent text-start">
-                    <v-list-item v-for="feature in plan.features" :key="feature" class="px-0 mb-2">
-                      <template #prepend>
-                        <v-icon color="success" size="20" class="me-2">mdi-check-circle</v-icon>
-                      </template>
-                      <v-list-item-title class="text-body-2 font-weight-medium">{{ feature }}</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-
-                  <v-btn :color="plan.featured ? 'primary' : 'primary'"
-                    :variant="plan.featured ? 'elevated' : 'outlined'" size="large" block rounded="xl"
-                    class="mt-6 font-weight-bold" height="48" @click="selectPlan(plan)">
+                  <v-divider class="my-4" />
+                  <ul class="pricing-features">
+                    <li v-for="(f, i) in plan.features" :key="i">
+                      <v-icon size="18" color="success" class="me-2">mdi-check-circle</v-icon>
+                      <span>{{ f }}</span>
+                    </li>
+                  </ul>
+                  <v-btn
+                    :color="plan.featured ? 'primary' : 'grey-darken-3'"
+                    :variant="plan.featured ? 'elevated' : 'outlined'"
+                    block
+                    size="large"
+                    rounded="lg"
+                    class="mt-4 pricing-cta"
+                    @click="selectPlan(plan)"
+                  >
                     {{ plan.buttonText }}
                   </v-btn>
                 </v-card>
@@ -602,102 +633,91 @@
         </v-container>
       </section>
 
-      <!-- 8️⃣ Call To Action Section -->
-      <section class="cta-section py-16">
-        <v-container>
-          <v-row justify="center">
-            <v-col cols="12" md="8">
-              <div class="text-center">
-                <h2 class="text-h2 font-weight-bold mb-4 text-white text-balance">
-                  ابدأ رحلتك التعليمية مع ملهم اليوم
-                </h2>
-                <p class="text-h6 text-white mb-6" style="opacity: 0.95;">
-                  انضم إلى آلاف المعلمين والطلاب الذين يستخدمون ملهم
-                </p>
-                <v-btn size="x-large" color="white" variant="elevated" to="/login">
-                  <v-icon start>mdi-account-plus</v-icon>
-                  أنشئ حسابك مجانًا
-                </v-btn>
-              </div>
-            </v-col>
-          </v-row>
+      <!-- 8. CTA =============================================== -->
+      <section class="cta-section">
+        <div class="cta-glow" />
+        <v-container style="max-width:1280px;">
+          <div class="cta-inner">
+            <div class="cta-text">
+              <h2>جاهز لتجربة نظام تعليمي يعمل لصالحك؟</h2>
+              <p>سجّل مجاناً اليوم وابدأ بإدارة كورساتك وطلابك في أقل من خمس دقائق.</p>
+            </div>
+            <div class="cta-actions">
+              <v-btn size="x-large" color="white" rounded="lg" elevation="6" to="/login" class="cta-primary-light">
+                <v-icon start>mdi-rocket-launch-outline</v-icon>
+                أنشئ حسابك مجاناً
+              </v-btn>
+              <v-btn size="x-large" variant="text" color="white" rounded="lg" @click="scrollToSection('contact')">
+                تحدّث مع فريقنا
+              </v-btn>
+            </div>
+          </div>
         </v-container>
       </section>
 
-      <!-- 8️⃣ Contact Us -->
-      <section id="contact" class="py-16 bg-white">
-        <v-container>
-          <v-row>
-            <v-col cols="12" md="5" class="mb-8 mb-md-0">
-              <h2 class="text-h3 font-weight-bold mb-6 text-primary-dark">تواصل معنا</h2>
-              <p class="text-h6 text-medium-emphasis mb-8 lh-relaxed">
-                فريقنا جاهز للإجابة على استفساراتك ومساعدتك في البدء. لا تتردد في التواصل معنا في أي وقت.
-              </p>
+      <!-- 9. CONTACT =========================================== -->
+      <section id="contact" class="contact-section">
+        <v-container style="max-width:1280px;">
+          <v-row align="center">
+            <v-col cols="12" md="5" class="mb-6 mb-md-0">
+              <span class="section-chip">تواصل معنا</span>
+              <h2 class="contact-title">نسعد بسماع رأيك أو الرد على استفسارك</h2>
+              <p class="contact-sub">فريقنا متاح خلال ساعات العمل الرسمية للرد على رسائلك ومساعدتك في البدء.</p>
 
-              <div class="d-flex align-center mb-6">
-                <v-avatar color="primary-lighten-5" size="56" class="me-4">
-                  <v-icon color="primary" size="28">mdi-email</v-icon>
+              <div class="contact-card">
+                <v-avatar color="primary-lighten-5" size="48" class="me-3">
+                  <v-icon color="primary">mdi-email-outline</v-icon>
                 </v-avatar>
                 <div>
-                  <div class="text-caption text-medium-emphasis">البريد الإلكتروني</div>
-                  <div class="text-subtitle-1 font-weight-bold">support@mulhimiq.com</div>
+                  <div class="contact-label">البريد الإلكتروني</div>
+                  <a href="mailto:support@mulhimiq.com" class="contact-value">support@mulhimiq.com</a>
                 </div>
               </div>
-
-              <div class="d-flex align-center mb-6">
-                <v-avatar color="primary-lighten-5" size="56" class="me-4">
-                  <v-icon color="primary" size="28">mdi-phone</v-icon>
+              <div class="contact-card">
+                <v-avatar color="primary-lighten-5" size="48" class="me-3">
+                  <v-icon color="primary">mdi-phone-outline</v-icon>
                 </v-avatar>
                 <div>
-                  <div class="text-caption text-medium-emphasis">الهاتف</div>
-                  <div class="text-subtitle-1 font-weight-bold">+964 770 000 0000</div>
+                  <div class="contact-label">الهاتف</div>
+                  <div class="contact-value">+964 770 000 0000</div>
                 </div>
               </div>
-
-              <div class="d-flex align-center">
-                <v-avatar color="primary-lighten-5" size="56" class="me-4">
-                  <v-icon color="primary" size="28">mdi-map-marker</v-icon>
+              <div class="contact-card">
+                <v-avatar color="primary-lighten-5" size="48" class="me-3">
+                  <v-icon color="primary">mdi-map-marker-outline</v-icon>
                 </v-avatar>
                 <div>
-                  <div class="text-caption text-medium-emphasis">العنوان</div>
-                  <div class="text-subtitle-1 font-weight-bold">بغداد، العراق</div>
+                  <div class="contact-label">العنوان</div>
+                  <div class="contact-value">بغداد، العراق</div>
                 </div>
               </div>
             </v-col>
 
             <v-col cols="12" md="6" offset-md="1">
-              <v-card elevation="0" class="border pa-8 rounded-xl">
-                <h3 class="text-h5 font-weight-bold mb-6">أرسل لنا رسالة</h3>
-                <v-alert v-if="contactError" type="error" variant="tonal" class="mb-4" closable
-                  @click:close="contactError = ''">
+              <v-card class="contact-form-card pa-7" elevation="0">
+                <h3 class="text-h6 font-weight-bold mb-4">أرسل لنا رسالة</h3>
+                <v-alert v-if="contactError" type="error" variant="tonal" class="mb-4" closable @click:close="contactError = ''">
                   {{ contactError }}
                 </v-alert>
-                <v-alert v-if="contactSuccess" type="success" variant="tonal" class="mb-4" closable
-                  @click:close="contactSuccess = ''">
+                <v-alert v-if="contactSuccess" type="success" variant="tonal" class="mb-4" closable @click:close="contactSuccess = ''">
                   {{ contactSuccess }}
                 </v-alert>
-
                 <v-form @submit.prevent="submitContact">
-                  <v-row>
+                  <v-row dense>
                     <v-col cols="12" md="6">
-                      <v-text-field v-model="contactForm.name" label="الاسم الكامل" variant="outlined"
-                        density="comfortable" color="primary" />
+                      <v-text-field v-model="contactForm.name" label="الاسم الكامل" variant="outlined" density="comfortable" color="primary" />
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-text-field v-model="contactForm.email" type="email" label="البريد الإلكتروني"
-                        variant="outlined" density="comfortable" color="primary" />
+                      <v-text-field v-model="contactForm.email" type="email" label="البريد الإلكتروني" variant="outlined" density="comfortable" color="primary" />
                     </v-col>
                     <v-col cols="12">
-                      <v-text-field v-model="contactForm.subject" label="الموضوع" variant="outlined"
-                        density="comfortable" color="primary" />
+                      <v-text-field v-model="contactForm.subject" label="الموضوع" variant="outlined" density="comfortable" color="primary" />
                     </v-col>
                     <v-col cols="12">
-                      <v-textarea v-model="contactForm.message" label="نص الرسالة" rows="4" auto-grow variant="outlined"
-                        density="comfortable" color="primary" />
+                      <v-textarea v-model="contactForm.message" label="نص الرسالة" rows="4" auto-grow variant="outlined" density="comfortable" color="primary" />
                     </v-col>
                     <v-col cols="12">
-                      <v-btn type="submit" color="primary" size="large" block height="48" :loading="contactLoading"
-                        class="font-weight-bold rounded-lg">
+                      <v-btn type="submit" color="primary" size="large" block height="48" :loading="contactLoading" rounded="lg" class="font-weight-bold">
                         إرسال الرسالة
                       </v-btn>
                     </v-col>
@@ -709,126 +729,80 @@
         </v-container>
       </section>
 
-      <!-- 9️⃣ Footer -->
-      <v-footer id="footer" class="footer-section text-white pt-16 pb-8">
-        <v-container>
-          <v-row class="mb-12">
-            <v-col cols="12" md="4" class="mb-8 mb-md-0">
-              <div class="d-flex align-center mb-6">
-                <v-img :src="logo" width="40" height="40" class="me-3 bg-white rounded-circle pa-1" />
-                <h3 class="text-h4 font-weight-bold">
-                  <span>Mulhim</span><span class="text-accent">IQ</span>
-                </h3>
+      <!-- 10. FOOTER =========================================== -->
+      <v-footer class="footer-v2" elevation="0">
+        <v-container style="max-width:1280px;">
+          <div class="footer-grid">
+            <div class="footer-brand">
+              <div class="d-flex align-center mb-3">
+                <v-img :src="logo" width="44" height="44" class="me-3" />
+                <span class="brand-text">
+                  <span class="text-white">Mulhim</span><span class="text-accent">IQ</span>
+                </span>
               </div>
-              <p class="text-body-1 text-grey-lighten-3 mb-6 lh-relaxed" style="max-inline-size: 300px;">
-                منصة تعليمية متكاملة تربط بين المعلمين والطلاب والإدارة في منظومة واحدة للتعليم الذكي.
-              </p>
-              <div class="d-flex gap-2">
-                <v-btn icon variant="tonal" color="white" size="small" class="rounded-circle">
-                  <v-icon>mdi-facebook</v-icon>
-                </v-btn>
-                <v-btn icon variant="tonal" color="white" size="small" class="rounded-circle">
-                  <v-icon>mdi-twitter</v-icon>
-                </v-btn>
-                <v-btn icon variant="tonal" color="white" size="small" class="rounded-circle">
-                  <v-icon>mdi-instagram</v-icon>
-                </v-btn>
-                <v-btn icon variant="tonal" color="white" size="small" class="rounded-circle">
-                  <v-icon>mdi-linkedin</v-icon>
-                </v-btn>
+              <p class="footer-tagline">منصة التعليم الذكي الأولى في العراق — تجربة عربية أصيلة بمعايير عالمية.</p>
+              <div class="footer-socials">
+                <a href="#" class="social-pill" aria-label="Facebook"><v-icon size="18">mdi-facebook</v-icon></a>
+                <a href="#" class="social-pill" aria-label="Instagram"><v-icon size="18">mdi-instagram</v-icon></a>
+                <a href="#" class="social-pill" aria-label="WhatsApp"><v-icon size="18">mdi-whatsapp</v-icon></a>
+                <a href="#" class="social-pill" aria-label="YouTube"><v-icon size="18">mdi-youtube</v-icon></a>
               </div>
-            </v-col>
-
-            <v-col cols="6" md="2" offset-md="2">
-              <h4 class="text-h6 font-weight-bold mb-6">الروابط</h4>
-              <div class="d-flex flex-column gap-3">
-                <a href="#" class="text-grey-lighten-3 text-decoration-none hover-white">الرئيسية</a>
-                <a href="#features" class="text-grey-lighten-3 text-decoration-none hover-white">المميزات</a>
-                <a href="#pricing" class="text-grey-lighten-3 text-decoration-none hover-white">الأسعار</a>
-                <a href="#contact" class="text-grey-lighten-3 text-decoration-none hover-white">تواصل معنا</a>
-              </div>
-            </v-col>
-
-            <v-col cols="6" md="2">
-              <h4 class="text-h6 font-weight-bold mb-6">قانوني</h4>
-              <div class="d-flex flex-column gap-3">
-                <router-link to="/privacy-policy" class="text-grey-lighten-3 text-decoration-none hover-white">سياسة
-                  الخصوصية</router-link>
-                <router-link to="/terms-and-conditions"
-                  class="text-grey-lighten-3 text-decoration-none hover-white">شروط
-                  الاستخدام</router-link>
-              </div>
-            </v-col>
-
-            <v-col cols="12" md="2">
-              <h4 class="text-h6 font-weight-bold mb-6">حمل التطبيق</h4>
-              <v-btn color="white" variant="outlined" block class="mb-3"
-                href="https://apps.apple.com/us/app/mulhimiq/id6754453929" target="_blank">
-                <v-icon start>mdi-apple</v-icon> App Store
-              </v-btn>
-              <v-btn color="white" variant="outlined" target="_blank" block
-                href="https://play.google.com/store/apps/details?id=com.mulhimiq.app">
-                <v-icon start>mdi-google-play</v-icon> Google Play
-              </v-btn>
-            </v-col>
-          </v-row>
-
-          <v-divider class="mb-8 border-opacity-25"></v-divider>
-
-          <div class="text-center text-body-2 text-grey-lighten-4">
-            © 2025 MulhimIQ — جميع الحقوق محفوظة.
+            </div>
+            <div class="footer-col">
+              <h4>المنصة</h4>
+              <a @click="scrollToSection('features')">المميزات</a>
+              <a @click="scrollToSection('preview')">النظام</a>
+              <a @click="scrollToSection('pricing')">الباقات</a>
+              <a @click="scrollToSection('how-it-works')">كيف يعمل</a>
+            </div>
+            <div class="footer-col">
+              <h4>روابط</h4>
+              <router-link to="/login">تسجيل الدخول</router-link>
+              <router-link to="/contact">تواصل معنا</router-link>
+              <router-link to="/privacy-policy">سياسة الخصوصية</router-link>
+              <router-link to="/terms-and-conditions">شروط الاستخدام</router-link>
+            </div>
+            <div class="footer-col">
+              <h4>تطبيق الطلاب</h4>
+              <a href="https://apps.apple.com/us/app/mulhimiq/id6754453929" target="_blank" rel="noopener" class="store-pill store-pill-dark">
+                <v-icon size="20">mdi-apple</v-icon>
+                App Store
+              </a>
+              <a href="https://play.google.com/store/apps/details?id=com.mulhimiq.app" target="_blank" rel="noopener" class="store-pill store-pill-dark mt-2">
+                <v-icon size="20">mdi-google-play</v-icon>
+                Google Play
+              </a>
+            </div>
+          </div>
+          <v-divider class="my-6" color="white" opacity="0.15" />
+          <div class="footer-bottom">
+            <span>© {{ new Date().getFullYear() }} Mulhim IQ — جميع الحقوق محفوظة.</span>
+            <span class="footer-status">
+              <span class="live-dot" :class="{ ok: apiHealthy, down: apiHealthy === false }" />
+              {{ apiHealthy ? 'النظام يعمل' : (apiHealthy === false ? 'تحقق من الاتصال' : 'جارٍ الفحص') }}
+            </span>
           </div>
         </v-container>
       </v-footer>
     </v-main>
 
     <!-- Dialogs -->
-    <v-dialog v-model="startDialog" max-width="500">
-      <v-card class="pa-6">
-        <v-card-title class="text-center">
-          <h2 class="text-h4 font-weight-bold">ابدأ مع ملهم</h2>
-        </v-card-title>
-        <v-card-text class="text-center">
-          <v-icon size="64" color="accent" class="mb-4">mdi-rocket-launch</v-icon>
-          <p class="text-body-1 mb-4">اختر نوع حسابك للبدء</p>
-          <div class="d-flex flex-column gap-3">
-            <v-btn color="primary" size="large" block to="/login">
-              <v-icon start>mdi-account-tie</v-icon>
-              حساب معلم
-            </v-btn>
-
-            <v-btn color="accent" size="large" block>
-              <v-icon start>mdi-school</v-icon>
-              حساب طالب
-            </v-btn>
-          </div>
-        </v-card-text>
-        <v-card-actions class="justify-center">
-          <v-btn variant="text" @click="startDialog = false">إلغاء</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
     <v-dialog v-model="newsDialog" max-width="900">
       <v-card>
         <v-card-title class="d-flex align-center">
           <v-icon start color="primary" class="me-2">mdi-newspaper</v-icon>
           <span class="text-h6 font-weight-bold">{{ selectedNews?.title }}</span>
           <v-spacer />
-          <v-btn icon variant="text" @click="newsDialog = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <v-btn icon variant="text" @click="newsDialog = false"><v-icon>mdi-close</v-icon></v-btn>
         </v-card-title>
         <v-divider />
         <v-img v-if="selectedNews?.image" :src="selectedNews.image" :alt="selectedNews.title" height="320" cover />
         <v-card-text>
-          <div class="text-body-2 text-medium-emphasis mb-2" v-if="selectedNews?.raw?.publishedAt">
+          <div v-if="selectedNews?.raw?.publishedAt" class="text-body-2 text-medium-emphasis mb-2">
             <v-icon size="16" class="me-1">mdi-calendar</v-icon>
             {{ new Date(selectedNews.raw.publishedAt).toLocaleString('en-IQ') }}
           </div>
-          <div style="white-space: pre-line;">
-            {{ selectedNews?.description }}
-          </div>
+          <div style="white-space:pre-line;">{{ selectedNews?.description }}</div>
         </v-card-text>
         <v-card-actions class="justify-end">
           <v-btn variant="text" @click="newsDialog = false">إغلاق</v-btn>
@@ -842,21 +816,17 @@
           <v-icon start color="primary" class="me-2">mdi-bell</v-icon>
           <span class="text-h6 font-weight-bold">{{ selectedNotification?.title }}</span>
           <v-spacer />
-          <v-btn icon variant="text" @click="notificationDialog = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <v-btn icon variant="text" @click="notificationDialog = false"><v-icon>mdi-close</v-icon></v-btn>
         </v-card-title>
         <v-divider />
         <v-img v-if="selectedNotification?.image" :src="selectedNotification.image" height="260" cover />
         <v-card-text>
-          <div class="text-body-2 text-medium-emphasis mb-2" v-if="selectedNotification?.sentAt">
+          <div v-if="selectedNotification?.sentAt" class="text-body-2 text-medium-emphasis mb-2">
             <v-icon size="16" class="me-1">mdi-calendar</v-icon>
             {{ formatDate(selectedNotification.sentAt) }}
           </div>
-          <div style="white-space: pre-line;" class="mb-3">
-            {{ selectedNotification?.message }}
-          </div>
-          <div class="text-caption text-medium-emphasis" v-if="selectedNotification?.type">
+          <div class="mb-3" style="white-space:pre-line;">{{ selectedNotification?.message }}</div>
+          <div v-if="selectedNotification?.type" class="text-caption text-medium-emphasis">
             <v-icon size="14" class="me-1">mdi-tag</v-icon>
             {{ selectedNotification.type }}
           </div>
@@ -873,9 +843,7 @@
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000" location="top">
       {{ snackbar.message }}
       <template #actions>
-        <v-btn icon @click="snackbar.show = false">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
+        <v-btn icon @click="snackbar.show = false"><v-icon>mdi-close</v-icon></v-btn>
       </template>
     </v-snackbar>
   </v-app>
@@ -883,6 +851,7 @@
 
 <script>
 import teacher_api from '@/api/teacher/teacher_api';
+import axiosInstance from '@/utils/axios';
 import logo from '@/assets/images/logo.png';
 import emailjs from 'emailjs-com';
 
@@ -892,14 +861,15 @@ export default {
 
   data() {
     return {
-      carouselModel: 0,
-      appScreenshots: [],
-      // حالة الدخول
+      logo,
+      isScrolled: false,
       isLoggedIn: false,
 
-      // Dialogs
-      startDialog: false,
-      studentDialog: false,
+      // Hero phone carousel
+      carouselModel: 0,
+      appScreenshots: [],
+
+      // Notifications drawer (logged-in only)
       notificationsMenu: false,
       notificationDialog: false,
       notificationsList: [],
@@ -909,464 +879,313 @@ export default {
       notificationsLoading: false,
       unreadCount: 0,
       selectedNotification: null,
+
+      // News dialog
       newsDialog: false,
       selectedNews: null,
 
-      // Dashboard theme
-      dashboardDark: false,
+      // Live platform stats (Live Strip + Hero floating widgets)
+      platformStatsLoading: true,
+      platformStats: {
+        governoratesCount: 0,
+        packagesCount: 0,
+        newsCount: 0,
+      },
+      apiHealthy: null, // null = unknown, true = ok, false = down
 
       // Snackbar
-      snackbar: {
-        show: false,
-        message: '',
-        color: 'success'
-      },
+      snackbar: { show: false, message: '', color: 'success' },
 
-      // Contact form state
+      // Contact form
       contactForm: { name: '', email: '', subject: '', message: '' },
       contactLoading: false,
       contactError: '',
       contactSuccess: '',
 
-      // Features data
+      // Features (kept brand-aligned, with bilingual tag pills)
       features: [
         {
           id: 1,
-          icon: 'mdi-calendar-check',
-          title: 'إدارة الحصص بسهولة',
-          description: 'نظّم جدولك الدراسي وحدد المواعيد بكل سهولة ومرونة',
-          color: 'primary',
-          colorClass: 'primary'
+          icon: 'mdi-calendar-clock-outline',
+          title: 'إدارة الحصص والجداول',
+          description: 'حدّد المواعيد الأسبوعية، تحقق من تعارضات الجدول، وأرسل تذكيرات تلقائية قبل الحصة.',
+          color: 'primary', colorHex: '#0B2545',
+          tags: ['جدول أسبوعي', 'تذكيرات', 'تكرار يومي'],
         },
         {
           id: 2,
-          icon: 'mdi-message-text',
-          title: 'تواصل مباشر مع الطلاب',
-          description: 'تواصل فوري مع طلابك عبر الرسائل والإشعارات',
-          color: 'accent',
-          colorClass: 'accent'
+          icon: 'mdi-account-multiple-check-outline',
+          title: 'حضور بـ QR Code',
+          description: 'الطالب يمسح، النظام يسجّل. تقارير حضور لحظية لكل حصة وكل طالب.',
+          color: 'accent', colorHex: '#FF8A00',
+          tags: ['مسح فوري', 'تقارير', 'سجلات'],
         },
         {
           id: 3,
-          icon: 'mdi-chart-bar',
-          title: 'إحصاءات وتقارير تفاعلية',
-          description: 'تابع أداء طلابك من خلال تقارير مفصلة ورسوم بيانية',
-          color: 'support',
-          colorClass: 'support'
+          icon: 'mdi-chart-box-outline',
+          title: 'تحليلات وتقارير ذكية',
+          description: 'نتائج الامتحانات، تطوّر الأداء، ودقة المتابعة المالية في مكان واحد.',
+          color: 'secondary', colorHex: '#3FA9F5',
+          tags: ['Insights', 'مخططات', 'تصدير'],
         },
         {
           id: 4,
-          icon: 'mdi-cash-multiple',
-          title: 'نظام مالي واشتراكات ذكي',
-          description: 'إدارة المدفوعات والاشتراكات بشكل آلي وآمن',
-          color: 'highlight',
-          colorClass: 'highlight'
+          icon: 'mdi-wallet-outline',
+          title: 'نظام مالي ومحفظة',
+          description: 'فواتير، أقساط، خصومات، ومحفظة معلّم متكاملة — مع دعم بوابة Wayl للدفع.',
+          color: 'success', colorHex: '#10B981',
+          tags: ['فواتير', 'أقساط', 'Wayl'],
         },
         {
           id: 5,
-          icon: 'mdi-bell-ring',
-          title: 'إشعارات فورية وتنبيهات تلقائية',
-          description: 'ابقَ على اطلاع دائم بكل جديد من خلال الإشعارات الذكية',
-          color: 'warning',
-          colorClass: 'warning'
+          icon: 'mdi-bell-ring-outline',
+          title: 'إشعارات Push فورية',
+          description: 'تنبيه الطالب وولي الأمر بالحصة، الواجب، أو نتيجة الامتحان فور حدوثها.',
+          color: 'warning', colorHex: '#FF8A00',
+          tags: ['Push', 'OneSignal', 'iOS · Android'],
         },
         {
           id: 6,
-          icon: 'mdi-earth',
-          title: 'موقعك، طلابك، كل شيء متصل',
-          description: 'منصة متكاملة تربط جميع عناصر العملية التعليمية',
-          color: 'info',
-          colorClass: 'info'
-        }
-      ],
-
-      // Dashboard sidebar items
-      sidebarItems: [
-        { id: 1, icon: 'mdi-view-dashboard', title: 'الرئيسية', active: true },
-        { id: 2, icon: 'mdi-book-open-variant', title: 'الكورسات', active: false },
-        { id: 3, icon: 'mdi-account-group', title: 'الطلاب', active: false },
-        { id: 4, icon: 'mdi-clipboard-check', title: 'الحضور', active: false },
-        { id: 5, icon: 'mdi-bell', title: 'الإشعارات', active: false }
-      ],
-
-      // Dashboard stats
-      stats: [
-        { id: 1, icon: 'mdi-account-group', value: '248', label: 'إجمالي الطلاب', color: 'primary', change: '+12%' },
-        { id: 2, icon: 'mdi-book-open', value: '12', label: 'الكورسات النشطة', color: 'accent', change: '+3' },
-        { id: 3, icon: 'mdi-calendar-today', value: '8', label: 'حصص اليوم', color: 'support', change: '2 قادمة' },
-        { id: 4, icon: 'mdi-cash', value: '15,240', label: 'الإيرادات (ريال)', color: 'highlight', change: '+8%' }
-      ],
-
-      // Table headers
-      tableHeaders: [
-        { title: 'الكورس', key: 'course' },
-        { title: 'الوقت', key: 'time' },
-        { title: 'الطلاب', key: 'students' },
-        { title: 'الحالة', key: 'status' },
-        { title: 'إجراءات', key: 'actions', sortable: false }
-      ],
-
-      // Upcoming classes
-      upcomingClasses: [
-        { course: 'الرياضيات المتقدمة', time: '10:00 ص', students: 25, status: 'قريباً', statusColor: 'warning' },
-        { course: 'الفيزياء الحديثة', time: '12:00 م', students: 18, status: 'مجدول', statusColor: 'info' },
-        { course: 'الكيمياء العضوية', time: '02:00 م', students: 22, status: 'مجدول', statusColor: 'info' },
-        { course: 'البرمجة بلغة Python', time: '04:00 م', students: 30, status: 'مجدول', statusColor: 'info' },
-        { course: 'تصميم الجرافيك', time: '06:00 م', students: 15, status: 'مجدول', statusColor: 'info' }
-      ],
-
-      // Notifications
-      notifications: [
-        { id: 1, icon: 'mdi-account-plus', title: 'طالب جديد انضم للكورس', time: 'منذ 5 دقائق', color: 'success' },
-        { id: 2, icon: 'mdi-message', title: 'رسالة جديدة من أحمد', time: 'منذ 15 دقيقة', color: 'primary' },
-        { id: 3, icon: 'mdi-calendar', title: 'تذكير: حصة الرياضيات', time: 'منذ 30 دقيقة', color: 'warning' },
-        { id: 4, icon: 'mdi-cash', title: 'دفعة جديدة مستلمة', time: 'منذ ساعة', color: 'highlight' }
+          icon: 'mdi-shield-lock-outline',
+          title: 'أمان وموثوقية',
+          description: 'بيانات آمنة، تشفير شامل، صلاحيات بأدوار، ومسار تدقيق لكل عملية حساسة.',
+          color: 'error', colorHex: '#E53935',
+          tags: ['JWT', 'CORS', 'CSP'],
+        },
       ],
 
       // Steps
       steps: [
-        {
-          id: 1,
-          icon: 'mdi-account-plus',
-          title: 'سجّل حسابك كمعلم',
-          description: 'أنشئ حسابك المجاني في دقائق معدودة وابدأ رحلتك التعليمية',
-          color: 'primary'
-        },
-        {
-          id: 2,
-          icon: 'mdi-book-plus',
-          title: 'أضف كورساتك وحدد المواعيد وباقات الأشتراك',
-          description: 'أنشئ كورساتك الخاصة وحدد الجدول الزمني وباقات الأشتراك المناسبة',
-          color: 'accent'
-        },
-        {
-          id: 3,
-          icon: 'mdi-account-group',
-          title: 'الطلاب يسجلون ويتابعون دروسهم',
-          description: 'يمكن للطلاب التسجيل في كورساتك ومتابعة الدروس بسهولة',
-          color: 'support'
-        },
-        {
-          id: 4,
-          icon: 'mdi-chart-line',
-          title: 'تابع الحضور والتقييمات من لوحة التحكم',
-          description: 'راقب تقدم طلابك وأدائهم من خلال لوحة تحكم شاملة',
-          color: 'highlight'
-        }
+        { id: 1, icon: 'mdi-account-plus-outline', title: 'سجّل حسابك', description: 'أنشئ حساب معلم مجاناً واختر باقة البداية في دقيقة.', color: 'primary', bg: 'rgba(11,37,69,0.08)' },
+        { id: 2, icon: 'mdi-book-plus-outline', title: 'أضف كورساتك', description: 'أنشئ كورس، حدّد السعر، الباقات والجدول الأسبوعي.', color: 'accent', bg: 'rgba(255,138,0,0.10)' },
+        { id: 3, icon: 'mdi-account-group-outline', title: 'انضمام الطلاب', description: 'الطالب يحجز، يدفع، ويبدأ الحضور عبر QR من تطبيق ملهم.', color: 'secondary', bg: 'rgba(63,169,245,0.10)' },
+        { id: 4, icon: 'mdi-chart-line', title: 'تابع وحلّل', description: 'اطّلع على لوحة تحكم لحظية، أرسل واجبات، وامنح تقييمات.', color: 'success', bg: 'rgba(16,185,129,0.10)' },
       ],
 
-      // Testimonials
-      testimonials: [
-        {
-          id: 1,
-          name: 'د. محمد العتيبي',
-          role: 'معلم رياضيات',
-          comment: 'منصة ملهم غيرت طريقة تدريسي بالكامل. أصبح التواصل مع الطلاب أسهل والإدارة أكثر فعالية',
-          avatar: 'mdi-account-tie',
-          color: 'primary'
-        },
-        {
-          id: 2,
-          name: 'أ. سارة الأحمد',
-          role: 'معلمة لغة إنجليزية',
-          comment: 'أدوات رائعة لتتبع تقدم الطلاب. النظام المالي المدمج وفر علي الكثير من الوقت والجهد',
-          avatar: 'mdi-account-circle',
-          color: 'accent'
-        },
-        {
-          id: 3,
-          name: 'خالد السالم',
-          role: 'طالب ثانوي',
-          comment: 'واجهة سهلة الاستخدام وتجربة تعليمية ممتازة. أستطيع متابعة دروسي من أي مكان',
-          avatar: 'mdi-school',
-          color: 'support'
-        }
+      // Preview-section data — illustrative, derived once on mount
+      previewNav: [
+        { icon: 'mdi-view-dashboard-outline', title: 'الرئيسية' },
+        { icon: 'mdi-book-open-page-variant-outline', title: 'الكورسات' },
+        { icon: 'mdi-account-multiple-outline', title: 'الطلاب' },
+        { icon: 'mdi-calendar-check-outline', title: 'الحضور' },
+        { icon: 'mdi-file-document-outline', title: 'الفواتير' },
+        { icon: 'mdi-bell-outline', title: 'الإشعارات' },
+      ],
+      previewStats: [
+        { label: 'إيرادات الشهر', value: '4,820,000 د.ع', trend: '+12%', trendUp: true, color: '#0B2545', spark: [25, 38, 52, 41, 67, 78, 90] },
+        { label: 'طلاب نشطون', value: '128', trend: '+6%', trendUp: true, color: '#3FA9F5', spark: [40, 55, 48, 70, 62, 75, 88] },
+        { label: 'حضور اليوم', value: '94%', trend: '+3%', trendUp: true, color: '#10B981', spark: [60, 72, 78, 85, 80, 92, 94] },
+        { label: 'فواتير معلّقة', value: '7', trend: '-2', trendUp: false, color: '#FF8A00', spark: [80, 75, 70, 60, 50, 45, 35] },
+      ],
+      previewActivity: [
+        { id: 1, icon: 'mdi-cash-multiple', color: 'success', title: 'دفعة جديدة من سارة (200,000 د.ع)', time: 'منذ دقيقتين', tag: 'دفع' },
+        { id: 2, icon: 'mdi-account-plus', color: 'primary', title: 'انضمام أحمد إلى كورس الفيزياء', time: 'منذ 12 دقيقة', tag: 'انضمام' },
+        { id: 3, icon: 'mdi-clipboard-check-outline', color: 'secondary', title: 'تم تسليم واجب الرياضيات لـ 22 طالب', time: 'منذ ساعة', tag: 'واجب' },
+        { id: 4, icon: 'mdi-bell-ring', color: 'warning', title: 'تذكير قبل الحصة (28 طالب)', time: 'قبل 3 ساعات', tag: 'تنبيه' },
+        { id: 5, icon: 'mdi-chart-line', color: 'accent', title: 'تحديث تقرير الأداء الأسبوعي', time: 'اليوم 09:15', tag: 'تقرير' },
+      ],
+      previewInsights: [
+        { id: 1, icon: 'mdi-trending-up', tone: 'success', title: '+12% نمو في الحجوزات', sub: 'مقارنة بالأسبوع الماضي.' },
+        { id: 2, icon: 'mdi-account-alert-outline', tone: 'warning', title: '7 فواتير معلّقة', sub: 'تجاوزت موعد الاستحقاق.' },
+        { id: 3, icon: 'mdi-pulse', tone: 'primary', title: 'كل الخدمات تعمل بكفاءة', sub: 'API + الإشعارات + الدفع.' },
+        { id: 4, icon: 'mdi-account-group-outline', tone: 'secondary', title: '23 طالباً جدداً هذا الأسبوع', sub: 'أعلى من المعدل بنسبة 30%.' },
       ],
 
-      // Pricing plans
-      pricingPlans: [
-        {
-          id: 1,
-          name: 'مجانية',
-          price: '0 ريال',
-          period: '/ شهرياً',
-          icon: 'mdi-gift',
-          iconColor: 'support',
-          buttonColor: 'support',
-          buttonText: 'ابدأ مجاناً',
-          featured: false,
-          features: [
-            'حتى 20 طالب',
-            'كورس واحد نشط',
-            'تقارير أساسية',
-            'دعم فني محدود',
-            'تخزين 1 جيجا'
-          ]
-        },
-        {
-          id: 2,
-          name: 'أساسية',
-          price: '99 ريال',
-          period: '/ شهرياً',
-          icon: 'mdi-star',
-          iconColor: 'white',
-          buttonColor: 'accent',
-          buttonText: 'اشترك الآن',
-          featured: true,
-          features: [
-            'حتى 100 طالب',
-            '5 كورسات نشطة',
-            'تقارير متقدمة',
-            'دعم فني على مدار الساعة',
-            'تخزين 10 جيجا',
-            'إشعارات SMS'
-          ]
-        },
-        {
-          id: 3,
-          name: 'احترافية',
-          price: '249 ريال',
-          period: '/ شهرياً',
-          icon: 'mdi-crown',
-          iconColor: 'highlight',
-          buttonColor: 'highlight',
-          buttonText: 'اشترك الآن',
-          featured: false,
-          features: [
-            'طلاب غير محدودين',
-            'كورسات غير محدودة',
-            'تقارير وتحليلات شاملة',
-            'دعم فني مخصص',
-            'تخزين غير محدود',
-            'إشعارات SMS',
-            'تطبيق موبايل مخصص'
-          ]
-        }
-      ],
+      // Pricing (fetched from API)
+      pricingPlans: [],
+      pricingLoading: true,
 
-      // تقرير سعة اشتراك المعلم (للمعلمين المسجلين الدخول)
-      subscriptionCapacity: {
-        currentStudents: 0,
-        maxStudents: 0,
-        remaining: 0,
-        canAdd: false,
-      },
+      // Subscription capacity (logged-in teacher)
+      subscriptionCapacity: { currentStudents: 0, maxStudents: 0, remaining: 0, canAdd: false },
       subscriptionCapacityLoading: false,
       subscriptionCapacityError: '',
+    };
+  },
 
-      // الأصول
-      logo
-    }
+  computed: {
+    capacityPct() {
+      const m = Number(this.subscriptionCapacity.maxStudents) || 0;
+      if (!m) return 0;
+      return Math.min(100, Math.round((Number(this.subscriptionCapacity.currentStudents) / m) * 100));
+    },
   },
 
   mounted() {
-    const token = localStorage.getItem('accessToken')
-    const user = localStorage.getItem('user')
-    this.isLoggedIn = !!(token && user)
-    // Load pricing plans from backend
-    this.fetchPricingPlans()
-    this.getPublicNews()
+    const token = localStorage.getItem('accessToken');
+    const user = localStorage.getItem('user');
+    this.isLoggedIn = !!(token && user);
+
+    window.addEventListener('scroll', this.handleScroll, { passive: true });
+
+    this.fetchPlatformStats();
+    this.fetchPricingPlans();
+    this.getPublicNews();
+
     if (this.isLoggedIn) {
-      this.refreshNotifications()
+      this.refreshNotifications();
       try {
-        const parsedUser = JSON.parse(user)
-        if (parsedUser?.userType === 'teacher') {
-          this.fetchSubscriptionCapacity()
-        }
-      } catch { }
+        const parsedUser = JSON.parse(user);
+        if (parsedUser?.userType === 'teacher') this.fetchSubscriptionCapacity();
+      } catch { /* ignore */ }
     }
+
     try {
-      const params = new URLSearchParams(window.location.search)
-      const qid = params.get('notificationId')
-      if (qid) this.markNotificationAsRead(String(qid))
-    } catch { }
+      const params = new URLSearchParams(window.location.search);
+      const qid = params.get('notificationId');
+      if (qid) this.markNotificationAsRead(String(qid));
+    } catch { /* ignore */ }
+  },
+
+  beforeUnmount() {
+    window.removeEventListener('scroll', this.handleScroll);
   },
 
   methods: {
-    scrollToSection(sectionId) {
-      const element = document.getElementById(sectionId)
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' })
-      }
+    handleScroll() {
+      this.isScrolled = window.scrollY > 12;
     },
 
-    openStartDialog() {
-      this.startDialog = true
+    scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     },
 
-    openStudentDialog() {
-      this.snackbar = {
-        show: true,
-        message: 'صفحة الطلاب قيد التطوير',
-        color: 'info'
-      }
-    },
+    // -------- Live platform stats (4 anonymous APIs) ----------
+    async fetchPlatformStats() {
+      this.platformStatsLoading = true;
+      // /health is at the API ROOT (no /api prefix). Derive the origin from
+      // the shared axios instance's baseURL so dev / staging / prod stay in
+      // sync with the rest of the dashboard's HTTP layer.
+      const baseURL = axiosInstance?.defaults?.baseURL || 'http://localhost:3000/api';
+      const apiOrigin = baseURL.replace(/\/api\/?$/, '');
 
-    toggleDashboardTheme() {
-      this.dashboardDark = !this.dashboardDark
-      this.snackbar = {
-        show: true,
-        message: this.dashboardDark ? 'تم التبديل للوضع الليلي' : 'تم التبديل للوضع النهاري',
-        color: 'info'
-      }
-    },
+      const tasks = [
+        // Health (live dot)
+        fetch(`${apiOrigin}/health`).then(r => r.json()).then(j => ({ healthy: !!j?.success })).catch(() => ({ healthy: false })),
+        // Governorates count
+        teacher_api.getGovernorates().then((res) => {
+          const payload = res?.data?.data ? res.data : res;
+          const data = payload?.data || {};
+          return { gov: Number(data.count) || (Array.isArray(data.governorates) ? data.governorates.length : 0) };
+        }).catch(() => ({ gov: 0 })),
+        // Active packages count
+        teacher_api.getActivePackages().then((res) => {
+          const payload = res?.data?.data ? res.data : res;
+          const items = Array.isArray(payload?.data) ? payload.data : [];
+          return { pkg: items.length };
+        }).catch(() => ({ pkg: 0 })),
+        // Public news count
+        teacher_api.getPublicNews().then((res) => {
+          const payload = res?.data?.data ? res.data : res;
+          const items = Array.isArray(payload?.data) ? payload.data : [];
+          return { news: items.length };
+        }).catch(() => ({ news: 0 })),
+      ];
 
-    async submitContact() {
       try {
-        this.contactError = ''
-        this.contactSuccess = ''
-        const { name, email, subject, message } = this.contactForm
-
-        if (!name || !email || !message) {
-          this.contactError = 'يرجى تعبئة الاسم والبريد والرسالة'
-          return
-        }
-
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-          this.contactError = 'يرجى إدخال بريد إلكتروني صالح'
-          return
-        }
-
-        this.contactLoading = true
-
-        const templateParams = {
-          from_name: name,
-          from_email: email,
-          subject: subject || 'رسالة من نموذج التواصل',
-          message,
-        }
-
-
-        // ⚙️ ضع قيمك هنا من لوحة EmailJS
-        const SERVICE_ID = 'service_e6wa64v'
-        const TEMPLATE_ID = 'template_rn0tt0u'
-        const PUBLIC_KEY = 'km9zF8cdDOxdFruui'  // تجده في صفحة Account > API Keys في EmailJS
-
-        const response = await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
-
-        if (response.status === 200) {
-          this.contactSuccess = '✅ تم إرسال رسالتك بنجاح وسنعاود التواصل قريبًا'
-          this.contactForm = { name: '', email: '', subject: '', message: '' }
-        } else {
-          this.contactError = 'حدث خطأ أثناء الإرسال، حاول لاحقًا'
-        }
-      } catch (err) {
-        console.error('EmailJS Error:', err)
-        this.contactError = 'تعذر إرسال الرسالة، يرجى المحاولة لاحقًا'
+        const [h, g, p, n] = await Promise.all(tasks);
+        this.apiHealthy = h.healthy;
+        this.platformStats = {
+          governoratesCount: g.gov,
+          packagesCount: p.pkg,
+          newsCount: n.news,
+        };
       } finally {
-        this.contactLoading = false
+        this.platformStatsLoading = false;
       }
     },
 
+    // -------- Pricing ---------------------------------------
     async fetchPricingPlans() {
+      this.pricingLoading = true;
       try {
-        // ✅ جلب البيانات من API
         const res = await teacher_api.getActivePackages();
-
-        // ✅ دعم Axios أو Fetch
-        const payload = res.data?.data.data ? res.data.data : res;
-
+        const payload = res?.data?.data ? res.data : res;
         const items = Array.isArray(payload?.data) ? payload.data : [];
-
-        // 🧩 تحويل البيانات إلى شكل واجهة المستخدم
         const mapped = items.map((p) => {
           const isFree = p.isFree || p.price === 0;
-          const formattedPrice = isFree
-            ? "0"
-            : new Intl.NumberFormat("en-IQ").format(p.price);
-
+          const priceFmt = isFree ? '0' : new Intl.NumberFormat('en-IQ').format(p.price);
           return {
             id: p.id,
             name: p.name,
-            price: `${formattedPrice} دينار`,
-            period: p.durationDays === 30 ? "/ شهرياً" : `/ ${p.durationDays} يوماً`,
-            icon: isFree ? "mdi-gift" : "mdi-star",
-            iconColor: isFree ? "support" : "white",
-            buttonColor: isFree ? "support" : "accent",
-            buttonText: isFree ? "ابدأ مجاناً" : "اشترك الآن",
+            price: `${priceFmt} د.ع`,
+            period: p.durationDays === 30 ? '/ شهرياً' : `/ ${p.durationDays} يوم`,
+            icon: isFree ? 'mdi-gift-outline' : 'mdi-star-outline',
+            buttonText: isFree ? 'ابدأ مجاناً' : 'اشترك الآن',
             featured: false,
             features: [
               `حتى ${p.maxStudents} طالب`,
-              p.description || (isFree ? "مجاناً للمعلمين الجدد" : "ميزات متقدمة"),
-              p.durationDays === 30 ? "اشتراك شهري" : `اشتراك ${p.durationDays} يوم`,
-              "دعم فني مخصص",
+              p.description || (isFree ? 'مجاناً للمعلمين الجدد' : 'ميزات متقدمة'),
+              p.durationDays === 30 ? 'اشتراك شهري' : `اشتراك ${p.durationDays} يوم`,
+              'دعم فني مخصص',
             ],
           };
         });
-
-        // 🌟 تحديد أول باقة مدفوعة كباقة مميزة
-        const paidIndex = mapped.findIndex((pl) => pl.price !== "0 دينار");
-        if (paidIndex !== -1) mapped[paidIndex].featured = true;
-
-        // ✅ حفظ النتائج في الحالة
-        if (mapped.length) {
-          this.pricingPlans = mapped;
-        } else {
-          throw new Error("لم يتم العثور على باقات.");
-        }
+        const paidIdx = mapped.findIndex((m) => !m.price.startsWith('0'));
+        if (paidIdx !== -1) mapped[paidIdx].featured = true;
+        this.pricingPlans = mapped;
       } catch (err) {
-        // ⚠️ عرض رسالة خطأ جميلة للمستخدم
-        this.snackbar = {
-          show: true,
-          message: "تعذر تحميل الباقات. يرجى المحاولة لاحقًا",
-          color: "error",
-        };
-        console.warn("⚠️ Failed to fetch pricing plans:", err);
+        this.snackbar = { show: true, message: 'تعذر تحميل الباقات. يرجى المحاولة لاحقاً', color: 'error' };
+        console.warn('Failed to fetch pricing plans:', err);
+      } finally {
+        this.pricingLoading = false;
+      }
+    },
+
+    async selectPlan(plan) {
+      if (!this.isLoggedIn) {
+        this.snackbar = { show: true, message: 'يرجى تسجيل الدخول أولاً لاختيار باقة', color: 'info' };
+        this.$router.push('/login');
+        return;
+      }
+      try {
+        const res = await teacher_api.activateSubscriptionPackage(plan.id);
+        const ok = res?.data?.success || res?.success;
+        const msg = res?.data?.message || res?.message || `تم تفعيل باقة ${plan.name} بنجاح`;
+        this.snackbar = { show: true, message: msg, color: ok ? 'success' : 'error' };
+      } catch (err) {
+        const msg = err?.response?.data?.message || 'تعذر تفعيل الباقة، يرجى المحاولة لاحقاً';
+        this.snackbar = { show: true, message: msg, color: 'error' };
       }
     },
 
     async fetchSubscriptionCapacity() {
-      this.subscriptionCapacityLoading = true
-      this.subscriptionCapacityError = ''
+      this.subscriptionCapacityLoading = true;
+      this.subscriptionCapacityError = '';
       try {
-        const res = await teacher_api.getRemainingStudents()
-        const ok = res?.data?.success || res?.success
-        const data = res?.data?.data || res?.data || res
-
-        if (!ok || !data) {
-          throw new Error(res?.data?.message || 'تعذر جلب تقرير السعة')
-        }
-
+        const res = await teacher_api.getRemainingStudents();
+        const ok = res?.data?.success || res?.success;
+        const data = res?.data?.data || res?.data || res;
+        if (!ok || !data) throw new Error(res?.data?.message || 'تعذر جلب تقرير السعة');
         this.subscriptionCapacity = {
           currentStudents: Number(data.currentStudents) || 0,
           maxStudents: Number(data.maxStudents) || 0,
           remaining: Number(data.remaining) || 0,
           canAdd: Boolean(data.canAdd),
-        }
+        };
       } catch (err) {
-        console.warn('Failed to fetch remaining students:', err)
-        this.subscriptionCapacityError =
-          err?.response?.data?.message ||
-          err?.message ||
-          'تعذر جلب تقرير السعة، يرجى المحاولة لاحقًا'
+        this.subscriptionCapacityError = err?.response?.data?.message || err?.message || 'تعذر جلب تقرير السعة';
       } finally {
-        this.subscriptionCapacityLoading = false
+        this.subscriptionCapacityLoading = false;
       }
     },
 
+    // -------- Public news (hero carousel) -------------------
     async getPublicNews() {
       try {
-        // ✅ جلب البيانات من API
         const res = await teacher_api.getPublicNews();
-        const payload = res.data?.data ? res.data : res;
-        const items = Array.isArray(payload.data) ? payload.data : [];
-        const baseUrl = payload.content_url || '';
-
+        const payload = res?.data?.data ? res.data : res;
+        const items = Array.isArray(payload?.data) ? payload.data : [];
+        const baseUrl = payload?.content_url || '';
         this.appScreenshots = items.map((n) => ({
           id: n.id,
           title: n.title,
           description: n.details,
-          image: baseUrl ? `${baseUrl}${n.imageUrl}` : n.imageUrl,
+          image: baseUrl && n.imageUrl ? `${baseUrl}${n.imageUrl}` : n.imageUrl,
           raw: n,
         }));
       } catch (err) {
-        // ⚠️ عرض رسالة خطأ جميلة للمستخدم
-        this.snackbar = {
-          show: true,
-          message: "تعذر تحميل الباقات. يرجى المحاولة لاحقًا",
-          color: "error",
-        };
-        console.warn("⚠️ Failed to fetch pricing plans:", err);
+        console.warn('Failed to fetch public news:', err);
       }
     },
 
@@ -1375,13 +1194,14 @@ export default {
       this.newsDialog = true;
     },
 
+    // -------- Notifications (logged-in only) ----------------
     async fetchNotifications(page = 1, append = false) {
       try {
-        this.notificationsLoading = true
-        const res = await teacher_api.getNotifications({ page, limit: this.notificationsLimit })
-        const payload = res.data?.data ? res.data : res
-        const items = Array.isArray(payload.data) ? payload.data : []
-        const baseUrl = payload.content_url || ''
+        this.notificationsLoading = true;
+        const res = await teacher_api.getNotifications({ page, limit: this.notificationsLimit });
+        const payload = res?.data?.data ? res.data : res;
+        const items = Array.isArray(payload?.data) ? payload.data : [];
+        const baseUrl = payload?.content_url || '';
         const mapped = items.map((n) => ({
           id: n.id,
           title: n.title,
@@ -1392,515 +1212,861 @@ export default {
           image: n.data?.imageUrl ? (baseUrl ? `${baseUrl}${n.data.imageUrl}` : n.data.imageUrl) : null,
           url: n.data?.url || null,
           raw: n,
-        }))
-        this.notificationsList = append ? [...this.notificationsList, ...mapped] : mapped
-        this.unreadCount = this.notificationsList.filter(n => !n.is_read).length
-        const pagination = payload.pagination || {}
-        const totalPages = pagination.totalPages || (mapped.length < this.notificationsLimit ? page : page + 1)
-        this.notificationsHasMore = page < totalPages && mapped.length > 0
-        this.notificationsPage = page
+        }));
+        this.notificationsList = append ? [...this.notificationsList, ...mapped] : mapped;
+        this.unreadCount = this.notificationsList.filter((n) => !n.is_read).length;
+        const pagination = payload?.pagination || {};
+        const totalPages = pagination.totalPages || (mapped.length < this.notificationsLimit ? page : page + 1);
+        this.notificationsHasMore = page < totalPages && mapped.length > 0;
+        this.notificationsPage = page;
       } catch (err) {
-        this.snackbar = { show: true, message: 'تعذر تحميل الإشعارات', color: 'error' }
-        console.warn('Failed to fetch notifications:', err)
+        this.snackbar = { show: true, message: 'تعذر تحميل الإشعارات', color: 'error' };
+        console.warn('Failed to fetch notifications:', err);
       } finally {
-        this.notificationsLoading = false
+        this.notificationsLoading = false;
       }
     },
-
     refreshNotifications() {
-      this.notificationsPage = 1
-      this.fetchNotifications(1, false)
+      this.notificationsPage = 1;
+      this.fetchNotifications(1, false);
     },
-
     loadMoreNotifications() {
-      const next = this.notificationsPage + 1
-      this.fetchNotifications(next, true)
+      this.fetchNotifications(this.notificationsPage + 1, true);
     },
-
     async openNotification(n) {
-      this.selectedNotification = n
-      this.notificationDialog = true
-      this.notificationsMenu = false
-      if (n && !n.is_read && n.id) {
-        await this.markNotificationAsRead(n.id)
-      }
+      this.selectedNotification = n;
+      this.notificationDialog = true;
+      this.notificationsMenu = false;
+      if (n && !n.is_read && n.id) await this.markNotificationAsRead(n.id);
     },
-
     async markNotificationAsRead(id) {
       try {
-        if (!id) return
-        await teacher_api.markNotificationRead(id)
-        const idx = this.notificationsList.findIndex(x => x.id === id)
+        if (!id) return;
+        await teacher_api.markNotificationRead(id);
+        const idx = this.notificationsList.findIndex((x) => x.id === id);
         if (idx > -1 && !this.notificationsList[idx].is_read) {
-          this.notificationsList[idx].is_read = true
-          this.unreadCount = Math.max(0, this.unreadCount - 1)
+          this.notificationsList[idx].is_read = true;
+          this.unreadCount = Math.max(0, this.unreadCount - 1);
         }
       } catch (err) {
-        console.warn('Failed to mark notification as read:', err)
+        console.warn('Failed to mark notification as read:', err);
       }
-    },
-
-    async onDemoNotificationClick(notification) {
-      // يحاول تعليم الإشعار إن كان له معرف صالح (للقائمة التجريبية قد لا يكون ذلك متاحًا)
-      try {
-        if (notification?.id) await teacher_api.markNotificationRead(notification.id)
-      } catch { }
     },
 
     formatDate(d) {
-      try {
-        return new Date(d).toLocaleString('en-IQ')
-      } catch {
-        return d
-      }
+      try { return new Date(d).toLocaleString('en-IQ'); } catch { return d; }
     },
 
-    async selectPlan(plan) {
+    // -------- Contact form (EmailJS) ------------------------
+    async submitContact() {
+      this.contactError = '';
+      this.contactSuccess = '';
+      const { name, email, message } = this.contactForm;
+      if (!name || !email || !message) {
+        this.contactError = 'يرجى تعبئة الاسم والبريد والرسالة';
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        this.contactError = 'يرجى إدخال بريد إلكتروني صالح';
+        return;
+      }
+      this.contactLoading = true;
       try {
-        const res = await teacher_api.activateSubscriptionPackage(plan.id)
-        const ok = res?.data?.success || res?.success
-        const msg = res?.data?.message || res?.message || `تم تفعيل باقة ${plan.name} بنجاح`
-
-        this.snackbar = {
-          show: true,
-          message: msg,
-          color: ok ? 'success' : 'error',
+        const SERVICE_ID = 'service_e6wa64v';
+        const TEMPLATE_ID = 'template_rn0tt0u';
+        const PUBLIC_KEY = 'km9zF8cdDOxdFruui';
+        const templateParams = {
+          from_name: name,
+          from_email: email,
+          subject: this.contactForm.subject || 'رسالة من نموذج التواصل',
+          message,
+        };
+        const response = await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY);
+        if (response.status === 200) {
+          this.contactSuccess = '✅ تم إرسال رسالتك بنجاح وسنعاود التواصل قريباً';
+          this.contactForm = { name: '', email: '', subject: '', message: '' };
+        } else {
+          this.contactError = 'حدث خطأ أثناء الإرسال، حاول لاحقاً';
         }
       } catch (err) {
-        console.warn('Failed to activate subscription package:', err)
-        const msg = err?.response?.data?.message || err?.response?.data?.errors?.[0] || 'تعذر تفعيل الباقة، يرجى المحاولة لاحقًا'
-        this.snackbar = {
-          show: true,
-          message: msg,
-          color: 'error',
-        }
+        console.warn('EmailJS Error:', err);
+        this.contactError = 'تعذر إرسال الرسالة، يرجى المحاولة لاحقاً';
+      } finally {
+        this.contactLoading = false;
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <script setup>
-definePage({
-  meta: {
-    layout: "blank",
-  },
-});
+definePage({ meta: { layout: 'blank' } });
 </script>
+
 <style scoped>
+/* =====================================================
+   Mulhim IQ — Landing v2 styles
+   Brand palette:
+     navy   #0B2545   (primary)
+     orange #FF8A00   (warning / brand accent)
+     sky    #3FA9F5   (secondary)
+   ===================================================== */
+
+/* Brand accent text class (Vuetify theme has no "accent" color name; this
+   gives `.text-accent` a stable definition wherever it's used. */
+.text-accent { color: #FF8A00 !important; }
+
+/* ---------- Navbar ---------- */
+/* Hero background is dark navy; a translucent white navbar disappears against
+   it. Use solid white with a strong shadow so the bar always reads. */
 .navbar-glass {
-  backdrop-filter: blur(12px);
-  background: rgba(11, 37, 69, 90%) !important;
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border-block-end: 1px solid rgba(11, 37, 69, 0.08);
+  box-shadow: 0 2px 16px rgba(11, 37, 69, 0.08);
+  transition: box-shadow .25s ease, background-color .25s ease;
 }
-
-.hero-section {
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-secondary)) 100%);
-  min-block-size: 100vh;
-  padding-block-start: 80px;
+.navbar-scrolled {
+  background-color: rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 6px 28px rgba(11, 37, 69, 0.10);
 }
-
-.dashboard-preview-section {
-  background: linear-gradient(135deg, #e6f7f1 0%, #d9f5ff 100%);
+.brand-link { transition: opacity .2s ease; }
+.brand-link:hover { opacity: .85; }
+.brand-logo { transition: transform .35s cubic-bezier(.34, 1.56, .64, 1); }
+.brand-link:hover .brand-logo { transform: rotate(-6deg) scale(1.05); }
+.brand-text {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  font-family: 'Cairo', sans-serif;
 }
-
-.testimonials-section {
-  background: linear-gradient(135deg, #0b2545 0%, #3fa9f5 100%);
-}
-
-.cta-section {
-  background: linear-gradient(135deg, #0b2545 0%, #6ef2b4 100%);
-}
-
-.footer-section {
-  background: linear-gradient(135deg, #0b2545 0%, #3fa9f5 100%);
-}
-
-@media (max-width: 960px) {
-  .responsive-row {
-    flex-direction: column-reverse !important;
-  }
-}
-
-.floating-card {
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-preview-section {
-    display: none;
-  }
-
-  .hero-section {
-    padding-block-start: 100px;
-    text-align: center;
-  }
-
-  .dashboard-sidebar {
-    inline-size: 60px;
-  }
-
-  .dashboard-sidebar .v-list-item-title {
-    display: none;
-  }
-
-  .pricing-featured {
-    transform: scale(1);
-  }
-}
-
-.v-list-item-title {
-  white-space: pre-wrap;
-}
-
-@media (max-width: 960px) {
-  .hero-section {
-    padding-block-start: 100px;
-  }
-
-  .phone-mockup {
-    max-inline-size: 280px;
-  }
-
-  .phone-frame {
-    padding: 10px;
-    border-radius: 30px;
-  }
-
-  .phone-notch {
-    block-size: 20px;
-    inline-size: 100px;
-  }
-
-  .phone-screen {
-    border-radius: 24px;
-  }
-
-  .hero-content {
-    text-align: center;
-  }
-
-  .hero-content .d-flex {
-    justify-content: center;
-  }
-
-  .download-section {
-    text-align: center;
-  }
-}
-
-@media (max-width: 600px) {
-  .phone-mockup {
-    max-inline-size: 240px;
-  }
-
-  .hero-section h1 {
-    font-size: 1.75rem !important;
-  }
-
-  .hero-section .text-h6 {
-    font-size: 1rem !important;
-  }
-
-  .download-section h3 {
-    font-size: 1rem !important;
-  }
-
-  .download-section .v-btn {
-    font-size: 0.875rem;
-    padding-inline: 12px;
-  }
-}
-
-.ss {
-  color: white !important;
-}
-
-.ss .v-icon {
-  color: white !important;
-}
-
-/* Typography */
-.text-h1,
-.text-h2,
-.text-h3,
-.text-h4,
-.text-h5,
-.text-h6 {
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.text-body-1,
-.text-body-2 {
-  line-height: 1.6;
-}
-
-/* Utilities */
-.v-btn {
-  border-radius: 8px;
+.brand-sub {
+  font-size: .72rem;
+  color: rgba(11, 37, 69, .55);
   font-weight: 600;
+  margin-top: 2px;
+}
+.nav-links .nav-link {
+  font-weight: 600;
+  font-size: .92rem;
+  color: rgba(11, 37, 69, .82);
   text-transform: none;
+  letter-spacing: 0;
+}
+.nav-links .nav-link:hover { color: var(--v-theme-primary, #0B2545); }
+.cta-btn {
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  height: 40px;
 }
 
-.v-card {
-  border-radius: 12px;
+/* ---------- HERO ---------- */
+.hero-section {
+  position: relative;
+  min-height: 100vh;
+  padding-block-start: 120px;
+  padding-block-end: 80px;
+  /* Deeper, cooler navy base — less brown undertones, more modern blue.
+     The base color is intentionally darker than before so the orbs read
+     as luminous accents instead of clashing washes. */
+  background:
+    linear-gradient(180deg, #050d1f 0%, #08162d 40%, #0a1d3c 100%);
+  overflow: hidden;
+  isolation: isolate;
+}
+/* Layered gradients form a soft mesh of cool blues + cyan, with the orange
+   accent intentionally far from the headline area. */
+.hero-mesh {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    /* sky blue glow — top-left (LTR end) */
+    radial-gradient(38% 32% at 18% 22%, rgba(63, 169, 245, 0.32), transparent 60%),
+    /* teal glow — bottom-right (LTR start), behind phone */
+    radial-gradient(40% 36% at 78% 78%, rgba(110, 242, 180, 0.20), transparent 65%),
+    /* subtle indigo wash for depth */
+    radial-gradient(50% 48% at 50% 55%, rgba(20, 60, 120, 0.32), transparent 70%);
+  filter: saturate(115%);
+}
+.hero-orb {
+  position: absolute; border-radius: 50%; filter: blur(80px); z-index: 0;
+  animation: orb-drift 14s ease-in-out infinite;
+  pointer-events: none;
+  will-change: transform;
+}
+/* Cyan orb — top-left, gives a cool luminous corner */
+.orb-1 {
+  width: 420px; height: 420px;
+  background: #3FA9F5;
+  inset-block-start: -160px; inset-inline-start: -120px;
+  opacity: .35;
+}
+/* Teal orb — bottom-right, behind the phone */
+.orb-2 {
+  width: 360px; height: 360px;
+  background: #6EF2B4;
+  inset-block-end: -120px; inset-inline-end: -100px;
+  opacity: .22;
+  animation-delay: -4s;
+}
+/* Orange accent — DELIBERATELY OFFSET to the LTR bottom-left corner where
+   the floating widgets sit, NOT under the headline area. Small + soft. */
+.orb-3 {
+  width: 240px; height: 240px;
+  background: #FF8A00;
+  inset-block-end: 8%; inset-inline-start: 18%;
+  opacity: .18;
+  animation-delay: -8s;
+}
+@keyframes orb-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(18px, -22px) scale(1.04); }
+}
+.hero-grain {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: .045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.hero-inner { position: relative; z-index: 2; }
+.hero-row { min-height: calc(100vh - 152px); }
+.hero-copy { color: white; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 14px; margin-block-end: 22px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  font-size: .82rem; font-weight: 600;
+}
+.eyebrow-text { color: rgba(255, 255, 255, 0.92); }
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #6ef2b4; box-shadow: 0 0 0 0 rgba(110, 242, 180, 0.6);
+  animation: pulse 1.8s infinite;
+}
+.live-dot.ok { background: #6ef2b4; box-shadow: 0 0 0 0 rgba(110, 242, 180, 0.6); }
+.live-dot.down { background: #E53935; box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.5); animation: none; }
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(110, 242, 180, 0.6); }
+  70%  { box-shadow: 0 0 0 8px rgba(110, 242, 180, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(110, 242, 180, 0); }
+}
+.hero-title {
+  font-family: 'Cairo', sans-serif;
+  font-size: clamp(1.85rem, 4.4vw, 3.4rem);
+  font-weight: 900;
+  line-height: 1.45;
+  letter-spacing: -.01em;
+  margin-block-end: 22px;
+  padding-block-start: 6px;
+  /* Explicit white + subtle dark text-shadow so the first line stays legible
+     even if any background gradient bleeds behind it. */
+  color: #FFFFFF !important;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+}
+.hero-title-accent {
+  display: inline-block;
+  background: linear-gradient(120deg, #ffb260 0%, #ff8a00 50%, #ffa233 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  padding-block: 4px 8px;
+  /* The gradient-clip kills text-shadow, so use a drop-shadow filter instead
+     for the same depth effect. */
+  filter: drop-shadow(0 2px 14px rgba(255, 138, 0, 0.35));
+}
+.hero-sub {
+  font-size: clamp(1rem, 1.4vw, 1.18rem);
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.95;
+  max-inline-size: 58ch;
+  margin-block-end: 32px;
+  font-weight: 400;
+}
+.hero-ctas { display: flex; flex-wrap: wrap; gap: 14px; margin-block-end: 32px; }
+/* Primary CTA: accent orange — high contrast against the navy hero. */
+.cta-primary {
+  height: 56px; padding-inline: 30px;
+  font-weight: 800; font-size: 1.02rem; letter-spacing: 0; text-transform: none;
+  box-shadow: 0 14px 36px rgba(255, 138, 0, 0.40);
+}
+.cta-primary :deep(.v-btn__content),
+.cta-primary .cta-text { color: white !important; }
+.cta-primary:hover { box-shadow: 0 18px 44px rgba(255, 138, 0, 0.55); }
+
+/* Secondary CTA: outlined white. Force the text + icon to be opaque white
+   because Vuetify's outlined variant uses the `color` prop for the border
+   and can wash out the inner text on dark backgrounds. */
+.cta-secondary {
+  height: 56px; padding-inline: 28px;
+  border: 2px solid rgba(255, 255, 255, 0.55) !important;
+  background: rgba(255, 255, 255, 0.05);
+  font-weight: 700; font-size: 1.02rem; letter-spacing: 0; text-transform: none;
+  backdrop-filter: blur(6px);
+}
+.cta-secondary :deep(.v-btn__content),
+.cta-secondary .cta-text,
+.cta-secondary :deep(.v-icon) { color: white !important; }
+.cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.85) !important;
+}
+.hero-trust { display: flex; flex-wrap: wrap; gap: 22px; margin-block-end: 22px; }
+.trust-item {
+  display: inline-flex; align-items: center;
+  color: rgba(255, 255, 255, 0.88); font-size: .92rem; font-weight: 600;
+}
+.trust-icon { color: #6ef2b4; }
+.hero-stores { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-block-start: 4px; }
+.stores-label { color: rgba(255, 255, 255, 0.72); font-size: .88rem; font-weight: 500; }
+.store-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: 12px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: white; text-decoration: none; font-weight: 700; font-size: .88rem;
+  backdrop-filter: blur(8px);
+  transition: transform .2s ease, background .2s ease;
+}
+.store-pill:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.16); }
+
+/* Phone mockup */
+.hero-visual { position: relative; }
+.phone-wrap {
+  position: relative; display: flex; justify-content: center; align-items: center;
+  padding-block: 24px;
+}
+.phone-glow {
+  position: absolute; inset: 0;
+  background: radial-gradient(closest-side, rgba(63, 169, 245, .35), transparent 70%);
+  filter: blur(40px); z-index: 0;
+}
+.phone-frame {
+  position: relative; z-index: 1;
+  width: 280px; height: 580px;
+  background: #0b132b; border-radius: 44px;
+  padding: 14px;
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+}
+.phone-notch {
+  position: absolute; inset-block-start: 18px; inset-inline: 50%; transform: translateX(50%);
+  width: 110px; height: 26px; background: #06080F; border-radius: 14px; z-index: 3;
+}
+.phone-screen {
+  width: 100%; height: 100%; border-radius: 32px; overflow: hidden; background: #0b132b; position: relative;
+}
+.phone-carousel { width: 100%; height: 100%; }
+.phone-caption {
+  position: absolute; inset-block-end: 0; inset-inline: 0;
+  padding: 20px 16px 24px;
+  background: linear-gradient(to top, rgba(0, 0, 0, .92) 0%, rgba(0, 0, 0, .55) 60%, rgba(0, 0, 0, 0) 100%);
+  color: white;
+}
+.phone-caption h4 { font-size: .98rem; font-weight: 700; margin-block-end: 4px; }
+.phone-caption p { font-size: .78rem; opacity: .85; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.phone-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; color: white;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255, 138, 0, .18), transparent 55%),
+    linear-gradient(160deg, #0b2545 0%, #122e54 100%);
+}
+.phone-empty-logo { filter: drop-shadow(0 6px 24px rgba(255, 138, 0, 0.45)); }
+.phone-empty-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-block-start: 4px;
+  letter-spacing: -.01em;
+}
+.phone-empty-sub {
+  font-size: .76rem;
+  opacity: .72;
+  margin-block-start: 6px;
+  text-align: center;
 }
 
-.v-chip {
-  border-radius: 20px;
+/* Floating data widgets — balanced around the phone (top-right / mid-left / bottom-right) */
+.float-card {
+  position: absolute; z-index: 4;
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
+  min-width: 168px;
+  animation: float-y 5s ease-in-out infinite;
+}
+.float-card.is-loading { opacity: .65; }
+/* RTL-aware positioning (inset-inline-start/end flips automatically with dir="rtl"). */
+.float-1 { inset-block-start: 8%;  inset-inline-end: -32px; animation-delay: 0s; }
+.float-2 { inset-block-start: 42%; inset-inline-start: -38px; animation-delay: -1.5s; }
+.float-3 { inset-block-end: 6%;  inset-inline-end: -20px; animation-delay: -3s; }
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+.float-avatar { box-shadow: 0 6px 18px rgba(11, 37, 69, 0.25); }
+.float-label { font-size: .74rem; color: rgba(11, 37, 69, .62); font-weight: 600; }
+.float-value { font-size: 1.2rem; font-weight: 800; color: #0b2545; line-height: 1.1; margin-block-start: 2px; }
+
+.hero-fade-bottom {
+  position: absolute; inset-block-end: 0; inset-inline: 0; height: 80px; z-index: 2;
+  background: linear-gradient(to bottom, transparent 0%, #fbfcfe 100%);
+  pointer-events: none;
+}
+
+/* ---------- LIVE STATS STRIP ---------- */
+.stats-strip {
+  background: #fbfcfe;
+  padding-block: 28px;
+  border-block-end: 1px solid rgba(11, 37, 69, 0.06);
+}
+.stats-grid {
+  display: grid; gap: 18px;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: center;
+}
+.stat-cell {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 12px;
+}
+.stat-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.stat-icon-primary  { background: rgba(11, 37, 69, .08); }
+.stat-icon-accent   { background: rgba(255, 138, 0, .10); }
+.stat-icon-success  { background: rgba(16, 185, 129, .10); }
+.stat-icon-warning  { background: rgba(255, 138, 0, .10); }
+.stat-icon-secondary{ background: rgba(63, 169, 245, .10); }
+.stat-cell-label { font-size: .78rem; color: rgba(11, 37, 69, .6); font-weight: 600; }
+.stat-cell-value {
+  font-size: 1.05rem; font-weight: 800; color: #0b2545;
+  display: inline-flex; align-items: center; gap: 6px; line-height: 1.1;
+}
+@media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ---------- Generic section heads ---------- */
+.section-head { text-align: center; margin-block-end: 56px; }
+.section-chip {
+  display: inline-block; padding: 6px 14px; border-radius: 999px;
+  background: rgba(11, 37, 69, .08); color: #0b2545;
+  font-weight: 700; font-size: .82rem; margin-block-end: 14px;
+}
+.section-chip-accent { background: rgba(255, 138, 0, .14); color: #b35e00; }
+.section-chip-success { background: rgba(16, 185, 129, .12); color: #047857; }
+.section-title {
+  font-family: 'Cairo', sans-serif;
+  font-size: clamp(1.7rem, 3vw, 2.6rem);
+  font-weight: 900;
+  letter-spacing: -.015em;
+  color: #0b2545;
+  margin-block-end: 12px;
+  line-height: 1.25;
+}
+.section-sub {
+  font-size: clamp(.95rem, 1.2vw, 1.1rem);
+  color: rgba(11, 37, 69, .68);
+  line-height: 1.85;
+  max-inline-size: 70ch;
+  margin-inline: auto;
+}
+
+/* ---------- FEATURES ---------- */
+.features-section { padding-block: 96px; background: #fbfcfe; }
+.feature-card-v2 {
+  position: relative;
+  border-radius: 20px !important;
+  padding: 28px 24px;
+  background: white;
+  border: 1px solid rgba(11, 37, 69, .07);
+  transition: transform .35s cubic-bezier(.34, 1.56, .64, 1), box-shadow .35s ease, border-color .35s ease;
+  overflow: hidden;
+}
+.feature-card-v2.is-hovered { transform: translateY(-6px); border-color: var(--feature-color, #0b2545); }
+.feature-glow {
+  position: absolute; inset-block-start: -40%; inset-inline-end: -40%;
+  width: 220px; height: 220px; border-radius: 50%;
+  background: var(--feature-color, #0b2545); opacity: 0; filter: blur(50px);
+  transition: opacity .4s ease;
+}
+.feature-card-v2.is-hovered .feature-glow { opacity: .12; }
+.feature-icon-v2 {
+  width: 56px; height: 56px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--feature-color) 12%, white);
+  margin-block-end: 18px;
+}
+.feature-title {
+  font-size: 1.18rem; font-weight: 800; color: #0b2545; margin-block-end: 8px;
+}
+.feature-desc {
+  color: rgba(11, 37, 69, .68); line-height: 1.85; font-size: .95rem;
+  margin-block-end: 16px;
+}
+.feature-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.feature-tag {
+  font-size: .72rem; font-weight: 600;
+  padding: 4px 10px; border-radius: 999px;
+  background: rgba(11, 37, 69, .06); color: rgba(11, 37, 69, .72);
+}
+
+/* ---------- PREVIEW (smart dashboard showcase) ---------- */
+.preview-section {
+  padding-block: 96px;
+  background: linear-gradient(160deg, #061a2e 0%, #0b2545 60%, #0e2e54 100%);
+  position: relative;
+  overflow: hidden;
+}
+.preview-section::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(40% 35% at 80% 20%, rgba(255, 138, 0, 0.20), transparent 60%),
+    radial-gradient(35% 40% at 15% 80%, rgba(63, 169, 245, 0.18), transparent 65%);
+  z-index: 0;
+}
+.preview-shell {
+  position: relative; z-index: 1;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  margin-block-start: 8px;
+}
+.preview-chrome {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 18px;
+  background: #f4f6fa;
+  border-block-end: 1px solid rgba(11, 37, 69, .08);
+}
+.chrome-dots { display: flex; gap: 6px; }
+.chrome-dots .dot { width: 12px; height: 12px; border-radius: 50%; }
+.dot-red { background: #ff5f57; } .dot-amber { background: #febc2e; } .dot-green { background: #28c840; }
+.chrome-address {
+  background: white; padding: 4px 14px; border-radius: 8px;
+  font-size: .78rem; color: rgba(11, 37, 69, .6);
+  border: 1px solid rgba(11, 37, 69, .06);
+}
+.chrome-spacer { flex: 1; }
+.preview-body { display: grid; grid-template-columns: 220px 1fr; min-height: 540px; }
+@media (max-width: 900px) { .preview-body { grid-template-columns: 1fr; } }
+.preview-sidebar {
+  background: #0b2545; color: white; padding: 22px 18px;
+  display: flex; flex-direction: column;
+}
+.preview-nav-item {
+  display: flex; align-items: center;
+  padding: 10px 12px; border-radius: 10px;
+  font-size: .9rem; color: rgba(255, 255, 255, .8); font-weight: 600;
+  margin-block-end: 4px; cursor: default;
+}
+.preview-nav-item.active { background: rgba(255, 255, 255, .10); color: white; }
+.preview-content { padding: 22px 24px; background: #f8fafd; display: flex; flex-direction: column; gap: 18px; }
+.preview-topbar { display: flex; align-items: center; gap: 12px; }
+.topbar-search {
+  flex: 1; padding: 10px 14px; border-radius: 10px;
+  background: white; border: 1px solid rgba(11, 37, 69, .08);
+  font-size: .85rem; color: rgba(11, 37, 69, .55);
+  display: flex; align-items: center;
+}
+.topbar-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 999px;
+  background: rgba(16, 185, 129, .12); color: #047857;
+  font-size: .76rem; font-weight: 700;
+}
+.preview-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+@media (max-width: 900px) { .preview-stats { grid-template-columns: repeat(2, 1fr); } }
+.preview-stat {
+  background: white; border-radius: 14px; padding: 14px 16px;
+  border: 1px solid rgba(11, 37, 69, .06);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.stat-top { display: flex; align-items: center; justify-content: space-between; }
+.stat-label { font-size: .8rem; color: rgba(11, 37, 69, .6); font-weight: 600; }
+.stat-num { font-size: 1.4rem; font-weight: 900; color: #0b2545; }
+.stat-spark { display: flex; align-items: flex-end; gap: 3px; height: 32px; margin-block-start: 4px; }
+.spark-bar { width: 6px; border-radius: 2px; opacity: .85; }
+.preview-split { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; }
+@media (max-width: 900px) { .preview-split { grid-template-columns: 1fr; } }
+.preview-panel { background: white; border: 1px solid rgba(11, 37, 69, .06); border-radius: 14px; padding: 14px 16px; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; margin-block-end: 10px; }
+.activity-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 4px; border-block-start: 1px dashed rgba(11, 37, 69, .06);
+}
+.activity-row:first-of-type { border-block-start: none; }
+.activity-title { font-size: .88rem; font-weight: 600; color: #0b2545; }
+.activity-time { font-size: .72rem; color: rgba(11, 37, 69, .55); }
+.insight-row {
+  display: flex; align-items: flex-start;
+  padding: 10px; border-radius: 10px; margin-block-end: 6px;
+  background: rgba(11, 37, 69, .04);
+}
+.insight-success { background: rgba(16, 185, 129, .08); }
+.insight-warning { background: rgba(255, 138, 0, .10); }
+.insight-primary { background: rgba(11, 37, 69, .06); }
+.insight-secondary { background: rgba(63, 169, 245, .10); }
+.insight-title { font-weight: 700; font-size: .88rem; color: #0b2545; }
+.insight-sub { font-size: .76rem; color: rgba(11, 37, 69, .65); margin-block-start: 2px; }
+
+/* ---------- HOW IT WORKS ---------- */
+.how-section { padding-block: 96px; background: #fbfcfe; }
+.steps-rail {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+  position: relative;
+}
+@media (max-width: 900px) { .steps-rail { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .steps-rail { grid-template-columns: 1fr; } }
+.step-card {
+  position: relative;
+  background: white;
+  border-radius: 18px;
+  padding: 28px 22px;
+  border: 1px solid rgba(11, 37, 69, .07);
+  text-align: center;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.step-card:hover { transform: translateY(-4px); box-shadow: 0 18px 36px rgba(11, 37, 69, .08); }
+.step-num {
+  position: absolute; inset-block-start: -16px; inset-inline-start: 24px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #0b2545; color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: .92rem;
+}
+.step-icon {
+  width: 64px; height: 64px; border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 4px auto 18px;
+}
+.step-title { font-size: 1.05rem; font-weight: 800; color: #0b2545; margin-block-end: 6px; }
+.step-desc { color: rgba(11, 37, 69, .68); line-height: 1.75; font-size: .9rem; }
+
+/* ---------- PRICING ---------- */
+.pricing-section { padding-block: 96px; background: white; }
+.capacity-card {
+  border: 1px solid rgba(11, 37, 69, .08);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(11, 37, 69, .03) 0%, rgba(63, 169, 245, .04) 100%);
+}
+.capacity-row { display: flex; flex-wrap: wrap; gap: 26px; }
+.cap-cell { min-width: 120px; }
+.cap-label { font-size: .76rem; color: rgba(11, 37, 69, .6); font-weight: 600; }
+.cap-value { font-size: 1.15rem; font-weight: 800; color: #0b2545; margin-block-start: 2px; }
+.pricing-card-v2 {
+  position: relative;
+  border-radius: 20px !important;
+  padding: 28px 24px;
+  background: white;
+  border: 1px solid rgba(11, 37, 69, .07);
+  display: flex; flex-direction: column;
+  transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+.pricing-card-v2.is-hovered { transform: translateY(-6px); }
+.pricing-card-v2.featured {
+  background: linear-gradient(160deg, #0b2545 0%, #103261 100%);
+  color: white;
+  border: none;
+  transform: scale(1.02);
+}
+.pricing-card-v2.featured .pricing-name,
+.pricing-card-v2.featured .pricing-price,
+.pricing-card-v2.featured .pricing-period { color: white; }
+.pricing-card-v2.featured .pricing-features li { color: rgba(255, 255, 255, .9); }
+.pricing-card-v2.featured .pricing-features .v-icon { color: #6ef2b4 !important; }
+.featured-flag {
+  position: absolute; inset-block-start: -14px; inset-inline-start: 50%;
+  transform: translateX(50%);
+  background: linear-gradient(135deg, #ff8a00 0%, #ffb766 100%);
+  color: white; font-weight: 800; font-size: .78rem;
+  padding: 6px 14px; border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(255, 138, 0, .35);
+}
+.pricing-head { text-align: center; }
+.pricing-icon-wrap {
+  width: 64px; height: 64px; border-radius: 18px;
+  background: rgba(11, 37, 69, .08);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+}
+.pricing-icon-wrap.is-featured { background: rgba(255, 255, 255, .15); }
+.pricing-name { font-size: 1.2rem; font-weight: 800; color: #0b2545; margin-block-end: 8px; }
+.pricing-price { display: flex; align-items: baseline; justify-content: center; gap: 6px; }
+.price-amount { font-size: 1.9rem; font-weight: 900; color: #0b2545; letter-spacing: -.02em; }
+.pricing-period { font-size: .82rem; color: rgba(11, 37, 69, .6); margin-block-start: 2px; }
+.pricing-features { list-style: none; padding: 0; margin: 0; }
+.pricing-features li {
+  display: flex; align-items: center;
+  padding-block: 6px;
+  color: rgba(11, 37, 69, .78); font-size: .9rem;
+}
+.pricing-cta {
+  font-weight: 700; text-transform: none; letter-spacing: 0;
+}
+.empty-block { padding-block: 60px; color: rgba(11, 37, 69, .65); }
+.empty-block h3 { font-weight: 700; color: #0b2545; }
+
+/* ---------- CTA ---------- */
+.cta-section {
+  position: relative;
+  padding-block: 80px;
+  background: linear-gradient(135deg, #0b2545 0%, #122e54 50%, #1c3a6e 100%);
+  overflow: hidden;
+}
+.cta-glow {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(40% 60% at 80% 30%, rgba(255, 138, 0, 0.30), transparent 60%),
+    radial-gradient(40% 60% at 20% 70%, rgba(63, 169, 245, 0.25), transparent 60%);
+  z-index: 0;
+}
+.cta-inner {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 28px; align-items: center;
+}
+@media (max-width: 900px) { .cta-inner { grid-template-columns: 1fr; text-align: center; } }
+.cta-text h2 {
+  font-family: 'Cairo', sans-serif;
+  color: white; font-weight: 900; font-size: clamp(1.5rem, 2.4vw, 2.2rem);
+  margin-block-end: 8px; line-height: 1.3;
+}
+.cta-text p { color: rgba(255, 255, 255, .85); font-size: 1.05rem; }
+.cta-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.cta-primary-light {
+  height: 56px; padding-inline: 28px;
+  font-weight: 800; text-transform: none; letter-spacing: 0;
+  color: #0b2545 !important;
+}
+
+/* ---------- CONTACT ---------- */
+.contact-section { padding-block: 96px; background: #fbfcfe; }
+.contact-title { font-family: 'Cairo', sans-serif; font-weight: 900; color: #0b2545; font-size: clamp(1.6rem, 2.5vw, 2.2rem); margin-block: 12px 14px; line-height: 1.3; }
+.contact-sub { color: rgba(11, 37, 69, .7); font-size: 1.02rem; line-height: 1.85; margin-block-end: 28px; }
+.contact-card { display: flex; align-items: center; margin-block-end: 18px; }
+.contact-label { font-size: .76rem; color: rgba(11, 37, 69, .6); font-weight: 600; }
+.contact-value { font-size: 1rem; font-weight: 700; color: #0b2545; text-decoration: none; }
+.contact-form-card { background: white; border: 1px solid rgba(11, 37, 69, .08); border-radius: 18px; }
+
+/* ---------- FOOTER ---------- */
+.footer-v2 {
+  background: linear-gradient(180deg, #050d1f 0%, #08162d 100%) !important;
+  color: white !important;
+  padding-block: 64px 28px !important;
+}
+/* Force color on every text child so Vuetify's --v-theme-on-surface variable
+   (which it auto-binds inside v-footer) can't darken our copy. */
+.footer-v2 :deep(*) { color: inherit; }
+
+.footer-grid {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 36px;
+}
+@media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .footer-grid { grid-template-columns: 1fr; } }
+
+.footer-brand .brand-text { font-size: 1.4rem; }
+.footer-tagline {
+  color: rgba(255, 255, 255, .78) !important;
+  font-size: .94rem; line-height: 1.9;
+  margin-block-end: 20px;
+  max-inline-size: 38ch;
+}
+.footer-socials { display: flex; gap: 8px; }
+.social-pill {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 10px;
+  background: rgba(255, 255, 255, .08);
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, .14);
+  transition: background .2s ease, transform .2s ease, border-color .2s ease;
+}
+.social-pill:hover {
+  background: rgba(255, 138, 0, .18);
+  border-color: rgba(255, 138, 0, .45);
+  transform: translateY(-2px);
+}
+
+/* Column titles — high-contrast white with a small brand-orange underline
+   so each section is unmistakably a heading even in the dark footer. */
+.footer-col h4 {
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: #FFFFFF !important;
+  margin-block-end: 18px;
+  letter-spacing: -.005em;
+  position: relative;
+  padding-block-end: 10px;
+  display: inline-block;
+}
+.footer-col h4::after {
+  content: '';
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  width: 28px; height: 3px;
+  background: linear-gradient(90deg, #FF8A00 0%, #FFB766 100%);
+  border-radius: 2px;
+}
+.footer-col a {
+  display: block;
+  color: rgba(255, 255, 255, .72) !important;
+  text-decoration: none;
+  font-size: .94rem; padding-block: 5px;
+  cursor: pointer;
+  transition: color .2s ease, transform .2s ease;
+}
+.footer-col a:hover {
+  color: #FFB766 !important;
+  transform: translateX(-4px); /* RTL: small leftward nudge on hover */
+}
+.store-pill-dark {
+  background: rgba(255, 255, 255, .08) !important;
+  border-color: rgba(255, 255, 255, .14) !important;
+  color: white !important;
+}
+.store-pill-dark:hover {
+  background: rgba(255, 138, 0, .18) !important;
+  border-color: rgba(255, 138, 0, .45) !important;
+  transform: none;
+}
+
+.footer-bottom {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px;
+  color: rgba(255, 255, 255, .65) !important;
+  font-size: .85rem;
+}
+.footer-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: rgba(255, 255, 255, .75) !important;
   font-weight: 600;
 }
 
-.min-height-screen {
-  min-block-size: calc(100vh - 80px);
-}
+/* ---------- Utility ---------- */
+.g-3 > * { padding: 12px; }
+.cursor-pointer { cursor: pointer; }
 
-/* Carousel and Phone Mockup Styles */
-.hero-carousel-container {
-  margin-inline: auto;
-  max-inline-size: 100%;
-}
+/* Notification card polish */
+.notif-card { border-radius: 14px; }
+.notif-item { transition: background-color .2s ease; }
+.notif-item:hover { background-color: rgba(11, 37, 69, .04); }
+.notif-trigger { color: rgba(11, 37, 69, .8); }
 
-/* .hero-carousel {
-  overflow: visible !important;
-  border-radius: 20px;
-} */
-
-.phone-mockup {
-  margin-inline: auto;
-  max-inline-size: 350px;
-}
-
-.phone-frame {
-  position: relative;
-  padding: 12px;
-  border-radius: 40px;
-  aspect-ratio: 9 / 19;
-  background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 40%),
-    0 0 0 2px rgba(255, 255, 255, 10%),
-    inset 0 0 0 1px rgba(255, 255, 255, 5%);
-  inline-size: 100%;
-}
-
-.phone-screen {
-  position: relative;
-  overflow: hidden;
-  border-radius: 32px;
-  background: white;
-  block-size: 100%;
-  inline-size: 100%;
-}
-
-.phone-screen-image {
-  block-size: 100%;
-  inline-size: 100%;
-}
-
-.download-section {
-  border: 2px solid rgba(255, 255, 255, 20%);
-}
-
-/* New Styles */
-.hero-bg-glow {
-  position: absolute;
-  z-index: 1;
-  background: radial-gradient(circle, rgba(var(--v-theme-accent), 0.3) 0%, rgba(0, 0, 0, 0%) 70%);
-  block-size: 600px;
-  filter: blur(80px);
-  inline-size: 600px;
-  inset-block-start: -20%;
-  inset-inline-end: -10%;
-}
-
-.hero-shape-1 {
-  position: absolute;
-  z-index: 1;
-  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.4) 0%, rgba(0, 0, 0, 0%) 70%);
-  block-size: 400px;
-  filter: blur(60px);
-  inline-size: 400px;
-  inset-block-end: 10%;
-  inset-inline-start: -5%;
-}
-
-.text-gradient {
-  background: linear-gradient(90deg, #fff 0%, rgb(var(--v-theme-accent)) 100%);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.phone-mockup-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-}
-
-.phone-frame {
-  position: relative;
-  overflow: hidden;
-  border: 8px solid #2d2d2d;
-  border-radius: 48px;
-  background: #1a1a1a;
-  block-size: 600px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 50%);
-  inline-size: 300px;
-  max-block-size: 80vh;
-  max-inline-size: 100%;
-}
-
-.phone-notch {
-  position: absolute;
-  z-index: 10;
-  background: #2d2d2d;
-  block-size: 24px;
-  border-end-end-radius: 16px;
-  border-end-start-radius: 16px;
-  inline-size: 120px;
-  inset-block-start: 0;
-  inset-inline-start: 50%;
-  transform: translateX(-50%);
-}
-
-.phone-screen {
-  overflow: hidden;
-  border-radius: 38px;
-  background: #000;
-  block-size: 100%;
-  inline-size: 100%;
-}
-
-.floating-card {
-  position: absolute;
-  z-index: 5;
-  border-radius: 16px !important;
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 90%) !important;
-  padding-block: 12px;
-  padding-inline: 16px;
-}
-
-.card-1 {
-  animation: float 6s ease-in-out infinite;
-  inset-block-start: 20%;
-  inset-inline-start: 0;
-}
-
-.card-2 {
-  animation: float 6s ease-in-out infinite 2s;
-  inset-block-end: 20%;
-  inset-inline-end: 0;
-}
-
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-.feature-card {
-  border: 1px solid rgba(0, 0, 0, 5%);
-  border-radius: 24px;
-  background: white;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.feature-card.on-hover {
-  transform: translateY(-10px);
-}
-
-.feature-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 24px;
-  block-size: 80px;
-  inline-size: 80px;
-  margin-block: 0;
-  margin-inline: auto;
-  transition: transform 0.3s ease;
-}
-
-.feature-card:hover .feature-icon-wrapper {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.dashboard-window {
-  overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 10%);
-  border-radius: 12px;
-  background: white;
-}
-
-.window-controls .control {
-  border-radius: 50%;
-  block-size: 12px;
-  inline-size: 12px;
-}
-
-.window-controls .red {
-  background: #ff5f56;
-}
-
-.window-controls .yellow {
-  background: #ffbd2e;
-}
-
-.window-controls .green {
-  background: #27c93f;
-}
-
-.dashboard-bg-shape {
-  position: absolute;
-  z-index: 1;
-  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.05) 0%, rgba(0, 0, 0, 0%) 70%);
-  block-size: 100%;
-  inline-size: 120%;
-  inset-block-start: 50%;
-  inset-inline-start: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.pricing-card {
-  border: 1px solid rgba(0, 0, 0, 5%);
-  border-radius: 24px !important;
-  transition: all 0.3s ease;
-}
-
-.pricing-card:hover {
-  transform: translateY(-5px);
-}
-
-.hover-white {
-  transition: color 0.2s ease;
-}
-
-.hover-white:hover {
-  color: white !important;
-}
-
-.cursor-pointer {
-  cursor: pointer;
+/* Mobile spacing tweaks */
+@media (max-width: 600px) {
+  .hero-section { padding-block-start: 96px; padding-block-end: 48px; }
+  .hero-row { min-height: auto; }
+  .float-card { display: none; }
+  .features-section, .preview-section, .how-section, .pricing-section, .contact-section { padding-block: 64px; }
+  .section-head { margin-block-end: 36px; }
+  .phone-frame { width: 240px; height: 500px; }
 }
 </style>

@@ -46,6 +46,12 @@ class TeacherApi {
     const response = await axiosInstance.get(`/public/news`);
     return response;
   }
+  // Public — list of governorates the platform covers. Used by the landing
+  // "live stats" strip to advertise coverage. Anonymous-callable.
+  async getGovernorates() {
+    const response = await axiosInstance.get(`/teacher-search/governorates`);
+    return response;
+  }
 
   // wallet (Teacher)
   async getWallet() {
@@ -84,20 +90,32 @@ class TeacherApi {
   // profile
 
   // expenses
+  // GET /teacher/expenses
+  //   params: { page, limit, studyYear?, from?, to?, category?, paymentMethod?, search?, deleted? }
+  //   response: { data: TeacherExpense[], meta: { pagination, summary: { totalAmount, count, byCategory } } }
   async getExpenses(params) {
     const response = await axiosInstance.get(`/teacher/expenses`, { params })
     return response
   }
+  // POST /teacher/expenses
+  //   body: { amount, note?, expense_date?, category?, paymentMethod? }
   async addExpense(payload) {
     const response = await axiosInstance.post(`/teacher/expenses`, payload)
     return response
   }
+  // PATCH /teacher/expenses/:id
   async updateExpense(id, payload) {
-    const response = await axiosInstance.patch(`/teacher/expenses/${id}`, payload)
+    const response = await axiosInstance.patch(`/teacher/expenses/${encodeURIComponent(id)}`, payload)
     return response
   }
+  // DELETE /teacher/expenses/:id  (soft delete)
   async deleteExpense(id) {
-    const response = await axiosInstance.delete(`/teacher/expenses/${id}`)
+    const response = await axiosInstance.delete(`/teacher/expenses/${encodeURIComponent(id)}`)
+    return response
+  }
+  // PATCH /teacher/expenses/:id/restore
+  async restoreExpense(id) {
+    const response = await axiosInstance.patch(`/teacher/expenses/${encodeURIComponent(id)}/restore`)
     return response
   }
   // expenses
@@ -133,58 +151,96 @@ class TeacherApi {
   // grades
 
   // subjects
-  async getSubjects(userData) {
-    const response = await axiosInstance.get(`/subjects?page=${userData.options.page}&limit=${userData.options.limit}&search=${userData.options.search}&is_deleted=${userData.options.is_deleted}`);
+  // GET /teacher/subjects
+  //   params: { page, limit, search?, is_deleted? }
+  //   response: { data: Subject[], meta: { pagination } }
+  async getSubjects(opts = {}) {
+    const o = opts.options || opts;
+    const params = {
+      page: o.page || 1,
+      limit: o.limit || 10,
+    };
+    if (o.search != null && o.search !== '') params.search = o.search;
+    // Only forward is_deleted when explicitly true/false; null = "all" → omit.
+    if (o.is_deleted === true || o.is_deleted === false) params.is_deleted = o.is_deleted;
+    const response = await axiosInstance.get(`/teacher/subjects`, { params });
     return response;
   }
   async getAllSubjects() {
-    const response = await axiosInstance.get(`/subjects/all`);
+    const response = await axiosInstance.get(`/teacher/subjects/all`);
     return response;
   }
-  async addSubjects(userData) {
-    const response = await axiosInstance.post(`/subjects`, userData);
+  async addSubjects(payload) {
+    const response = await axiosInstance.post(`/teacher/subjects`, payload);
     return response;
   }
-  async editSubjects(id, userData) {
-    const response = await axiosInstance.put(`/subjects/${id}`, userData);
+  async editSubjects(id, payload) {
+    const response = await axiosInstance.put(`/teacher/subjects/${encodeURIComponent(id)}`, payload);
     return response;
   }
   async deleteSubjects(id) {
-    const response = await axiosInstance.delete(`/subjects/${id}`);
+    const response = await axiosInstance.delete(`/teacher/subjects/${encodeURIComponent(id)}`);
     return response;
   }
   async restoreSubjects(id) {
-    const response = await axiosInstance.patch(`/subjects/${id}/restore`);
+    const response = await axiosInstance.patch(`/teacher/subjects/${encodeURIComponent(id)}/restore`);
     return response;
   }
   // subjects
 
   // course
-  async getCourse(userData) {
-    const response = await axiosInstance.get(`/courses?page=${userData.options.page}&limit=${userData.options.limit}&search=${userData.options.search}&deleted=${userData.options.is_deleted}&grade_id=${userData.options.grade_id}&subject_id=${userData.options.subject_id}&study_year=${userData.options.study_year}`);
+  // GET /teacher/courses
+  //   params: { page, limit, search?, study_year?, grade_id?, subject_id?, deleted? }
+  //   response: { data: Course[], meta: { pagination } }
+  async getCourse(opts = {}) {
+    const o = opts.options || opts;
+    const params = {
+      page: o.page || 1,
+      limit: o.limit || 12,
+    };
+    if (o.search != null && o.search !== '') params.search = o.search;
+    if (o.study_year) params.study_year = o.study_year;
+    if (o.grade_id) params.grade_id = o.grade_id;
+    if (o.subject_id) params.subject_id = o.subject_id;
+    // Map UI's `is_deleted` (legacy name) to backend's `deleted`. Only forward
+    // when explicitly true/false; null = "all" → omit.
+    const del = o.deleted ?? o.is_deleted;
+    if (del === true || del === false) params.deleted = del;
+    const response = await axiosInstance.get(`/teacher/courses`, { params });
     return response;
   }
-  async addCourse(userData) {
-    const response = await axiosInstance.post(`/courses`, userData);
+  async addCourse(payload) {
+    const response = await axiosInstance.post(`/teacher/courses`, payload);
     return response;
   }
-  async editCourse(id, userData) {
-    const response = await axiosInstance.put(`/courses/${id}`, userData);
+  async editCourse(id, payload) {
+    const response = await axiosInstance.put(`/teacher/courses/${encodeURIComponent(id)}`, payload);
     return response;
   }
   async deleteCourse(id) {
-    const response = await axiosInstance.delete(`/courses/${id}`);
+    const response = await axiosInstance.delete(`/teacher/courses/${encodeURIComponent(id)}`);
     return response;
   }
   async restoreCourse(id) {
-    const response = await axiosInstance.patch(`/courses/${id}/restore`);
+    const response = await axiosInstance.patch(`/teacher/courses/${encodeURIComponent(id)}/restore`);
     return response;
   }
   // course
 
   // bookings
-  async getBookings(userData) {
-    const response = await axiosInstance.get(`/teacher/bookings?page=${userData.options.page}&limit=${userData.options.limit}&search=${userData.options.search}&status=${userData.options.status}&studyYear=${userData.options.study_year}`);
+  // GET /teacher/bookings
+  //   params: { page, limit, studyYear (required), status?, search? }
+  //   response: { data: Booking[], meta: { pagination } }
+  async getBookings(opts = {}) {
+    const o = opts.options || opts;
+    const params = {
+      page: o.page || 1,
+      limit: o.limit || 12,
+      studyYear: o.studyYear || o.study_year,
+    };
+    if (o.status) params.status = o.status;
+    if (o.search != null && o.search !== '') params.search = o.search;
+    const response = await axiosInstance.get(`/teacher/bookings`, { params });
     return response;
   }
   async getBookingById(id) {
@@ -229,14 +285,20 @@ class TeacherApi {
   }
 
   // sessions
-  async getSessions(userData) {
-    const page = userData?.options?.page ?? 1;
-    const limit = userData?.options?.limit ?? 10;
-    const search = userData?.options?.search ?? '';
-    const weekday = userData?.options?.weekday ?? '';
-    const courseId = userData?.options?.course_id ?? '';
-    const url = `/teacher/sessions?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&weekday=${encodeURIComponent(weekday)}&courseId=${encodeURIComponent(courseId)}`;
-    const response = await axiosInstance.get(url);
+  // GET /teacher/sessions
+  //   params: { page, limit, weekday?, courseId?, search? }
+  //   response: { data: Session[], meta: { pagination } }
+  async getSessions(opts = {}) {
+    const o = opts.options || opts;
+    const params = {
+      page: o.page || 1,
+      limit: o.limit || 50,
+    };
+    if (typeof o.weekday === 'number' && o.weekday >= 0 && o.weekday <= 6) params.weekday = o.weekday;
+    const courseId = o.courseId || o.course_id;
+    if (courseId) params.courseId = courseId;
+    if (o.search != null && o.search !== '') params.search = o.search;
+    const response = await axiosInstance.get(`/teacher/sessions`, { params });
     return response;
   }
   async createSession(payload) {
@@ -244,27 +306,27 @@ class TeacherApi {
     return response;
   }
   async updateSession(id, payload) {
-    const response = await axiosInstance.put(`/teacher/sessions/${id}`, payload);
+    const response = await axiosInstance.put(`/teacher/sessions/${encodeURIComponent(id)}`, payload);
     return response;
   }
   async deleteSession(id) {
-    const response = await axiosInstance.delete(`/teacher/sessions/${id}`);
+    const response = await axiosInstance.delete(`/teacher/sessions/${encodeURIComponent(id)}`);
     return response;
   }
   async addSessionAttendees(id, studentIds) {
-    const response = await axiosInstance.post(`/teacher/sessions/${id}/attendees`, { studentIds });
+    const response = await axiosInstance.post(`/teacher/sessions/${encodeURIComponent(id)}/attendees`, { studentIds });
     return response;
   }
   async getSessionAttendees(id) {
-    const response = await axiosInstance.get(`/teacher/sessions/${id}/attendees`);
+    const response = await axiosInstance.get(`/teacher/sessions/${encodeURIComponent(id)}/attendees`);
     return response;
   }
   async removeSessionAttendees(id, studentIds) {
-    const response = await axiosInstance.delete(`/teacher/sessions/${id}/attendees`, { data: { studentIds } });
+    const response = await axiosInstance.delete(`/teacher/sessions/${encodeURIComponent(id)}/attendees`, { data: { studentIds } });
     return response;
   }
   async endSession(id) {
-    const response = await axiosInstance.post(`/teacher/sessions/${id}/end`);
+    const response = await axiosInstance.post(`/teacher/sessions/${encodeURIComponent(id)}/end`);
     return response;
   }
   // sessions
@@ -294,15 +356,19 @@ class TeacherApi {
   }
 
   // notifications
+  // GET /teacher/notifications
+  //   params: { page, limit, q?, type?, subType?, courseId? }
+  //   response: { data: Notification[], meta: { pagination } }
   async getNotifications(options = {}) {
-    const page = options.page ?? 1;
-    const limit = options.limit ?? 20;
-    const q = options.q ?? '';
-    const type = options.type ?? '';
-    const subType = options.subType ?? '';
-    const courseId = options.courseId ?? '';
-    const url = `/teacher/notifications?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}&q=${encodeURIComponent(q)}&type=${encodeURIComponent(type)}&subType=${encodeURIComponent(subType)}&courseId=${encodeURIComponent(courseId)}`;
-    const response = await axiosInstance.get(url);
+    const params = {
+      page: options.page ?? 1,
+      limit: options.limit ?? 20,
+    };
+    if (options.q && options.q !== '') params.q = options.q;
+    if (options.type && options.type !== '') params.type = options.type;
+    if (options.subType && options.subType !== '') params.subType = options.subType;
+    if (options.courseId && options.courseId !== '') params.courseId = options.courseId;
+    const response = await axiosInstance.get(`/teacher/notifications`, { params });
     return response;
   }
   async getUnreadNotifications(limit = 20) {
@@ -470,38 +536,57 @@ class TeacherApi {
     return response;
   }
 
-  // Invoices (Teacher)
+  // ============================================================
+  // Invoices (Teacher) — aligned with simplified backend (2026-05-17)
+  // Surface:
+  //   GET    /teacher/invoices              → list + filters + pagination
+  //   GET    /teacher/invoices/summary      → KPIs
+  //   GET    /teacher/invoices/:id          → single + installments + totals
+  //   POST   /teacher/invoices              → create (cash or installments)
+  //   POST   /teacher/invoices/:id/payments → add payment (partial-friendly)
+  //   PATCH  /teacher/invoices/:id/meta     → update dates + notes
+  //   PATCH  /teacher/invoices/:id/discount → set exact discount
+  //   DELETE /teacher/invoices/:id          → soft delete
+  //   PATCH  /teacher/invoices/:id/restore  → restore
+  // ============================================================
   async listInvoices(params = {}) {
-    // params: { studyYear, status, page, limit }
+    // params: { studyYear, status?, studentId?, courseId?, paymentMode?,
+    //          search?, deleted?, page?, limit? }
     const response = await axiosInstance.get('/teacher/invoices', { params });
     return response;
   }
-  async getInvoiceDetails(invoiceId) {
-    // returns: { invoice, installments, entries }
-    const response = await axiosInstance.get(`/teacher/invoices/${encodeURIComponent(invoiceId)}`)
-    return response;
-  }
-  async getInvoiceFull(invoiceId) {
-    // returns: { invoice, installments, totals }
-    const response = await axiosInstance.get(`/teacher/invoices/${encodeURIComponent(invoiceId)}/full`)
-    return response;
-  }
   async getInvoicesSummary(params = {}) {
-    // params: { studyYear, status, deleted }
+    // returns: { totalAmount, totalPaid, totalDiscount, totalRemaining,
+    //           totalCount, paidCount, partialCount, pendingCount,
+    //           overdueCount, discountCount }
     const response = await axiosInstance.get('/teacher/invoices/summary', { params });
     return response;
   }
+  async getInvoiceFull(invoiceId) {
+    // returns: { invoice, installments[], totals }
+    // (Replaces v1 trio: getInvoiceDetails / getInvoiceFull / getInvoiceInstallments / getInvoiceEntries)
+    const response = await axiosInstance.get(`/teacher/invoices/${encodeURIComponent(invoiceId)}`);
+    return response;
+  }
   async createInvoice(payload) {
-    // payload follows the backend spec
+    // For installments: pass either `installmentsCount` (auto-split) or `installments[]` (manual).
     const response = await axiosInstance.post('/teacher/invoices', payload);
     return response;
   }
   async addInvoicePayment(invoiceId, payload) {
+    // payload: { amount, paymentMethod, installmentId?, paidAt?, notes? }
+    // Supports partial payments. Omit `installmentId` to auto-allocate across pending.
     const response = await axiosInstance.post(`/teacher/invoices/${encodeURIComponent(invoiceId)}/payments`, payload);
     return response;
   }
-  async addInvoiceDiscount(invoiceId, payload) {
-    const response = await axiosInstance.post(`/teacher/invoices/${encodeURIComponent(invoiceId)}/discounts`, payload);
+  async updateInvoiceMeta(invoiceId, payload) {
+    // payload: { invoiceDate?, dueDate?, notes? }  — pass null to clear a field.
+    const response = await axiosInstance.patch(`/teacher/invoices/${encodeURIComponent(invoiceId)}/meta`, payload);
+    return response;
+  }
+  async setInvoiceDiscount(invoiceId, discountAmount) {
+    // Sets the discount to an exact value (not additive).
+    const response = await axiosInstance.patch(`/teacher/invoices/${encodeURIComponent(invoiceId)}/discount`, { discountAmount });
     return response;
   }
   async softDeleteInvoice(invoiceId) {
@@ -512,22 +597,11 @@ class TeacherApi {
     const response = await axiosInstance.patch(`/teacher/invoices/${encodeURIComponent(invoiceId)}/restore`);
     return response;
   }
-  async updateInvoice(invoiceId, payload) {
-    const response = await axiosInstance.patch(`/teacher/invoices/${encodeURIComponent(invoiceId)}`, payload);
-    return response;
-  }
-  // Optional detail reads (if backend provides them)
-  async getInvoiceInstallments(invoiceId) {
-    const response = await axiosInstance.get(`/teacher/invoices/${encodeURIComponent(invoiceId)}/installments`);
-    return response;
-  }
-  async getInvoiceEntries(invoiceId) {
-    const response = await axiosInstance.get(`/teacher/invoices/${encodeURIComponent(invoiceId)}/entries`);
-    return response;
-  }
-  async getInvoiceEntriesReport(invoiceId) {
-    const response = await axiosInstance.get(`/teacher/invoices/${encodeURIComponent(invoiceId)}/entries/report`);
-    return response;
-  }
+
+  // --- Removed in v2 (backend endpoints no longer exist) ---
+  // addInvoiceDiscount(id, {amount, notes})         → use setInvoiceDiscount(id, amount)
+  // updateInvoice(id, payload) [monolithic]          → use updateInvoiceMeta() or setInvoiceDiscount()
+  // getInvoiceDetails / getInvoiceInstallments
+  //   / getInvoiceEntries / getInvoiceEntriesReport  → use getInvoiceFull(id)
 }
 export default new TeacherApi();
