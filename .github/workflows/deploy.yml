@@ -1,41 +1,27 @@
-name: Deploy Mulhimiq Frontend
+name: Deploy Dashboard
 
 on:
   push:
     branches:
-      - main
+      - staging
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📦 Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: 📍 Install dependencies
-        run: npm install
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-      - name: 🏗️ Build Vue project
+      - name: Clean install
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
+
+      - name: Build
         run: npm run build
-
-      - name: 🚚 Upload dist to server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          source: "dist/*"
-          target: "/var/www/mulhimiq/frontend_dist/"
-
-      - name: 🚀 Run deployment script
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            cd /var/www/mulhimiq/vue
-            ./update-web.sh
