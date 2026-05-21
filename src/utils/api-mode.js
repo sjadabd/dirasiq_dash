@@ -37,4 +37,23 @@ const target = USE_LOCAL ? LOCAL : PUBLIC_URLS
 // When no env file supplies the value, the boolean above decides.
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || target.api
 export const CHAT_BASE_URL = import.meta.env.VITE_CHAT_BASE_URL || target.chat
+
+// Defence-in-depth: in a production build, no exported URL may point at a
+// dev/private host. Mirrors the `Forbidden URL scan` step in
+// `.github/workflows/deploy.yml` so a regression caught only in CI also fails
+// loudly at runtime if it ever slipped through.
+if (import.meta.env.PROD) {
+  const FORBIDDEN = ["localhost", "127.0.0.1", "0.0.0.0", "10.0.2.2", "38.60.250."]
+  const violations = []
+
+  for (const [name, value] of [["API_BASE_URL", API_BASE_URL], ["CHAT_BASE_URL", CHAT_BASE_URL]]) {
+    const match = FORBIDDEN.find(bad => value?.includes(bad))
+    if (match) violations.push(`${name} contains "${match}" → ${value}`)
+  }
+  if (violations.length) {
+    // Throwing here aborts app init before any request leaks the dev URL.
+    throw new Error(`[api-mode] Forbidden production URLs:\n  ${violations.join("\n  ")}`)
+  }
+}
+
 export { USE_LOCAL }
