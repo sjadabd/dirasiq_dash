@@ -14,8 +14,10 @@
 // every (re)connection so subscribers can re-fetch state.
 
 import { io as ioClient } from "socket.io-client"
+import { CHAT_BASE_URL } from "@/utils/api-mode"
 
-const CHAT_URL = "http://localhost:3001"
+// Same `USE_LOCAL` switch as the axios clients — single source of truth.
+const CHAT_URL = CHAT_BASE_URL
 
 class ChatSocketClient {
   constructor() {

@@ -184,7 +184,7 @@ const loadNotifStats = async () => {
 
 const loadHealth = async () => {
   try {
-    const baseURL = axiosInstance?.defaults?.baseURL || "http://localhost:3000/api";
+    const baseURL = axiosInstance?.defaults?.baseURL || import.meta.env.VITE_API_BASE_URL || "";
     const origin = baseURL.replace(/\/api\/?$/, "");
     const res = await fetch(`${origin}/health`).then((r) => r.json());
     apiHealthy.value = !!res?.success;

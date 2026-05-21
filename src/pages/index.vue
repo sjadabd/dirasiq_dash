@@ -1056,7 +1056,7 @@ export default {
       // /health is at the API ROOT (no /api prefix). Derive the origin from
       // the shared axios instance's baseURL so dev / staging / prod stay in
       // sync with the rest of the dashboard's HTTP layer.
-      const baseURL = axiosInstance?.defaults?.baseURL || 'http://localhost:3000/api';
+      const baseURL = axiosInstance?.defaults?.baseURL || import.meta.env.VITE_API_BASE_URL || '';
       const apiOrigin = baseURL.replace(/\/api\/?$/, '');
 
       const tasks = [

@@ -364,6 +364,9 @@
     "useAuth": true,
     "chatAxios": true,
     "chatSocket": true,
-    "useChatRealtime": true
+    "useChatRealtime": true,
+    "API_BASE_URL": true,
+    "CHAT_BASE_URL": true,
+    "USE_LOCAL": true
   }
 }

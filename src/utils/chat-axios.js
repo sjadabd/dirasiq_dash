@@ -14,10 +14,12 @@
 // `@/utils/axios` for /api/* endpoints.
 
 import axios from "axios"
+import { CHAT_BASE_URL } from "@/utils/api-mode"
 
+// Base URL sourced from `@/utils/api-mode` (same `USE_LOCAL` switch as the
+// main axios client). Env files still take precedence.
 const chatAxios = axios.create({
-  // baseURL: "https://chat.mulhimiq.com",
-  baseURL: "http://localhost:3001",
+  baseURL: CHAT_BASE_URL,
   timeout: 30000,
 })
 

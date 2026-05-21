@@ -5,17 +5,38 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { VueRouterAutoImports, getPascalCaseRouteName } from 'unplugin-vue-router'
 import VueRouter from 'unplugin-vue-router/vite'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
+
+// Always-resolve %VITE_CSP_DEV_*% placeholders in index.html.
+//
+// Vite leaves any `%VAR%` literal in HTML when the env var is undefined,
+// which the browser then logs as an invalid CSP source ("contains an
+// invalid source: '%VITE_CSP_DEV_CONNECT%'"). This plugin force-substitutes
+// the two CSP dev-extra placeholders to whatever is in env (empty string if
+// nothing) — keeps prod CSP strict, dev CSP customisable via .env.development.
+const cspPlaceholderPlugin = (mode) => ({
+  name: 'csp-placeholder-fallback',
+  transformIndexHtml: {
+    order: 'pre',
+    handler(html) {
+      const env = loadEnv(mode, process.cwd(), '')
+      return html
+        .replaceAll('%VITE_CSP_DEV_CONNECT%', env.VITE_CSP_DEV_CONNECT || '')
+        .replaceAll('%VITE_CSP_DEV_IMG%', env.VITE_CSP_DEV_IMG || '')
+    },
+  },
+})
 import VueDevTools from 'vite-plugin-vue-devtools'
 import Layouts from 'vite-plugin-vue-layouts'
 import vuetify from 'vite-plugin-vuetify'
 import svgLoader from 'vite-svg-loader'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   // ✅ أهم تعديل
   base: '/',
 
   plugins: [
+    cspPlaceholderPlugin(mode),
     VueRouter({
       getRouteName: routeNode => {
         return getPascalCaseRouteName(routeNode)
@@ -99,4 +120,4 @@ export default defineConfig({
     strictPort: true,
     host: '0.0.0.0',
   },
-})
+}))

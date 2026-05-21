@@ -1,5 +1,6 @@
 <script setup>
 import { useChatRealtime } from "@/composables/useChatRealtime"
+import { CHAT_BASE_URL as chatBase } from "@/utils/api-mode"
 
 const chat = useChatRealtime()
 const {
@@ -117,8 +118,10 @@ function isMine(message) {
 function resolveAttachmentUrl(att) {
   if (!att?.url) return ""
   if (att.url.startsWith("http")) return att.url
+  // Single source of truth — `@/utils/api-mode` exports the chat origin.
+  // Imported eagerly at module scope is fine; the value is a constant.
 
-  return `http://localhost:3001${att.url}`
+  return `${chatBase}${att.url}`
 }
 
 const composerDisabledReason = computed(() => {

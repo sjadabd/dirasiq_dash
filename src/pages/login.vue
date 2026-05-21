@@ -287,7 +287,7 @@ const handleResetPassword = async () => {
 
 // ---- Brand-visual: live platform stats (decorative / trust signal) --------
 const fetchVisualStats = async () => {
-  const baseURL = axiosInstance?.defaults?.baseURL || "http://localhost:3000/api";
+  const baseURL = axiosInstance?.defaults?.baseURL || import.meta.env.VITE_API_BASE_URL || "";
   const apiOrigin = baseURL.replace(/\/api\/?$/, "");
   try {
     const teacherApi = (await import("@/api/teacher/teacher_api")).default;

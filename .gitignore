@@ -15,8 +15,13 @@ dist/
 dist-ssr/
 
 # Local env
+# Production env (only PUBLIC URLs — no secrets) IS committed so docker builds
+# inside the CI / VPS always pick up the right base URLs. Anything else with a
+# secret stays out of git.
 .env*
 !.env.example
+!.env.production
+!.env.development.example
 
 # IDE and editor folders
 .vscode/*

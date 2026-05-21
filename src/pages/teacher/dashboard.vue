@@ -286,7 +286,7 @@ async function loadReferral() {
 
 async function loadHealth() {
   try {
-    const baseURL = axiosInstance?.defaults?.baseURL || "http://localhost:3000/api";
+    const baseURL = axiosInstance?.defaults?.baseURL || import.meta.env.VITE_API_BASE_URL || "";
     const origin = baseURL.replace(/\/api\/?$/, "");
     const r = await fetch(`${origin}/health`).then((res) => res.json());
     apiHealthy.value = !!r?.success;

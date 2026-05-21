@@ -1,9 +1,13 @@
 import { router } from "@/plugins/1.router/index";
 import axios from "axios";
+import { API_BASE_URL } from "@/utils/api-mode";
 
+// Base URL is sourced from `@/utils/api-mode` — flip `USE_LOCAL` there to
+// switch the whole dashboard between localhost and production in one line.
+// Env files (`.env.development` / `.env.production`) still take precedence
+// when present, so CI / Docker builds stay deterministic.
 const axiosInstance = axios.create({
-  // baseURL: "https://api.mulhimiq.com/api",
-  baseURL: "http://localhost:3000/api",
+  baseURL: API_BASE_URL,
   timeout: 100000,
 });
 
