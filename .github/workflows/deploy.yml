@@ -1,27 +1,218 @@
+# =============================================================================
+#  Production deploy — Dashboard (mulhimiq.com / www.mulhimiq.com)
+# =============================================================================
+#
+# Builds the Vue/Vite SPA in CI, ships `dist/*` to the VPS via SCP, then
+# atomically swaps the served directory and reloads nginx. Rollback restores
+# the previous `dist` snapshot if the post-deploy probe fails.
+#
+# Triggered on `main` for production deploys; `staging` builds-only (no
+# deploy) so PRs can validate without touching prod.
+#
+# Required GitHub repo secrets:
+#   VPS_HOST, VPS_USER, VPS_SSH_KEY, VPS_PORT     (same as API/Chat)
+#
+# See DEPLOY_AUTOMATION.md (in dirasiq_api) for VPS bootstrap.
+
 name: Deploy Dashboard
 
 on:
   push:
-    branches:
-      - staging
+    branches: [main, staging]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-dashboard-${{ github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  # Path on the VPS that nginx serves. Symlink (`current`) flips atomically
+  # between `releases/<sha>` directories.
+  VPS_RELEASES_DIR: /var/www/mulhimiq/dashboard/releases
+  VPS_CURRENT_LINK: /var/www/mulhimiq/dashboard/current
+  EXTERNAL_HEALTH_URL: https://mulhimiq.com/
 
 jobs:
+  # ───────────────────────────────────────────────────────────────────────
+  #  1. Build the SPA (always — runs on both main and staging)
+  # ───────────────────────────────────────────────────────────────────────
   build:
+    name: Build (Vite)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      release_id: ${{ steps.release_id.outputs.id }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Clean install
+      - name: Compute release id
+        id: release_id
+        run: echo "id=$(date -u +%Y%m%d-%H%M%S)-${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
+
+      - name: Install (clean)
         run: |
           rm -rf node_modules package-lock.json
-          npm install
+          npm install --no-audit --no-fund
 
-      - name: Build
+      - name: Build (mode=production)
+        # `.env.production` is committed (public URLs only — no secrets) so
+        # the bundle always points at the right domains regardless of who
+        # runs the build. See dashboard/.env.production.
         run: npm run build
+
+      - name: Forbidden URL scan in built bundle
+        run: |
+          set -e
+          if grep -rlE "localhost:300[01]|38\.60\.250\." dist/ 2>/dev/null; then
+            echo "::error::Built bundle contains dev/staging URLs — block deploy"
+            grep -rnE "localhost:300[01]|38\.60\.250\." dist/ | head -10
+            exit 1
+          fi
+          echo "✓ bundle is clean of dev URLs"
+
+      - name: Verify production CSP
+        run: |
+          # The strict CSP in index.html must NOT have localhost/IP origins
+          # after the Vite placeholder substitution (production mode empties
+          # %VITE_CSP_DEV_*%).
+          if grep -E "localhost:300[01]|38\.60\.250\." dist/index.html; then
+            echo "::error::dist/index.html CSP leaks dev origins"
+            exit 1
+          fi
+          echo "✓ production CSP is strict"
+
+      - name: Tarball dist
+        run: tar -czf dist.tar.gz -C dist .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ steps.release_id.outputs.id }}
+          path: dist.tar.gz
+          retention-days: 7
+
+  # ───────────────────────────────────────────────────────────────────────
+  #  2. Deploy — main branch ONLY (staging stops after build)
+  # ───────────────────────────────────────────────────────────────────────
+  deploy:
+    name: Atomic deploy + nginx reload
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    timeout-minutes: 15
+
+    steps:
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-${{ needs.build.outputs.release_id }}
+          path: .
+
+      - name: Ship dist to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          source: 'dist.tar.gz'
+          target: '/tmp/'
+
+      - name: Atomic swap + nginx reload + rollback on failure
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          command_timeout: 10m
+          script_stop: true
+          envs: VPS_RELEASES_DIR,VPS_CURRENT_LINK,EXTERNAL_HEALTH_URL
+          script: |
+            set -euo pipefail
+
+            RELEASE_ID="${{ needs.build.outputs.release_id }}"
+            NEW_DIR="${VPS_RELEASES_DIR}/${RELEASE_ID}"
+
+            # ── 1. Capture current release for rollback ─────────────
+            OLD_DIR=$(readlink -f "${VPS_CURRENT_LINK}" 2>/dev/null || echo "")
+            echo "Current release: ${OLD_DIR:-<none>}"
+            echo "New release:     ${NEW_DIR}"
+
+            # ── 2. Stage the new release ────────────────────────────
+            mkdir -p "${NEW_DIR}"
+            tar -xzf /tmp/dist.tar.gz -C "${NEW_DIR}"
+            rm -f /tmp/dist.tar.gz
+            # Workflow MUST NEVER overwrite uploads / SSL / env.
+            # Sanity: the new release dir must NOT contain any of those.
+            if [ -d "${NEW_DIR}/uploads" ] || [ -d "${NEW_DIR}/ssl" ]; then
+              echo "::error::release dir contains forbidden paths — refusing"
+              rm -rf "${NEW_DIR}"
+              exit 1
+            fi
+
+            # ── 3. Atomic symlink swap ──────────────────────────────
+            ln -sfn "${NEW_DIR}" "${VPS_CURRENT_LINK}.new"
+            mv -Tf "${VPS_CURRENT_LINK}.new" "${VPS_CURRENT_LINK}"
+            echo "Symlink swapped → ${NEW_DIR}"
+
+            # ── 4. Reload nginx (no full restart — zero connection drops)
+            sudo nginx -t && sudo systemctl reload nginx
+
+            # ── 5. Health probe ─────────────────────────────────────
+            sleep 2
+            HEALTH_OK=0
+            for i in $(seq 1 15); do
+              if curl -fsS --max-time 5 "${EXTERNAL_HEALTH_URL}" > /dev/null; then
+                echo "✓ external health OK after $((i * 2))s"
+                HEALTH_OK=1
+                break
+              fi
+              sleep 2
+            done
+
+            # ── 6. Rollback on failure ──────────────────────────────
+            if [ "${HEALTH_OK}" != "1" ]; then
+              echo "==================================================="
+              echo "DEPLOY FAILED — rolling back to ${OLD_DIR:-<none>}"
+              echo "==================================================="
+              if [ -n "${OLD_DIR}" ] && [ -d "${OLD_DIR}" ]; then
+                ln -sfn "${OLD_DIR}" "${VPS_CURRENT_LINK}.new"
+                mv -Tf "${VPS_CURRENT_LINK}.new" "${VPS_CURRENT_LINK}"
+                sudo systemctl reload nginx
+                echo "✓ rolled back to ${OLD_DIR}"
+              else
+                echo "✗ no previous release to roll back to — site may be down"
+              fi
+              exit 1
+            fi
+
+            # ── 7. Prune old releases (keep last 5) ─────────────────
+            cd "${VPS_RELEASES_DIR}"
+            ls -1t | tail -n +6 | xargs -r rm -rf
+            echo "==================================================="
+            echo "✓ Dashboard deploy ${RELEASE_ID} complete"
+            echo "==================================================="
+
+  notify:
+    name: Notify result
+    runs-on: ubuntu-latest
+    needs: [build, deploy]
+    if: always() && github.ref == 'refs/heads/main'
+    steps:
+      - name: Summary
+        run: |
+          STATUS="${{ needs.deploy.result }}"
+          if [ "$STATUS" = "success" ]; then
+            echo "✓ Dashboard deploy succeeded for ${{ github.sha }}"
+          else
+            echo "✗ Dashboard deploy failed (status: $STATUS)"
+          fi
