@@ -28,6 +28,8 @@ declare module 'vue-router/auto-routes' {
     'admin-settings-booking-confirm-fee': RouteRecordInfo<'admin-settings-booking-confirm-fee', '/admin/settings/booking-confirm-fee', Record<never, never>, Record<never, never>>,
     'admin-study-years-show-study-years': RouteRecordInfo<'admin-study-years-show-study-years', '/admin/study-years/show-study-years', Record<never, never>, Record<never, never>>,
     'admin-subscription-packages-show-subscription-packages': RouteRecordInfo<'admin-subscription-packages-show-subscription-packages', '/admin/subscription-packages/show-subscription-packages', Record<never, never>, Record<never, never>>,
+    'admin-teacher-applications': RouteRecordInfo<'admin-teacher-applications', '/admin/teacher-applications', Record<never, never>, Record<never, never>>,
+    'admin-teacher-applications-id': RouteRecordInfo<'admin-teacher-applications-id', '/admin/teacher-applications/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'admin-teachers-id': RouteRecordInfo<'admin-teachers-id', '/admin/teachers/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'admin-teachers-show-teachers': RouteRecordInfo<'admin-teachers-show-teachers', '/admin/teachers/show-teachers', Record<never, never>, Record<never, never>>,
     'chat-conversations': RouteRecordInfo<'chat-conversations', '/chat/conversations', Record<never, never>, Record<never, never>>,

@@ -209,5 +209,67 @@ class Admin {
     return response;
   }
   // notifications (admin)
+
+  // ===========================================================================
+  // Teacher Applications (super-admin) — Phase 5
+  // ===========================================================================
+  //
+  // Phase 1/2/3 backend surface (gated by requireRole(SUPER_ADMIN)):
+  //   GET    /super-admin/teacher-applications        — paginated list
+  //   GET    /super-admin/teacher-applications/:id    — detail
+  //   PATCH  /super-admin/teacher-applications/:id/approve
+  //   PATCH  /super-admin/teacher-applications/:id/reject
+  //   PATCH  /super-admin/teacher-applications/:id/request-more-info
+  //   GET    /super-admin/teacher-applications/:id/files
+  //   GET    /super-admin/teacher-applications/:id/files/:fileId  (streams bytes)
+
+  async listTeacherApplications({ page = 1, limit = 20, status, search } = {}) {
+    const qs = buildQuery({ page, limit, status, search });
+    const response = await axiosInstance.get(`/super-admin/teacher-applications${qs}`);
+    return response;
+  }
+
+  async getTeacherApplication(id) {
+    const response = await axiosInstance.get(`/super-admin/teacher-applications/${id}`);
+    return response;
+  }
+
+  async approveTeacherApplication(id, { adminNotes } = {}) {
+    const response = await axiosInstance.patch(
+      `/super-admin/teacher-applications/${id}/approve`,
+      adminNotes ? { adminNotes } : {},
+    );
+    return response;
+  }
+
+  async rejectTeacherApplication(id, { rejectionReason, adminNotes } = {}) {
+    const response = await axiosInstance.patch(
+      `/super-admin/teacher-applications/${id}/reject`,
+      { rejectionReason, ...(adminNotes ? { adminNotes } : {}) },
+    );
+    return response;
+  }
+
+  async requestMoreInfoTeacherApplication(id, { adminNotes } = {}) {
+    const response = await axiosInstance.patch(
+      `/super-admin/teacher-applications/${id}/request-more-info`,
+      { adminNotes },
+    );
+    return response;
+  }
+
+  async listTeacherApplicationFiles(id) {
+    const response = await axiosInstance.get(`/super-admin/teacher-applications/${id}/files`);
+    return response;
+  }
+
+  // Returns the raw streaming endpoint URL — used in <img src=…> / <iframe src=…>.
+  // The axios instance attaches Authorization on real fetches, but <img> tags
+  // can't send a header. We use a fetch-based blob loader on the page side
+  // (see file-preview helpers in the detail page) so files stream through the
+  // auth-gated endpoint and never bypass the JWT check.
+  teacherApplicationFileUrl(id, fileId) {
+    return `/super-admin/teacher-applications/${id}/files/${fileId}`;
+  }
 }
 export default new Admin();

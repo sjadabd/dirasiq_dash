@@ -34,6 +34,12 @@ export default [
     icon: { icon: 'ri-team-line' },
   },
   {
+    title: 'طلبات الانضمام',
+    to: { name: 'admin-teacher-applications' },
+    type: 'super_admin',
+    icon: { icon: 'ri-user-add-line' },
+  },
+  {
     title: 'الأخبار',
     to: { name: 'admin-news-show-news' },
     type: 'super_admin',
