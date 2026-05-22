@@ -431,7 +431,7 @@ watch(activeAuthTab, async () => {
             </h1>
             <p class="auth-subheading">
               <span v-if="activeAuthTab === 'login'">سجّل دخولك للمتابعة إلى لوحة التحكم.</span>
-              <span v-else>أنشئ حساب معلم جديد في دقائق.</span>
+              <span v-else>قدّم طلب الانضمام كأستاذ خلال دقائق.</span>
             </p>
           </div>
 
@@ -453,7 +453,7 @@ watch(activeAuthTab, async () => {
               @click="activeAuthTab = 'register'"
             >
               <VIcon size="18" class="me-1">ri-user-add-line</VIcon>
-              حساب معلم
+              تقديم طلب
             </button>
           </div>
 
@@ -565,7 +565,7 @@ watch(activeAuthTab, async () => {
               class="auth-primary-cta mt-3"
             >
               <VIcon start size="20">ri-user-add-line</VIcon>
-              إنشاء حساب معلم
+              تقديم طلب الانضمام
             </VBtn>
 
             <div class="auth-divider"><span>أو</span></div>
@@ -579,7 +579,7 @@ watch(activeAuthTab, async () => {
             <template v-if="activeAuthTab === 'login'">
               ليس لديك حساب؟
               <button type="button" class="auth-link strong" @click="activeAuthTab = 'register'">
-                أنشئ حساب معلم
+                قدّم طلب الانضمام
               </button>
             </template>
             <template v-else>

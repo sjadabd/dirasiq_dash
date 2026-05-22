@@ -822,7 +822,7 @@ export default {
 
       // Steps
       steps: [
-        { id: 1, icon: 'mdi-account-plus-outline', title: 'سجّل حسابك', description: 'أنشئ حساب معلم مجاناً واختر باقة البداية في دقيقة.', color: 'primary', bg: 'rgba(11,37,69,0.08)' },
+        { id: 1, icon: 'mdi-account-plus-outline', title: 'قدّم طلبك', description: 'قدّم طلب الانضمام كأستاذ مجاناً، وسيتم مراجعته من قبل الإدارة خلال أيام قليلة.', color: 'primary', bg: 'rgba(11,37,69,0.08)' },
         { id: 2, icon: 'mdi-book-plus-outline', title: 'أضف كورساتك', description: 'أنشئ كورس، حدّد السعر، الباقات والجدول الأسبوعي.', color: 'accent', bg: 'rgba(255,138,0,0.10)' },
         { id: 3, icon: 'mdi-account-group-outline', title: 'انضمام الطلاب', description: 'الطالب يحجز، يدفع، ويبدأ الحضور عبر QR من تطبيق ملهم.', color: 'secondary', bg: 'rgba(63,169,245,0.10)' },
         { id: 4, icon: 'mdi-chart-line', title: 'تابع وحلّل', description: 'اطّلع على لوحة تحكم لحظية، أرسل واجبات، وامنح تقييمات.', color: 'success', bg: 'rgba(16,185,129,0.10)' },
