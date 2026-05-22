@@ -29,10 +29,6 @@ onMounted(() => {
       </VCardTitle>
       <VCardText>
         <div class="d-flex flex-column gap-3">
-          <RouterLink to="/admin/subscription-packages/show-subscription-packages">
-            <VBtn block color="primary" variant="tonal">إدارة الباقات</VBtn>
-          </RouterLink>
-
           <RouterLink to="/admin/settings/booking-confirm-fee">
             <VBtn block color="primary" variant="tonal">رسوم تأكيد طلب الطالب</VBtn>
           </RouterLink>

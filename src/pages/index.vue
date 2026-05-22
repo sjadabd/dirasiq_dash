@@ -38,7 +38,6 @@
           <v-btn variant="text" class="nav-link" @click="scrollToSection('features')">المميزات</v-btn>
           <v-btn variant="text" class="nav-link" @click="scrollToSection('preview')">النظام</v-btn>
           <v-btn variant="text" class="nav-link" @click="scrollToSection('how-it-works')">كيف يعمل</v-btn>
-          <v-btn variant="text" class="nav-link" @click="scrollToSection('pricing')">الباقات</v-btn>
           <v-btn variant="text" class="nav-link" :to="{ path: '/contact' }">تواصل</v-btn>
         </div>
 
@@ -113,7 +112,6 @@
               <v-list-item @click="scrollToSection('features')" title="المميزات" prepend-icon="mdi-star-outline" />
               <v-list-item @click="scrollToSection('preview')" title="النظام" prepend-icon="mdi-monitor-dashboard" />
               <v-list-item @click="scrollToSection('how-it-works')" title="كيف يعمل" prepend-icon="mdi-stairs" />
-              <v-list-item @click="scrollToSection('pricing')" title="الباقات" prepend-icon="mdi-tag-outline" />
               <v-list-item :to="{ path: '/contact' }" title="تواصل" prepend-icon="mdi-email-outline" />
               <v-divider class="my-1" />
               <v-list-item v-if="!isLoggedIn" to="/login" title="ابدأ الآن" prepend-icon="mdi-rocket-launch-outline" />
@@ -257,15 +255,7 @@
                     </div>
                   </div>
 
-                  <div class="float-card float-3" :class="{ 'is-loading': platformStatsLoading }">
-                    <v-avatar color="success" size="40" class="float-avatar">
-                      <v-icon color="white">mdi-package-variant</v-icon>
-                    </v-avatar>
-                    <div>
-                      <div class="float-label">باقات متاحة</div>
-                      <div class="float-value">{{ platformStatsLoading ? '…' : platformStats.packagesCount }}</div>
-                    </div>
-                  </div>
+                  <!-- (Phase 7) packages-count card removed alongside subscriptions. -->
                 </div>
               </v-fade-transition>
             </v-col>
@@ -300,15 +290,7 @@
                 <div class="stat-cell-value">{{ platformStatsLoading ? '…' : platformStats.governoratesCount }}</div>
               </div>
             </div>
-            <div class="stat-cell">
-              <div class="stat-icon stat-icon-success">
-                <v-icon color="success">mdi-package-variant-closed</v-icon>
-              </div>
-              <div>
-                <div class="stat-cell-label">باقات اشتراك</div>
-                <div class="stat-cell-value">{{ platformStatsLoading ? '…' : platformStats.packagesCount }}</div>
-              </div>
-            </div>
+            <!-- (Phase 7) packages stat cell removed alongside subscriptions. -->
             <div class="stat-cell">
               <div class="stat-icon stat-icon-warning">
                 <v-icon color="warning">mdi-newspaper-variant</v-icon>
@@ -517,121 +499,6 @@
         </v-container>
       </section>
 
-      <!-- 7. PRICING =========================================== -->
-      <section id="pricing" class="pricing-section">
-        <v-container style="max-width:1280px;">
-          <div class="section-head">
-            <span class="section-chip section-chip-success">باقات بأسعار عراقية</span>
-            <h2 class="section-title">اختَر ما يناسب حجم عملك</h2>
-            <p class="section-sub">جرّب مجاناً ثم ترقّى متى احتجت — بدون التزام طويل.</p>
-          </div>
-
-          <!-- Capacity (logged-in teacher only) -->
-          <v-row v-if="isLoggedIn" justify="center" class="mb-6">
-            <v-col cols="12" md="9">
-              <v-card class="capacity-card pa-5" elevation="0">
-                <div class="d-flex align-center mb-3">
-                  <v-icon color="primary" class="me-2">mdi-account-multiple-outline</v-icon>
-                  <span class="font-weight-bold">سعة اشتراكك الحالية</span>
-                  <v-spacer />
-                  <v-btn size="small" variant="text" :loading="subscriptionCapacityLoading" @click="fetchSubscriptionCapacity">
-                    تحديث
-                  </v-btn>
-                </div>
-                <v-alert v-if="subscriptionCapacityError" type="error" variant="tonal" density="compact" class="mb-3">
-                  {{ subscriptionCapacityError }}
-                </v-alert>
-                <div class="capacity-row">
-                  <div class="cap-cell">
-                    <div class="cap-label">الطلاب الحاليون</div>
-                    <div class="cap-value">{{ subscriptionCapacity.currentStudents }}</div>
-                  </div>
-                  <div class="cap-cell">
-                    <div class="cap-label">الحد الأقصى</div>
-                    <div class="cap-value">{{ subscriptionCapacity.maxStudents }}</div>
-                  </div>
-                  <div class="cap-cell">
-                    <div class="cap-label">المتبقّي</div>
-                    <div class="cap-value text-success">{{ subscriptionCapacity.remaining }}</div>
-                  </div>
-                  <div class="cap-cell">
-                    <div class="cap-label">الحالة</div>
-                    <div class="cap-value" :class="subscriptionCapacity.canAdd ? 'text-success' : 'text-error'">
-                      {{ subscriptionCapacity.canAdd ? 'يمكن إضافة طلاب' : 'الباقة ممتلئة' }}
-                    </div>
-                  </div>
-                </div>
-                <v-progress-linear
-                  v-if="subscriptionCapacity.maxStudents > 0"
-                  :model-value="capacityPct"
-                  :color="capacityPct >= 90 ? 'error' : capacityPct >= 70 ? 'warning' : 'success'"
-                  height="8"
-                  rounded
-                  class="mt-3"
-                />
-              </v-card>
-            </v-col>
-          </v-row>
-
-          <!-- Skeleton while pricing loads -->
-          <v-row v-if="pricingLoading" justify="center">
-            <v-col v-for="n in 3" :key="n" cols="12" md="4" lg="3">
-              <v-skeleton-loader type="card" />
-            </v-col>
-          </v-row>
-
-          <!-- Empty state -->
-          <div v-else-if="!pricingPlans.length" class="empty-block text-center">
-            <v-icon size="48" color="grey-lighten-1">mdi-package-variant-closed-remove</v-icon>
-            <h3 class="mt-3">لا توجد باقات منشورة حالياً</h3>
-            <p class="text-medium-emphasis">يتم تحديث الباقات قريباً.</p>
-          </div>
-
-          <!-- Pricing grid -->
-          <v-row v-else justify="center" align="stretch" class="g-3">
-            <v-col v-for="plan in pricingPlans" :key="plan.id" cols="12" md="4" lg="3">
-              <v-hover v-slot="{ isHovering, props }">
-                <v-card
-                  v-bind="props"
-                  :elevation="plan.featured ? 12 : (isHovering ? 8 : 0)"
-                  class="pricing-card-v2 h-100"
-                  :class="{ featured: plan.featured, 'is-hovered': isHovering }"
-                >
-                  <div v-if="plan.featured" class="featured-flag">الأكثر طلباً</div>
-                  <div class="pricing-head">
-                    <div class="pricing-icon-wrap" :class="{ 'is-featured': plan.featured }">
-                      <v-icon size="28" :color="plan.featured ? 'white' : 'primary'">{{ plan.icon }}</v-icon>
-                    </div>
-                    <h3 class="pricing-name">{{ plan.name }}</h3>
-                    <div class="pricing-price">
-                      <span class="price-amount">{{ plan.price }}</span>
-                    </div>
-                    <div class="pricing-period">{{ plan.period }}</div>
-                  </div>
-                  <v-divider class="my-4" />
-                  <ul class="pricing-features">
-                    <li v-for="(f, i) in plan.features" :key="i">
-                      <v-icon size="18" color="success" class="me-2">mdi-check-circle</v-icon>
-                      <span>{{ f }}</span>
-                    </li>
-                  </ul>
-                  <v-btn
-                    :color="plan.featured ? 'primary' : 'grey-darken-3'"
-                    :variant="plan.featured ? 'elevated' : 'outlined'"
-                    block
-                    size="large"
-                    rounded="lg"
-                    class="mt-4 pricing-cta"
-                    @click="selectPlan(plan)"
-                  >
-                    {{ plan.buttonText }}
-                  </v-btn>
-                </v-card>
-              </v-hover>
-            </v-col>
-          </v-row>
-        </v-container>
-      </section>
 
       <!-- 8. CTA =============================================== -->
       <section class="cta-section">
@@ -752,7 +619,6 @@
               <h4>المنصة</h4>
               <a @click="scrollToSection('features')">المميزات</a>
               <a @click="scrollToSection('preview')">النظام</a>
-              <a @click="scrollToSection('pricing')">الباقات</a>
               <a @click="scrollToSection('how-it-works')">كيف يعمل</a>
             </div>
             <div class="footer-col">
@@ -991,23 +857,10 @@ export default {
         { id: 4, icon: 'mdi-account-group-outline', tone: 'secondary', title: '23 طالباً جدداً هذا الأسبوع', sub: 'أعلى من المعدل بنسبة 30%.' },
       ],
 
-      // Pricing (fetched from API)
-      pricingPlans: [],
-      pricingLoading: true,
-
-      // Subscription capacity (logged-in teacher)
-      subscriptionCapacity: { currentStudents: 0, maxStudents: 0, remaining: 0, canAdd: false },
-      subscriptionCapacityLoading: false,
-      subscriptionCapacityError: '',
+      // (Phase 7) pricing / subscription capacity state removed alongside
+      // the old subscription model. Course catalog browsing arrives in a
+      // later phase.
     };
-  },
-
-  computed: {
-    capacityPct() {
-      const m = Number(this.subscriptionCapacity.maxStudents) || 0;
-      if (!m) return 0;
-      return Math.min(100, Math.round((Number(this.subscriptionCapacity.currentStudents) / m) * 100));
-    },
   },
 
   mounted() {
@@ -1018,15 +871,10 @@ export default {
     window.addEventListener('scroll', this.handleScroll, { passive: true });
 
     this.fetchPlatformStats();
-    this.fetchPricingPlans();
     this.getPublicNews();
 
     if (this.isLoggedIn) {
       this.refreshNotifications();
-      try {
-        const parsedUser = JSON.parse(user);
-        if (parsedUser?.userType === 'teacher') this.fetchSubscriptionCapacity();
-      } catch { /* ignore */ }
     }
 
     try {
@@ -1068,12 +916,8 @@ export default {
           const data = payload?.data || {};
           return { gov: Number(data.count) || (Array.isArray(data.governorates) ? data.governorates.length : 0) };
         }).catch(() => ({ gov: 0 })),
-        // Active packages count
-        teacher_api.getActivePackages().then((res) => {
-          const payload = res?.data?.data ? res.data : res;
-          const items = Array.isArray(payload?.data) ? payload.data : [];
-          return { pkg: items.length };
-        }).catch(() => ({ pkg: 0 })),
+        // (Phase 7) "Active packages" stat removed alongside subscriptions.
+        Promise.resolve({ pkg: 0 }),
         // Public news count
         teacher_api.getPublicNews().then((res) => {
           const payload = res?.data?.data ? res.data : res;
@@ -1095,80 +939,8 @@ export default {
       }
     },
 
-    // -------- Pricing ---------------------------------------
-    async fetchPricingPlans() {
-      this.pricingLoading = true;
-      try {
-        const res = await teacher_api.getActivePackages();
-        const payload = res?.data?.data ? res.data : res;
-        const items = Array.isArray(payload?.data) ? payload.data : [];
-        const mapped = items.map((p) => {
-          const isFree = p.isFree || p.price === 0;
-          const priceFmt = isFree ? '0' : new Intl.NumberFormat('en-IQ').format(p.price);
-          return {
-            id: p.id,
-            name: p.name,
-            price: `${priceFmt} د.ع`,
-            period: p.durationDays === 30 ? '/ شهرياً' : `/ ${p.durationDays} يوم`,
-            icon: isFree ? 'mdi-gift-outline' : 'mdi-star-outline',
-            buttonText: isFree ? 'ابدأ مجاناً' : 'اشترك الآن',
-            featured: false,
-            features: [
-              `حتى ${p.maxStudents} طالب`,
-              p.description || (isFree ? 'مجاناً للمعلمين الجدد' : 'ميزات متقدمة'),
-              p.durationDays === 30 ? 'اشتراك شهري' : `اشتراك ${p.durationDays} يوم`,
-              'دعم فني مخصص',
-            ],
-          };
-        });
-        const paidIdx = mapped.findIndex((m) => !m.price.startsWith('0'));
-        if (paidIdx !== -1) mapped[paidIdx].featured = true;
-        this.pricingPlans = mapped;
-      } catch (err) {
-        this.snackbar = { show: true, message: 'تعذر تحميل الباقات. يرجى المحاولة لاحقاً', color: 'error' };
-        console.warn('Failed to fetch pricing plans:', err);
-      } finally {
-        this.pricingLoading = false;
-      }
-    },
-
-    async selectPlan(plan) {
-      if (!this.isLoggedIn) {
-        this.snackbar = { show: true, message: 'يرجى تسجيل الدخول أولاً لاختيار باقة', color: 'info' };
-        this.$router.push('/login');
-        return;
-      }
-      try {
-        const res = await teacher_api.activateSubscriptionPackage(plan.id);
-        const ok = res?.data?.success || res?.success;
-        const msg = res?.data?.message || res?.message || `تم تفعيل باقة ${plan.name} بنجاح`;
-        this.snackbar = { show: true, message: msg, color: ok ? 'success' : 'error' };
-      } catch (err) {
-        const msg = err?.response?.data?.message || 'تعذر تفعيل الباقة، يرجى المحاولة لاحقاً';
-        this.snackbar = { show: true, message: msg, color: 'error' };
-      }
-    },
-
-    async fetchSubscriptionCapacity() {
-      this.subscriptionCapacityLoading = true;
-      this.subscriptionCapacityError = '';
-      try {
-        const res = await teacher_api.getRemainingStudents();
-        const ok = res?.data?.success || res?.success;
-        const data = res?.data?.data || res?.data || res;
-        if (!ok || !data) throw new Error(res?.data?.message || 'تعذر جلب تقرير السعة');
-        this.subscriptionCapacity = {
-          currentStudents: Number(data.currentStudents) || 0,
-          maxStudents: Number(data.maxStudents) || 0,
-          remaining: Number(data.remaining) || 0,
-          canAdd: Boolean(data.canAdd),
-        };
-      } catch (err) {
-        this.subscriptionCapacityError = err?.response?.data?.message || err?.message || 'تعذر جلب تقرير السعة';
-      } finally {
-        this.subscriptionCapacityLoading = false;
-      }
-    },
+    // (Phase 7) fetchPricingPlans / selectPlan / fetchSubscriptionCapacity
+    // removed alongside the old subscription model.
 
     // -------- Public news (hero carousel) -------------------
     async getPublicNews() {

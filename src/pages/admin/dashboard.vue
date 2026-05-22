@@ -106,13 +106,6 @@ const quickActions = [
     to: "/admin/grades/show-grades",
   },
   {
-    title: "باقات الاشتراك",
-    sub: "تسعير الباقات والحد الأقصى",
-    icon: "ri-archive-line",
-    color: "success",
-    to: "/admin/subscription-packages/show-subscription-packages",
-  },
-  {
     title: "الأخبار والإعلانات",
     sub: "نشر للويب أو الهاتف أو الاثنين",
     icon: "ri-newspaper-line",

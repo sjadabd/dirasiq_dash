@@ -38,10 +38,7 @@ class TeacherApi {
     const response = await axiosInstance.get(`/teacher/dashboard/referrals`);
     return response;
   }
-  async getActivePackages() {
-    const response = await axiosInstance.get(`/teacher/subscription-packages/active`);
-    return response;
-  }
+  // (Phase 7) getActivePackages removed — subscription model is gone.
   async getPublicNews() {
     const response = await axiosInstance.get(`/public/news`);
     return response;
@@ -66,27 +63,9 @@ class TeacherApi {
     return response
   }
 
-  // wayl payments (Teacher)
-  async createWaylTopupLink(amount) {
-    const response = await axiosInstance.post(`/teacher/payments/wayl/wallet-topup-link`, {
-      amount,
-    })
-    return response
-  }
-
-  async createWaylSubscriptionLink(packageId) {
-    const response = await axiosInstance.post(`/teacher/payments/wayl/subscription-link`, {
-      packageId,
-    })
-    return response
-  }
-
-  // Subscription packages (Teacher)
-  async activateSubscriptionPackage(id) {
-    const safeId = encodeURIComponent(id)
-    const response = await axiosInstance.post(`/teacher/subscription-packages/${safeId}/activate`, {})
-    return response
-  }
+  // (Phase 7) Wayl topup + subscription link + package activation removed.
+  // Wallet credits will be generated automatically from course purchases
+  // in a later phase; manual top-ups are no longer in scope.
   // profile
 
   // expenses

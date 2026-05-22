@@ -99,32 +99,8 @@ class Admin {
   }
   // teachers (super-admin view)
 
-  // subscription-packages
-  async createSubscriptionPackage(userData) {
-    const response = await axiosInstance.post(`/subscription-packages`, userData);
-    return response;
-  }
-  async getSubscriptionPackage(userData) {
-    const opts = userData?.options || {};
-    const response = await axiosInstance.get(`/subscription-packages${buildQuery({
-      page: opts.page, limit: opts.limit, search: opts.search,
-      isActive: opts.isActive, isFree: opts.isFree, deleted: opts.deleted,
-    })}`);
-    return response;
-  }
-  async editSubscriptionPackage(id, userData) {
-    const response = await axiosInstance.put(`/subscription-packages/${id}`, userData);
-    return response;
-  }
-  async activateSubscriptionPackage(id) {
-    const response = await axiosInstance.patch(`/subscription-packages/${id}/activate`);
-    return response;
-  }
-  async deactivateSubscriptionPackage(id) {
-    const response = await axiosInstance.patch(`/subscription-packages/${id}/deactivate`);
-    return response;
-  }
-  // subscription-packages
+  // (Phase 7) subscription-package CRUD removed alongside the subscription
+  // model. The new commission tier admin endpoints land in Phase 8.
 
   // super-admin settings
   async getBookingConfirmFee() {

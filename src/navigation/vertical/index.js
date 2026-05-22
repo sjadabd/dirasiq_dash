@@ -22,12 +22,6 @@ export default [
     icon: { icon: 'ri-file-text-line' },
   },
   {
-    title: 'باقات الاشتراك',
-    to: { name: 'admin-subscription-packages-show-subscription-packages' },
-    type: 'super_admin',
-    icon: { icon: 'ri-file-text-line' },
-  },
-  {
     title: 'المعلمين',
     to: { name: 'admin-teachers-show-teachers' },
     type: 'super_admin',
