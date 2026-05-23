@@ -67,6 +67,8 @@ declare module 'vue-router/auto-routes' {
     'teacher-sessions-attendance-id': RouteRecordInfo<'teacher-sessions-attendance-id', '/teacher/sessions/attendance/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'teacher-sessions-manage-sessions': RouteRecordInfo<'teacher-sessions-manage-sessions', '/teacher/sessions/manage-sessions', Record<never, never>, Record<never, never>>,
     'teacher-subjects-show-subjects': RouteRecordInfo<'teacher-subjects-show-subjects', '/teacher/subjects/show-subjects', Record<never, never>, Record<never, never>>,
+    'teacher-video-courses': RouteRecordInfo<'teacher-video-courses', '/teacher/video-courses', Record<never, never>, Record<never, never>>,
+    'teacher-video-courses-id': RouteRecordInfo<'teacher-video-courses-id', '/teacher/video-courses/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'teacher-wallet': RouteRecordInfo<'teacher-wallet', '/teacher/wallet', Record<never, never>, Record<never, never>>,
     'terms-and-conditions': RouteRecordInfo<'terms-and-conditions', '/terms-and-conditions', Record<never, never>, Record<never, never>>,
     'verify-email': RouteRecordInfo<'verify-email', '/verify-email', Record<never, never>, Record<never, never>>,

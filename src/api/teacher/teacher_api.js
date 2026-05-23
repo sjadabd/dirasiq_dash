@@ -582,5 +582,141 @@ class TeacherApi {
   // updateInvoice(id, payload) [monolithic]          → use updateInvoiceMeta() or setInvoiceDiscount()
   // getInvoiceDetails / getInvoiceInstallments
   //   / getInvoiceEntries / getInvoiceEntriesReport  → use getInvoiceFull(id)
+
+  // -------------------------------------------------------------------------
+  // Phase 10.1.B — Video courses (teacher-owned VOD)
+  // -------------------------------------------------------------------------
+
+  async listMyVideoCourses({ page = 1, limit = 20, status } = {}) {
+    const params = new URLSearchParams()
+    params.set('page', String(page))
+    params.set('limit', String(limit))
+    if (status) params.set('status', status)
+    return axiosInstance.get(`/teacher/video-courses?${params.toString()}`)
+  }
+
+  async getMyVideoCourse(id) {
+    return axiosInstance.get(`/teacher/video-courses/${id}`)
+  }
+
+  async getMyVideoCourseLessons(id) {
+    return axiosInstance.get(`/teacher/video-courses/${id}/lessons`)
+  }
+
+  async createVideoCourse(payload) {
+    return axiosInstance.post(`/teacher/video-courses`, payload)
+  }
+
+  async updateVideoCourse(id, payload) {
+    return axiosInstance.patch(`/teacher/video-courses/${id}`, payload)
+  }
+
+  async deleteVideoCourse(id) {
+    return axiosInstance.delete(`/teacher/video-courses/${id}`)
+  }
+
+  async uploadVideoCourseCoverImage(id, file) {
+    const fd = new FormData()
+    fd.append('file', file)
+    return axiosInstance.post(`/teacher/video-courses/${id}/cover-image`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  }
+
+  /**
+   * Create a lesson — backend mints a Bunny videoId + returns the upload
+   * contract. Caller is responsible for PUTing the bytes directly to
+   * Bunny using the returned { url, method, headers } shape (see
+   * `uploadLessonBytesToBunny()` below).
+   */
+  async createVideoLesson(courseId, { title, description, displayOrder } = {}) {
+    return axiosInstance.post(`/teacher/video-courses/${courseId}/lessons`, {
+      title,
+      ...(description ? { description } : {}),
+      ...(displayOrder !== undefined ? { displayOrder } : {}),
+    })
+  }
+
+  async updateVideoLesson(courseId, lessonId, payload) {
+    return axiosInstance.patch(
+      `/teacher/video-courses/${courseId}/lessons/${lessonId}`,
+      payload,
+    )
+  }
+
+  async deleteVideoLesson(courseId, lessonId) {
+    return axiosInstance.delete(
+      `/teacher/video-courses/${courseId}/lessons/${lessonId}`,
+    )
+  }
+
+  async reorderVideoLessons(courseId, lessonIds) {
+    return axiosInstance.post(
+      `/teacher/video-courses/${courseId}/lessons/reorder`,
+      { lessonIds },
+    )
+  }
+
+  async syncVideoLesson(courseId, lessonId) {
+    return axiosInstance.post(
+      `/teacher/video-courses/${courseId}/lessons/${lessonId}/sync`,
+    )
+  }
+
+  // -------------------------------------------------------------------------
+  // Phase 10.1.B.2 — intro video to Bunny Stream
+  // -------------------------------------------------------------------------
+
+  async startBunnyIntroVideoUpload() {
+    return axiosInstance.post(`/teacher/profile/intro-video/bunny`)
+  }
+
+  // -------------------------------------------------------------------------
+  // Direct-to-Bunny upload helper (used by both lesson + intro-video flows)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Stream `file` to Bunny via a PUT, reporting progress 0–100. The
+   * `upload` object is the contract returned by createVideoLesson() or
+   * startBunnyIntroVideoUpload() — { url, method, headers }.
+   *
+   * Returns a Promise<{ok: true}> on a 2xx Bunny response, rejects with
+   * an Error('upload-failed') with `.status` and `.detail` properties
+   * otherwise. The caller can decide whether to retry / surface the error.
+   *
+   * NOTE: we use XHR (not fetch) because fetch's body-stream-progress
+   * support is browser-spotty and we want a reliable progress bar.
+   */
+  uploadBytesToBunny(upload, file, { onProgress } = {}) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open(upload.method || 'PUT', upload.url, true)
+      for (const [k, v] of Object.entries(upload.headers || {})) {
+        try {
+          xhr.setRequestHeader(k, v)
+        } catch (_) {
+          // Some browsers block setting certain headers — ignore.
+        }
+      }
+      xhr.upload.onprogress = e => {
+        if (e.lengthComputable && onProgress) {
+          onProgress(Math.round((e.loaded / e.total) * 100))
+        }
+      }
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve({ ok: true, status: xhr.status })
+        } else {
+          const err = new Error('upload-failed')
+          err.status = xhr.status
+          err.detail = xhr.responseText
+          reject(err)
+        }
+      }
+      xhr.onerror = () => reject(new Error('network-error'))
+      xhr.onabort = () => reject(new Error('upload-aborted'))
+      xhr.send(file)
+    })
+  }
 }
 export default new TeacherApi();

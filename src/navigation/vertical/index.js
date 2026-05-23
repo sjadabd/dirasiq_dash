@@ -125,6 +125,12 @@ export default [
     icon: { icon: 'ri-graduation-cap-line' },
   },
   {
+    title: 'الدورات المرئية',
+    to: { name: 'teacher-video-courses' },
+    type: 'teacher',
+    icon: { icon: 'ri-video-line' },
+  },
+  {
     title: 'الحجوزات',
     to: { name: 'teacher-bookings-show-bookings' },
     type: 'teacher',
