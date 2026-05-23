@@ -17,9 +17,15 @@
           </v-avatar>
           <div>
             <div class="d-flex align-center gap-2">
+              <!-- Phase 10.1.B.2 widened the status enum to include the full
+                   Bunny lifecycle: pending → uploaded → processing → ready | failed -->
               <v-chip size="small" color="success" v-if="introStatus === 'ready'">جاهز</v-chip>
               <v-chip size="small" color="warning" v-else-if="introStatus === 'processing'">قيد المعالجة</v-chip>
-              <v-chip size="small" color="info" v-else>{{ introStatus || 'غير معروف' }}</v-chip>
+              <v-chip size="small" color="info" v-else-if="introStatus === 'uploaded'">تم الرفع</v-chip>
+              <v-chip size="small" color="secondary" v-else-if="introStatus === 'pending'">بانتظار الرفع</v-chip>
+              <v-chip size="small" color="error" v-else-if="introStatus === 'failed'">فشل المعالجة</v-chip>
+              <v-chip size="small" color="default" v-else-if="introStatus === 'none' || !introStatus">لا يوجد</v-chip>
+              <v-chip size="small" color="info" v-else>{{ introStatus }}</v-chip>
             </div>
             <div class="text-caption text-medium-emphasis mt-1">
               المدة: {{ formatTime(introDuration || 0) }}
@@ -694,26 +700,29 @@ const uploadVideo = async () => {
 
     const fileToUpload: File = videoFile.value
 
-    // Build FormData (multipart)
     isUploading.value = true
-    processingStatus.value = 'جاري رفع الفيديو...'
+    processingStatus.value = 'جاري التحضير للرفع إلى Bunny Stream...'
 
-    const form = new FormData()
-    form.append('video', fileToUpload)
+    // Phase 10.1.B.4 — direct PUT to Bunny Stream.
+    // Step 1: ask the backend to mint a Bunny videoId + return the upload
+    // contract { url, method, headers }.
+    const startRes = await teacherApi.startBunnyIntroVideoUpload()
+    const startData = startRes?.data?.data || {}
+    const contract = startData.upload
+    if (!contract || !contract.url) {
+      throw new Error('استجابة الخادم غير صالحة لبدء رفع Bunny')
+    }
 
-    console.log('[v0] جاري إرسال الطلب إلى الخادم (multipart/form-data)...')
-    await teacherApi.uploadIntroVideo(form, {
-      timeout: 600000, // allow up to 10 minutes for server-side processing
-      onUploadProgress: (e) => {
-        if (e.total) {
-          const progress = Math.round((e.loaded * 100) / e.total)
-          uploadProgress.value = progress
-          console.log('[v0] تقدم الرفع:', progress + '%')
-        }
-      },
+    // Step 2: stream the bytes directly to Bunny with progress.
+    processingStatus.value = 'جاري رفع الفيديو إلى Bunny Stream...'
+    await teacherApi.uploadBytesToBunny(contract, fileToUpload, {
+      onProgress: (p: number) => { uploadProgress.value = p },
     })
 
-    console.log('[v0] تم الرفع بنجاح')
+    // Step 3: Bunny will webhook the backend when transcoding finishes;
+    // until then, the row sits in 'uploaded' / 'processing'. The user
+    // sees a status badge.
+    processingStatus.value = 'تم الرفع. سيتم معالجة الفيديو قريباً.'
     uploadSuccess.value = true
 
     // Refresh existing video from server after successful upload
@@ -785,8 +794,17 @@ const loadExistingVideo = async () => {
     const data = res?.data?.data || {}
     introStatus.value = data?.status || ''
     introDuration.value = Number(data?.durationSeconds || 0)
-    const manifest = data?.manifestUrl ? `${base}${data.manifestUrl}` : null
-    const thumb = data?.thumbnailUrl ? `${base}${data.thumbnailUrl}` : null
+    // Phase 10.1.B.4 — backend now returns either a relative legacy path
+    // (`/uploads/intro_videos/...`) OR an absolute Bunny signed URL
+    // (`https://...b-cdn.net/...m3u8?token=...&expires=...`). Detect and
+    // skip the base prepend for absolute URLs.
+    const isAbsolute = (u: string | null | undefined) => !!u && /^https?:\/\//i.test(u)
+    const manifest = data?.manifestUrl
+      ? (isAbsolute(data.manifestUrl) ? data.manifestUrl : `${base}${data.manifestUrl}`)
+      : null
+    const thumb = data?.thumbnailUrl
+      ? (isAbsolute(data.thumbnailUrl) ? data.thumbnailUrl : `${base}${data.thumbnailUrl}`)
+      : null
     if (manifest) {
       existingVideoUrl.value = manifest
       videoUrl.value = manifest
