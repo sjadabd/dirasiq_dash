@@ -34,6 +34,12 @@ export default [
     icon: { icon: 'ri-user-add-line' },
   },
   {
+    title: 'الدورات المرئية',
+    to: { name: 'admin-video-courses' },
+    type: 'super_admin',
+    icon: { icon: 'ri-video-line' },
+  },
+  {
     title: 'الأخبار',
     to: { name: 'admin-news-show-news' },
     type: 'super_admin',

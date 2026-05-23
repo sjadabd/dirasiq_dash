@@ -247,5 +247,68 @@ class Admin {
   teacherApplicationFileUrl(id, fileId) {
     return `/super-admin/teacher-applications/${id}/files/${fileId}`;
   }
+
+  // -------------------------------------------------------------------------
+  // Phase 10.1.A — Video courses moderation
+  // -------------------------------------------------------------------------
+  //
+  // Endpoints (super-admin only):
+  //   GET    /super-admin/video-courses             — list
+  //   GET    /super-admin/video-courses/:id         — detail + lessons
+  //   PATCH  /super-admin/video-courses/:id/approve
+  //   PATCH  /super-admin/video-courses/:id/hide
+  //   PATCH  /super-admin/video-courses/:id/reject
+  //   DELETE /super-admin/video-courses/:id         — soft delete
+
+  async listVideoCourses({
+    page = 1,
+    limit = 20,
+    status,
+    visibility,
+    subject,
+    teachingStage,
+    teacherId,
+    search,
+  } = {}) {
+    const qs = buildQuery({
+      page, limit, status, visibility, subject, teachingStage, teacherId, search,
+    });
+    const response = await axiosInstance.get(`/super-admin/video-courses${qs}`);
+    return response;
+  }
+
+  async getVideoCourse(id) {
+    const response = await axiosInstance.get(`/super-admin/video-courses/${id}`);
+    return response;
+  }
+
+  async approveVideoCourse(id, { reviewNotes } = {}) {
+    const response = await axiosInstance.patch(
+      `/super-admin/video-courses/${id}/approve`,
+      reviewNotes ? { reviewNotes } : {},
+    );
+    return response;
+  }
+
+  async hideVideoCourse(id, { reviewNotes } = {}) {
+    const response = await axiosInstance.patch(
+      `/super-admin/video-courses/${id}/hide`,
+      reviewNotes ? { reviewNotes } : {},
+    );
+    return response;
+  }
+
+  async rejectVideoCourse(id, { reviewNotes }) {
+    const response = await axiosInstance.patch(
+      `/super-admin/video-courses/${id}/reject`,
+      { reviewNotes },
+    );
+    return response;
+  }
+
+  async deleteVideoCourse(id) {
+    const response = await axiosInstance.delete(`/super-admin/video-courses/${id}`);
+    return response;
+  }
 }
 export default new Admin();
