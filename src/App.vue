@@ -184,6 +184,9 @@ onUnmounted(() => {
 
       <RouterView />
       <ScrollToTop />
+      <!-- Global cross-page upload progress tray (Phase 10.1.B.5).
+           Renders nothing when there are no in-flight / recent uploads. -->
+      <UploadsWidget />
 
       <div ref="waRef" :style="{
         position: 'fixed',
