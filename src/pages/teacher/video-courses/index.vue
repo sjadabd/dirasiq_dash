@@ -78,14 +78,23 @@ async function loadCatalogs () {
 
     const gradesData = gradesRes?.data?.data || gradesRes?.data || []
     const grades = Array.isArray(gradesData) ? gradesData : (gradesData.items || gradesData.grades || [])
+    // /grades/my-grades returns junction-table rows shaped as
+    //   { id: <teacher_grades.id>, gradeId: <grades.id>, gradeName, ... }
+    // We MUST use `gradeId` (the real grades.id) as the dropdown value +
+    // the backend payload — sending the junction-row `id` instead triggers
+    // a Postgres FK violation → HTTP 500 on POST /teacher/video-courses.
     stageOptions.value = grades
-      .map((g) => ({
-        title: g.name || g.gradeName || g.title || String(g.id || ''),
-        value: g.id || g.name,
-        name: g.name || g.gradeName || g.title,
-        id: g.id,
-      }))
-      .filter((g) => g.title)
+      .map((g) => {
+        const realGradeId = g.gradeId || g.id
+        const displayName = g.gradeName || g.name || g.title || String(realGradeId || '')
+        return {
+          title: displayName,
+          value: realGradeId,
+          name: displayName,
+          id: realGradeId,
+        }
+      })
+      .filter((g) => g.title && g.id)
   } catch (_e) {
     // Non-fatal — dropdowns will be empty; the create dialog shows a hint.
   } finally {

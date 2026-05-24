@@ -53,9 +53,15 @@ async function loadCatalogs () {
       .filter(s => s.title)
     const gradesData = gradesRes?.data?.data || gradesRes?.data || []
     const grades = Array.isArray(gradesData) ? gradesData : (gradesData.items || [])
+    // /grades/my-grades returns { id: teacher_grades.id, gradeId: grades.id, ... }
+    // — use `gradeId` so the FK to grades.id holds on POST/PATCH.
     stageOptions.value = grades
-      .map(g => ({ title: g.name || g.gradeName || g.title || String(g.id || ''), value: g.id || g.name, name: g.name || g.gradeName || g.title, id: g.id }))
-      .filter(g => g.title)
+      .map(g => {
+        const realGradeId = g.gradeId || g.id
+        const displayName = g.gradeName || g.name || g.title || String(realGradeId || '')
+        return { title: displayName, value: realGradeId, name: displayName, id: realGradeId }
+      })
+      .filter(g => g.title && g.id)
   } catch (_) { /* non-fatal */ }
 }
 
