@@ -1,13 +1,13 @@
 <script setup>
-import { useAuth } from "@/composables/useAuth";
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useAuth } from "@/composables/useAuth"
+import { onMounted, ref } from "vue"
+import { useRouter } from "vue-router"
 
-const router = useRouter();
-const { user, logout, hasPermission } = useAuth();
+const router = useRouter()
+const { user, logout, hasPermission } = useAuth()
 
 // بيانات المستخدم
-const isLoading = ref(true);
+const isLoading = ref(true)
 
 // إحصائيات الطالب
 const stats = ref({
@@ -17,13 +17,14 @@ const stats = ref({
   certificates: 0,
   currentStreak: 0,
   totalPoints: 0,
-});
+})
 
 onMounted(() => {
   // التحقق من صلاحية المستخدم
   if (!hasPermission("student")) {
-    router.push("/login");
-    return;
+    router.push("/login")
+    
+    return
   }
 
   // محاكاة جلب الإحصائيات
@@ -35,60 +36,83 @@ onMounted(() => {
       certificates: 2,
       currentStreak: 7,
       totalPoints: 1250,
-    };
-    isLoading.value = false;
-  }, 1000);
-});
+    }
+    isLoading.value = false
+  }, 1000)
+})
 
 // دالة تحديث الملف الشخصي
 const updateProfile = () => {
-  router.push("/student/profile-setup");
-};
+  router.push("/student/profile-setup")
+}
 
 // دالة عرض الدورات
 const viewCourses = () => {
-  router.push("/student/courses");
-};
+  router.push("/student/courses")
+}
 
 // دالة الشهادات
 const viewCertificates = () => {
-  router.push("/student/certificates");
-};
+  router.push("/student/certificates")
+}
 
 // دالة التقدم
 const viewProgress = () => {
-  router.push("/student/progress");
-};
+  router.push("/student/progress")
+}
 </script>
 
 <template>
   <div class="student-dashboard">
     <!-- شريط التنقل العلوي -->
-    <VAppBar color="primary" dark>
+    <VAppBar
+      color="primary"
+      dark
+    >
       <VAppBarTitle>
-        <VIcon class="me-2">mdi-account</VIcon>
+        <VIcon class="me-2">
+          mdi-account
+        </VIcon>
         لوحة تحكم الطالب
       </VAppBarTitle>
 
       <VSpacer />
 
-      <VBtn icon @click="updateProfile">
+      <VBtn
+        icon
+        @click="updateProfile"
+      >
         <VIcon>mdi-account-edit</VIcon>
       </VBtn>
 
-      <VBtn icon @click="logout">
+      <VBtn
+        icon
+        @click="logout"
+      >
         <VIcon>mdi-logout</VIcon>
       </VBtn>
     </VAppBar>
 
-    <VContainer fluid class="pa-6">
+    <VContainer
+      fluid
+      class="pa-6"
+    >
       <!-- ترحيب -->
       <VRow class="mb-6">
         <VCol cols="12">
-          <VCard color="primary" variant="tonal" class="pa-6">
+          <VCard
+            color="primary"
+            variant="tonal"
+            class="pa-6"
+          >
             <VRow align="center">
-              <VCol cols="12" md="8">
-                <h1 class="text-h4 mb-2">مرحباً {{ user?.name }}! 👋</h1>
+              <VCol
+                cols="12"
+                md="8"
+              >
+                <h1 class="text-h4 mb-2">
+                  مرحباً {{ user?.name }}! 👋
+                </h1>
                 <p class="text-body-1 mb-0">
                   {{ user?.email }} • {{ user?.userType }}
                 </p>
@@ -97,9 +121,18 @@ const viewProgress = () => {
                   {{ new Date(user?.createdAt).toLocaleDateString("ar-SA") }}
                 </p>
               </VCol>
-              <VCol cols="12" md="4" class="text-center">
-                <VAvatar size="80" color="primary">
-                  <VIcon size="40">mdi-account</VIcon>
+              <VCol
+                cols="12"
+                md="4"
+                class="text-center"
+              >
+                <VAvatar
+                  size="80"
+                  color="primary"
+                >
+                  <VIcon size="40">
+                    mdi-account
+                  </VIcon>
                 </VAvatar>
               </VCol>
             </VRow>
@@ -110,68 +143,182 @@ const viewProgress = () => {
       <!-- الإحصائيات -->
       <VRow class="mb-6">
         <VCol cols="12">
-          <h2 class="text-h5 mb-4">إحصائياتك التعليمية</h2>
+          <h2 class="text-h5 mb-4">
+            إحصائياتك التعليمية
+          </h2>
         </VCol>
 
-        <VCol cols="12" sm="6" md="4" lg="2">
-          <VCard class="pa-4 text-center" elevation="2">
-            <VIcon size="48" color="primary" class="mb-2">mdi-book-open</VIcon>
-            <h3 class="text-h4">{{ stats.enrolledCourses }}</h3>
-            <p class="text-body-2 text-medium-emphasis">الدورات المسجلة</p>
-          </VCard>
-        </VCol>
-
-        <VCol cols="12" sm="6" md="4" lg="2">
-          <VCard class="pa-4 text-center" elevation="2">
-            <VIcon size="48" color="success" class="mb-2"
-              >mdi-check-circle</VIcon
+        <VCol
+          cols="12"
+          sm="6"
+          md="4"
+          lg="2"
+        >
+          <VCard
+            class="pa-4 text-center"
+            elevation="2"
+          >
+            <VIcon
+              size="48"
+              color="primary"
+              class="mb-2"
             >
-            <h3 class="text-h4">{{ stats.completedLessons }}</h3>
-            <p class="text-body-2 text-medium-emphasis">الدروس المكتملة</p>
+              mdi-book-open
+            </VIcon>
+            <h3 class="text-h4">
+              {{ stats.enrolledCourses }}
+            </h3>
+            <p class="text-body-2 text-medium-emphasis">
+              الدورات المسجلة
+            </p>
           </VCard>
         </VCol>
 
-        <VCol cols="12" sm="6" md="4" lg="2">
-          <VCard class="pa-4 text-center" elevation="2">
-            <VIcon size="48" color="info" class="mb-2">mdi-clock</VIcon>
-            <h3 class="text-h4">{{ stats.totalHours }}</h3>
-            <p class="text-body-2 text-medium-emphasis">ساعات التعلم</p>
-          </VCard>
-        </VCol>
-
-        <VCol cols="12" sm="6" md="4" lg="2">
-          <VCard class="pa-4 text-center" elevation="2">
-            <VIcon size="48" color="warning" class="mb-2"
-              >mdi-certificate</VIcon
+        <VCol
+          cols="12"
+          sm="6"
+          md="4"
+          lg="2"
+        >
+          <VCard
+            class="pa-4 text-center"
+            elevation="2"
+          >
+            <VIcon
+              size="48"
+              color="success"
+              class="mb-2"
             >
-            <h3 class="text-h4">{{ stats.certificates }}</h3>
-            <p class="text-body-2 text-medium-emphasis">الشهادات</p>
+              mdi-check-circle
+            </VIcon>
+            <h3 class="text-h4">
+              {{ stats.completedLessons }}
+            </h3>
+            <p class="text-body-2 text-medium-emphasis">
+              الدروس المكتملة
+            </p>
           </VCard>
         </VCol>
 
-        <VCol cols="12" sm="6" md="4" lg="2">
-          <VCard class="pa-4 text-center" elevation="2">
-            <VIcon size="48" color="success" class="mb-2">mdi-fire</VIcon>
-            <h3 class="text-h4">{{ stats.currentStreak }}</h3>
-            <p class="text-body-2 text-medium-emphasis">أيام متتالية</p>
+        <VCol
+          cols="12"
+          sm="6"
+          md="4"
+          lg="2"
+        >
+          <VCard
+            class="pa-4 text-center"
+            elevation="2"
+          >
+            <VIcon
+              size="48"
+              color="info"
+              class="mb-2"
+            >
+              mdi-clock
+            </VIcon>
+            <h3 class="text-h4">
+              {{ stats.totalHours }}
+            </h3>
+            <p class="text-body-2 text-medium-emphasis">
+              ساعات التعلم
+            </p>
           </VCard>
         </VCol>
 
-        <VCol cols="12" sm="6" md="4" lg="2">
-          <VCard class="pa-4 text-center" elevation="2">
-            <VIcon size="48" color="primary" class="mb-2">mdi-star</VIcon>
-            <h3 class="text-h4">{{ stats.totalPoints }}</h3>
-            <p class="text-body-2 text-medium-emphasis">النقاط</p>
+        <VCol
+          cols="12"
+          sm="6"
+          md="4"
+          lg="2"
+        >
+          <VCard
+            class="pa-4 text-center"
+            elevation="2"
+          >
+            <VIcon
+              size="48"
+              color="warning"
+              class="mb-2"
+            >
+              mdi-certificate
+            </VIcon>
+            <h3 class="text-h4">
+              {{ stats.certificates }}
+            </h3>
+            <p class="text-body-2 text-medium-emphasis">
+              الشهادات
+            </p>
+          </VCard>
+        </VCol>
+
+        <VCol
+          cols="12"
+          sm="6"
+          md="4"
+          lg="2"
+        >
+          <VCard
+            class="pa-4 text-center"
+            elevation="2"
+          >
+            <VIcon
+              size="48"
+              color="success"
+              class="mb-2"
+            >
+              mdi-fire
+            </VIcon>
+            <h3 class="text-h4">
+              {{ stats.currentStreak }}
+            </h3>
+            <p class="text-body-2 text-medium-emphasis">
+              أيام متتالية
+            </p>
+          </VCard>
+        </VCol>
+
+        <VCol
+          cols="12"
+          sm="6"
+          md="4"
+          lg="2"
+        >
+          <VCard
+            class="pa-4 text-center"
+            elevation="2"
+          >
+            <VIcon
+              size="48"
+              color="primary"
+              class="mb-2"
+            >
+              mdi-star
+            </VIcon>
+            <h3 class="text-h4">
+              {{ stats.totalPoints }}
+            </h3>
+            <p class="text-body-2 text-medium-emphasis">
+              النقاط
+            </p>
           </VCard>
         </VCol>
       </VRow>
 
       <!-- الإجراءات السريعة -->
       <VRow>
-        <VCol cols="12" md="6">
-          <VCard elevation="2" class="pa-6">
+        <VCol
+          cols="12"
+          md="6"
+        >
+          <VCard
+            elevation="2"
+            class="pa-6"
+          >
             <VCardTitle>
-              <VIcon class="me-2">mdi-school</VIcon>
+              <VIcon class="me-2">
+                mdi-school
+              </VIcon>
               التعلم
             </VCardTitle>
 
@@ -181,7 +328,10 @@ const viewProgress = () => {
                   <VListItemTitle>دوراتي</VListItemTitle>
                   <VListItemSubtitle>عرض الدورات المسجلة</VListItemSubtitle>
                   <template #append>
-                    <VBtn icon variant="text">
+                    <VBtn
+                      icon
+                      variant="text"
+                    >
                       <VIcon>mdi-book-open</VIcon>
                     </VBtn>
                   </template>
@@ -191,7 +341,10 @@ const viewProgress = () => {
                   <VListItemTitle>تقدمي</VListItemTitle>
                   <VListItemSubtitle>عرض تقدمك في التعلم</VListItemSubtitle>
                   <template #append>
-                    <VBtn icon variant="text">
+                    <VBtn
+                      icon
+                      variant="text"
+                    >
                       <VIcon>mdi-chart-line</VIcon>
                     </VBtn>
                   </template>
@@ -199,11 +352,14 @@ const viewProgress = () => {
 
                 <VListItem @click="viewCertificates">
                   <VListItemTitle>شهاداتي</VListItemTitle>
-                  <VListItemSubtitle
-                    >عرض الشهادات المحصل عليها</VListItemSubtitle
-                  >
+                  <VListItemSubtitle>
+                    عرض الشهادات المحصل عليها
+                  </VListItemSubtitle>
                   <template #append>
-                    <VBtn icon variant="text">
+                    <VBtn
+                      icon
+                      variant="text"
+                    >
                       <VIcon>mdi-certificate</VIcon>
                     </VBtn>
                   </template>
@@ -213,10 +369,18 @@ const viewProgress = () => {
           </VCard>
         </VCol>
 
-        <VCol cols="12" md="6">
-          <VCard elevation="2" class="pa-6">
+        <VCol
+          cols="12"
+          md="6"
+        >
+          <VCard
+            elevation="2"
+            class="pa-6"
+          >
             <VCardTitle>
-              <VIcon class="me-2">mdi-account</VIcon>
+              <VIcon class="me-2">
+                mdi-account
+              </VIcon>
               معلومات الحساب
             </VCardTitle>
 
@@ -235,7 +399,12 @@ const viewProgress = () => {
                 <VListItem>
                   <VListItemTitle>نوع المستخدم</VListItemTitle>
                   <VListItemSubtitle>
-                    <VChip color="info" size="small"> طالب </VChip>
+                    <VChip
+                      color="info"
+                      size="small"
+                    >
+                      طالب
+                    </VChip>
                   </VListItemSubtitle>
                 </VListItem>
 
@@ -253,16 +422,23 @@ const viewProgress = () => {
 
                 <VListItem>
                   <VListItemTitle>تاريخ الإنشاء</VListItemTitle>
-                  <VListItemSubtitle>{{
-                    new Date(user?.createdAt).toLocaleDateString("ar-SA")
-                  }}</VListItemSubtitle>
+                  <VListItemSubtitle>
+                    {{
+                      new Date(user?.createdAt).toLocaleDateString("ar-SA")
+                    }}
+                  </VListItemSubtitle>
                 </VListItem>
               </VList>
             </VCardText>
 
             <VCardActions>
-              <VBtn color="primary" @click="updateProfile">
-                <VIcon start>mdi-account-edit</VIcon>
+              <VBtn
+                color="primary"
+                @click="updateProfile"
+              >
+                <VIcon start>
+                  mdi-account-edit
+                </VIcon>
                 تحديث الملف الشخصي
               </VBtn>
             </VCardActions>

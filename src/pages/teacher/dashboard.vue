@@ -12,18 +12,18 @@
 // Icons: ri-* (Remix) — per project ESLint rule.
 // =====================================================
 
-import teacher_api from "@/api/teacher/teacher_api";
-import axiosInstance from "@/utils/axios";
-import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import teacher_api from "@/api/teacher/teacher_api"
+import axiosInstance from "@/utils/axios"
+import { computed, onMounted, ref } from "vue"
+import { useRouter } from "vue-router"
 
-const router = useRouter();
+const router = useRouter()
 
 // ---- Reactive state -------------------------------------------------------
-const user = ref(null);
-const contentUrl = ref(localStorage.getItem("content_url") || "");
-const isLoading = ref(true);
-const isLoadingSessions = ref(true);
+const user = ref(null)
+const contentUrl = ref(localStorage.getItem("content_url") || "")
+const isLoading = ref(true)
+const isLoadingSessions = ref(true)
 
 const stats = ref({
   totalStudents: 0, totalCourses: 0,
@@ -31,56 +31,61 @@ const stats = ref({
   sessionsToday: 0,
   totalDeposit: 0, receivedDeposit: 0, remainingDeposit: 0,
   studentTotalDue: 0, studentAmountPaid: 0, studentAmountRemaining: 0,
-});
+})
 
-const wallet = ref({ balance: 0 });
-const walletLoading = ref(false);
+const wallet = ref({ balance: 0 })
+const walletLoading = ref(false)
 
-const capacity = ref({ currentStudents: 0, maxStudents: 0, remaining: 0, canAdd: false });
-const capacityLoading = ref(false);
-const capacityError = ref("");
+const capacity = ref({ currentStudents: 0, maxStudents: 0, remaining: 0, canAdd: false })
+const capacityLoading = ref(false)
+const capacityError = ref("")
 
-const upcomingToday = ref([]);
+const upcomingToday = ref([])
 
 const referral = ref({
   referralCode: "", referralLink: "",
   total: 0, completed: 0, pending: 0, bonusSeats: 0,
-});
-const referralLoading = ref(false);
-const referralPanelOpen = ref(false);
+})
 
-const apiHealthy = ref(null);
+const referralLoading = ref(false)
+const referralPanelOpen = ref(false)
 
-const snackbar = ref({ show: false, text: "", color: "success" });
+const apiHealthy = ref(null)
+
+const snackbar = ref({ show: false, text: "", color: "success" })
 
 // ---- Derived --------------------------------------------------------------
 const greeting = computed(() => {
-  const h = new Date().getHours();
-  if (h < 5) return "ليلة سعيدة";
-  if (h < 12) return "صباح الخير";
-  if (h < 17) return "مساء النور";
-  if (h < 21) return "مساء الخير";
-  return "ليلة هادئة";
-});
+  const h = new Date().getHours()
+  if (h < 5) return "ليلة سعيدة"
+  if (h < 12) return "صباح الخير"
+  if (h < 17) return "مساء النور"
+  if (h < 21) return "مساء الخير"
+  
+  return "ليلة هادئة"
+})
 
 const todayLabel = computed(() =>
   new Date().toLocaleDateString("ar-IQ", { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
-);
+)
 
 const capacityPct = computed(() => {
-  if (!capacity.value.maxStudents) return 0;
-  return Math.min(100, Math.round((capacity.value.currentStudents / capacity.value.maxStudents) * 100));
-});
+  if (!capacity.value.maxStudents) return 0
+  
+  return Math.min(100, Math.round((capacity.value.currentStudents / capacity.value.maxStudents) * 100))
+})
 
 const depositPct = computed(() => {
-  if (!stats.value.totalDeposit) return 0;
-  return Math.round((stats.value.receivedDeposit / stats.value.totalDeposit) * 100);
-});
+  if (!stats.value.totalDeposit) return 0
+  
+  return Math.round((stats.value.receivedDeposit / stats.value.totalDeposit) * 100)
+})
 
 const studentPaidPct = computed(() => {
-  if (!stats.value.studentTotalDue) return 0;
-  return Math.round((stats.value.studentAmountPaid / stats.value.studentTotalDue) * 100);
-});
+  if (!stats.value.studentTotalDue) return 0
+  
+  return Math.round((stats.value.studentAmountPaid / stats.value.studentTotalDue) * 100)
+})
 
 const kpiCards = computed(() => [
   {
@@ -130,7 +135,7 @@ const kpiCards = computed(() => [
     to: "/teacher/invoices/manage-invoices",
     isText: true,
   },
-]);
+])
 
 const quickActions = [
   { label: "كورس جديد", icon: "ri-add-circle-line", color: "primary", to: "/teacher/course/show-course" },
@@ -138,7 +143,7 @@ const quickActions = [
   { label: "فاتورة طالب", icon: "ri-bill-line", color: "warning", to: "/teacher/invoices/create-invoices" },
   { label: "واجب", icon: "ri-task-line", color: "secondary", to: "/teacher/assignments/manage-assignments" },
   { label: "امتحان", icon: "ri-file-list-3-line", color: "error", to: "/teacher/exams/manage-exams" },
-];
+]
 
 const sectionsNav = [
   { title: "المواد الدراسية", icon: "ri-book-2-line", to: "/teacher/subjects/show-subjects" },
@@ -153,50 +158,54 @@ const sectionsNav = [
   { title: "المصاريف", icon: "ri-hand-coin-line", to: "/teacher/expenses/manage-expenses" },
   { title: "التقارير", icon: "ri-bar-chart-2-line", to: "/teacher/reports/financial" },
   { title: "الإشعارات", icon: "ri-notification-3-line", to: "/teacher/notifications/show-notifications" },
-];
+]
 
 // ---- Helpers --------------------------------------------------------------
 function formatIQD(n) {
-  const num = Number(n ?? 0);
-  return new Intl.NumberFormat("en-IQ").format(num) + " د.ع";
+  const num = Number(n ?? 0)
+  
+  return new Intl.NumberFormat("en-IQ").format(num) + " د.ع"
 }
 function formatIQDShort(n) {
-  const num = Number(n ?? 0);
-  if (num >= 1_000_000) return (num / 1_000_000).toFixed(num >= 10_000_000 ? 0 : 1) + "M د.ع";
-  if (num >= 1_000) return (num / 1_000).toFixed(num >= 10_000 ? 0 : 1) + "K د.ع";
-  return new Intl.NumberFormat("en-IQ").format(num) + " د.ع";
+  const num = Number(n ?? 0)
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(num >= 10_000_000 ? 0 : 1) + "M د.ع"
+  if (num >= 1_000) return (num / 1_000).toFixed(num >= 10_000 ? 0 : 1) + "K د.ع"
+  
+  return new Intl.NumberFormat("en-IQ").format(num) + " د.ع"
 }
 function resolveAsset(path) {
-  if (!path) return "";
-  if (/^https?:\/\//i.test(path) || path.startsWith("data:")) return path;
-  const base = (contentUrl.value || axiosInstance?.defaults?.baseURL?.replace(/\/api\/?$/, "") || "").replace(/\/+$/, "");
-  return base + (path.startsWith("/") ? path : "/" + path);
+  if (!path) return ""
+  if (/^https?:\/\//i.test(path) || path.startsWith("data:")) return path
+  const base = (contentUrl.value || axiosInstance?.defaults?.baseURL?.replace(/\/api\/?$/, "") || "").replace(/\/+$/, "")
+  
+  return base + (path.startsWith("/") ? path : "/" + path)
 }
 function stateLabel(s) {
-  return ({ confirmed: "مؤكدة", pending: "قيد الانتظار", cancelled: "ملغاة", rejected: "مرفوضة" })[s] || s || "";
+  return ({ confirmed: "مؤكدة", pending: "قيد الانتظار", cancelled: "ملغاة", rejected: "مرفوضة" })[s] || s || ""
 }
 function stateColor(s) {
-  return ({ confirmed: "success", pending: "warning", cancelled: "grey", rejected: "error" })[s] || "primary";
+  return ({ confirmed: "success", pending: "warning", cancelled: "grey", rejected: "error" })[s] || "primary"
 }
 function formatTimeRange(start, end) {
-  if (!start) return "";
-  return end ? `${start} – ${end}` : start;
+  if (!start) return ""
+  
+  return end ? `${start} – ${end}` : start
 }
 function copyToClipboard(text) {
-  const val = String(text || "");
+  const val = String(text || "")
   if (navigator?.clipboard?.writeText) {
     navigator.clipboard.writeText(val)
       .then(() => (snackbar.value = { show: true, text: "تم النسخ بنجاح", color: "success" }))
-      .catch(() => (snackbar.value = { show: true, text: "تعذّر النسخ", color: "error" }));
+      .catch(() => (snackbar.value = { show: true, text: "تعذّر النسخ", color: "error" }))
   }
 }
 
 // ---- Data loaders ---------------------------------------------------------
 async function loadDashboard() {
   try {
-    const res = await teacher_api.getDashboard();
-    const p = res?.data?.data ?? {};
-    if (res?.data?.content_url) contentUrl.value = res.data.content_url;
+    const res = await teacher_api.getDashboard()
+    const p = res?.data?.data ?? {}
+    if (res?.data?.content_url) contentUrl.value = res.data.content_url
     stats.value = {
       totalStudents: Number(p.totalStudents) || 0,
       totalCourses: Number(p.totalCourses) || 0,
@@ -209,66 +218,69 @@ async function loadDashboard() {
       studentTotalDue: Number(p.studentInvoices?.totalDue) || 0,
       studentAmountPaid: Number(p.studentInvoices?.amountPaid) || 0,
       studentAmountRemaining: Number(p.studentInvoices?.amountRemaining) || 0,
-    };
+    }
   } catch (e) {
-    console.warn("dashboard load failed:", e);
+    console.warn("dashboard load failed:", e)
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
 }
 
 async function loadCapacity() {
-  capacityLoading.value = true;
-  capacityError.value = "";
+  capacityLoading.value = true
+  capacityError.value = ""
   try {
-    const res = await teacher_api.getRemainingStudents();
-    const ok = res?.data?.success ?? res?.success;
-    const d = res?.data?.data ?? res?.data ?? {};
-    if (!ok) throw new Error(res?.data?.message || "تعذر جلب السعة");
+    const res = await teacher_api.getRemainingStudents()
+    const ok = res?.data?.success ?? res?.success
+    const d = res?.data?.data ?? res?.data ?? {}
+    if (!ok) throw new Error(res?.data?.message || "تعذر جلب السعة")
     capacity.value = {
       currentStudents: Number(d.currentStudents) || 0,
       maxStudents: Number(d.maxStudents) || 0,
       remaining: Number(d.remaining) || 0,
       canAdd: !!d.canAdd,
-    };
+    }
   } catch (e) {
-    capacityError.value = e?.response?.data?.message || e?.message || "تعذّر جلب السعة";
+    capacityError.value = e?.response?.data?.message || e?.message || "تعذّر جلب السعة"
   } finally {
-    capacityLoading.value = false;
+    capacityLoading.value = false
   }
 }
 
 async function loadWallet() {
-  walletLoading.value = true;
+  walletLoading.value = true
   try {
-    const res = await teacher_api.getWallet();
-    const d = res?.data?.data ?? res?.data ?? {};
-    wallet.value = { balance: Number(d.balance) || 0 };
+    const res = await teacher_api.getWallet()
+    const d = res?.data?.data ?? res?.data ?? {}
+
+    wallet.value = { balance: Number(d.balance) || 0 }
   } catch (e) {
-    console.warn("wallet load failed:", e);
+    console.warn("wallet load failed:", e)
   } finally {
-    walletLoading.value = false;
+    walletLoading.value = false
   }
 }
 
 async function loadUpcoming() {
-  isLoadingSessions.value = true;
+  isLoadingSessions.value = true
   try {
-    const res = await teacher_api.getUpcomingToday();
-    const items = res?.data?.data ?? [];
-    upcomingToday.value = Array.isArray(items) ? items : [];
+    const res = await teacher_api.getUpcomingToday()
+    const items = res?.data?.data ?? []
+
+    upcomingToday.value = Array.isArray(items) ? items : []
   } catch (e) {
-    console.warn("upcoming load failed:", e);
+    console.warn("upcoming load failed:", e)
   } finally {
-    isLoadingSessions.value = false;
+    isLoadingSessions.value = false
   }
 }
 
 async function loadReferral() {
-  referralLoading.value = true;
+  referralLoading.value = true
   try {
-    const res = await teacher_api.getReferralDashboard();
-    const p = res?.data?.data ?? {};
+    const res = await teacher_api.getReferralDashboard()
+    const p = res?.data?.data ?? {}
+
     referral.value = {
       referralCode: p.referralCode || "",
       referralLink: p.referralLink || "",
@@ -276,55 +288,57 @@ async function loadReferral() {
       completed: Number(p.referrals?.completed) || 0,
       pending: Number(p.referrals?.pending) || 0,
       bonusSeats: Number(p.bonuses?.totalBonusSeats) || 0,
-    };
+    }
   } catch (e) {
-    console.warn("referral load failed:", e);
+    console.warn("referral load failed:", e)
   } finally {
-    referralLoading.value = false;
+    referralLoading.value = false
   }
 }
 
 async function loadHealth() {
   try {
-    const baseURL = axiosInstance?.defaults?.baseURL || import.meta.env.VITE_API_BASE_URL || "";
-    const origin = baseURL.replace(/\/api\/?$/, "");
-    const r = await fetch(`${origin}/health`).then((res) => res.json());
-    apiHealthy.value = !!r?.success;
+    const baseURL = axiosInstance?.defaults?.baseURL || import.meta.env.VITE_API_BASE_URL || ""
+    const origin = baseURL.replace(/\/api\/?$/, "")
+    const r = await fetch(`${origin}/health`).then(res => res.json())
+
+    apiHealthy.value = !!r?.success
   } catch {
-    apiHealthy.value = false;
+    apiHealthy.value = false
   }
 }
 
 async function refreshAll() {
-  await Promise.all([loadDashboard(), loadCapacity(), loadWallet(), loadUpcoming()]);
+  await Promise.all([loadDashboard(), loadCapacity(), loadWallet(), loadUpcoming()])
 }
 
 // ---- Wayl return polling (preserved from v1) ------------------------------
 function pollAfterWaylReturnIfNeeded() {
-  let pending = null;
-  try { pending = JSON.parse(localStorage.getItem("pending_wayl_action") || "null"); }
-  catch { pending = null; }
-  if (!pending?.createdAt) return;
-  const ageMs = Date.now() - Number(pending.createdAt);
-  if (Number.isNaN(ageMs) || ageMs > 2 * 60 * 1000) return;
-  const startedAt = Date.now();
+  let pending = null
+  try { pending = JSON.parse(localStorage.getItem("pending_wayl_action") || "null") }
+  catch { pending = null }
+  if (!pending?.createdAt) return
+  const ageMs = Date.now() - Number(pending.createdAt)
+  if (Number.isNaN(ageMs) || ageMs > 2 * 60 * 1000) return
+  const startedAt = Date.now()
+
   const t = setInterval(async () => {
-    await Promise.all([loadDashboard(), loadCapacity(), loadWallet()]);
+    await Promise.all([loadDashboard(), loadCapacity(), loadWallet()])
     if (Date.now() - startedAt >= 45000) {
-      clearInterval(t);
-      localStorage.removeItem("pending_wayl_action");
+      clearInterval(t)
+      localStorage.removeItem("pending_wayl_action")
     }
-  }, 4000);
+  }, 4000)
 }
 
 // ---- QR print -------------------------------------------------------------
 function printQr() {
-  const qrPath = user.value?.qr;
-  if (!qrPath) return;
-  const qrUrl = resolveAsset(qrPath);
-  const win = window.open("", "_blank");
-  if (!win) return;
-  win.document.open();
+  const qrPath = user.value?.qr
+  if (!qrPath) return
+  const qrUrl = resolveAsset(qrPath)
+  const win = window.open("", "_blank")
+  if (!win) return
+  win.document.open()
   win.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="utf-8"><title>طباعة رمز الحضور</title><style>
     @page{size:A4 portrait;margin:20mm}
     body{font-family:'Cairo',system-ui,sans-serif;text-align:center}
@@ -340,60 +354,128 @@ function printQr() {
     <img src="${qrUrl}" alt="رمز حضور الطلاب">
     <div class="name">${user.value?.name || ""}</div>
     <div class="note">في حال تعذّر المسح، يرجى مراجعة المعلم.</div>
-  </div><script>window.onload=function(){setTimeout(function(){window.print();window.close()},300)}<\/script></body></html>`);
-  win.document.close();
+  </div><script>window.onload=function(){setTimeout(function(){window.print();window.close()},300)}<\/script></body></html>`)
+  win.document.close()
 }
 
 // ---- Lifecycle ------------------------------------------------------------
 onMounted(async () => {
-  const userData = localStorage.getItem("user");
-  if (!userData) { router.push("/login"); return; }
-  try { user.value = JSON.parse(userData); } catch { user.value = {}; }
+  const userData = localStorage.getItem("user")
+  if (!userData) { router.push("/login") 
 
-  await Promise.all([refreshAll(), loadReferral(), loadHealth()]);
-  pollAfterWaylReturnIfNeeded();
-});
+    return }
+  try { user.value = JSON.parse(userData) } catch { user.value = {} }
+
+  await Promise.all([refreshAll(), loadReferral(), loadHealth()])
+  pollAfterWaylReturnIfNeeded()
+})
 </script>
 
 <template>
   <div class="teacher-dash">
     <!-- 1. HERO ============================================== -->
-    <VCard class="hero-card mb-4" elevation="0" rounded="lg">
+    <VCard
+      class="hero-card mb-4"
+      elevation="0"
+      rounded="lg"
+    >
       <div class="hero-mesh" />
       <VCardItem class="position-relative">
-        <VRow align="center" class="g-3">
-          <VCol cols="12" md="7">
+        <VRow
+          align="center"
+          class="g-3"
+        >
+          <VCol
+            cols="12"
+            md="7"
+          >
             <div class="d-flex align-center gap-3 flex-wrap">
-              <VAvatar size="64" color="warning" class="hero-avatar">
-                <VImg v-if="user?.profileImagePath" :src="resolveAsset(user.profileImagePath)" alt="avatar" cover />
-                <VIcon v-else size="32" color="white">ri-user-3-line</VIcon>
+              <VAvatar
+                size="64"
+                color="warning"
+                class="hero-avatar"
+              >
+                <VImg
+                  v-if="user?.profileImagePath"
+                  :src="resolveAsset(user.profileImagePath)"
+                  alt="avatar"
+                  cover
+                />
+                <VIcon
+                  v-else
+                  size="32"
+                  color="white"
+                >
+                  ri-user-3-line
+                </VIcon>
               </VAvatar>
               <div class="flex-grow-1">
-                <div class="hero-greet">{{ greeting }} ✨</div>
-                <h1 class="hero-name">{{ user?.name || "أيها المعلم" }}</h1>
-                <div class="hero-date">{{ todayLabel }}</div>
+                <div class="hero-greet">
+                  {{ greeting }} ✨
+                </div>
+                <h1 class="hero-name">
+                  {{ user?.name || "أيها المعلم" }}
+                </h1>
+                <div class="hero-date">
+                  {{ todayLabel }}
+                </div>
               </div>
             </div>
           </VCol>
-          <VCol cols="12" md="5" class="d-flex justify-md-end align-center gap-2 flex-wrap">
-            <VChip :color="apiHealthy ? 'success' : apiHealthy === false ? 'error' : 'grey'"
-              variant="flat" size="small" class="font-weight-bold">
-              <span class="live-dot me-2" :class="{ ok: apiHealthy, down: apiHealthy === false }" />
+          <VCol
+            cols="12"
+            md="5"
+            class="d-flex justify-md-end align-center gap-2 flex-wrap"
+          >
+            <VChip
+              :color="apiHealthy ? 'success' : apiHealthy === false ? 'error' : 'grey'"
+              variant="flat"
+              size="small"
+              class="font-weight-bold"
+            >
+              <span
+                class="live-dot me-2"
+                :class="{ ok: apiHealthy, down: apiHealthy === false }"
+              />
               {{ apiHealthy ? "النظام نشط" : apiHealthy === false ? "خارج الخدمة" : "فحص…" }}
             </VChip>
-            <VBtn color="warning" variant="flat" rounded="lg" prepend-icon="ri-refresh-line"
-              :loading="isLoading" class="hero-refresh" @click="refreshAll">
+            <VBtn
+              color="warning"
+              variant="flat"
+              rounded="lg"
+              prepend-icon="ri-refresh-line"
+              :loading="isLoading"
+              class="hero-refresh"
+              @click="refreshAll"
+            >
               تحديث
             </VBtn>
           </VCol>
         </VRow>
 
         <!-- Quick actions row -->
-        <VDivider class="my-4" color="white" opacity="0.18" />
+        <VDivider
+          class="my-4"
+          color="white"
+          opacity="0.18"
+        />
         <div class="quick-actions">
-          <RouterLink v-for="a in quickActions" :key="a.label" :to="a.to" class="qa-link">
-            <div class="qa-pill" :class="`qa-${a.color}`">
-              <VIcon size="18" color="white">{{ a.icon }}</VIcon>
+          <RouterLink
+            v-for="a in quickActions"
+            :key="a.label"
+            :to="a.to"
+            class="qa-link"
+          >
+            <div
+              class="qa-pill"
+              :class="`qa-${a.color}`"
+            >
+              <VIcon
+                size="18"
+                color="white"
+              >
+                {{ a.icon }}
+              </VIcon>
               <span>{{ a.label }}</span>
             </div>
           </RouterLink>
@@ -402,23 +484,64 @@ onMounted(async () => {
     </VCard>
 
     <!-- 2. KPI ROW =========================================== -->
-    <VRow class="mb-2" dense>
-      <VCol v-for="card in kpiCards" :key="card.key" cols="12" sm="6" md="4" lg="auto" class="flex-lg-grow-1">
-        <RouterLink :to="card.to" class="kpi-link">
-          <VCard class="kpi-card h-100" elevation="0" rounded="lg" border>
+    <VRow
+      class="mb-2"
+      dense
+    >
+      <VCol
+        v-for="card in kpiCards"
+        :key="card.key"
+        cols="12"
+        sm="6"
+        md="4"
+        lg="auto"
+        class="flex-lg-grow-1"
+      >
+        <RouterLink
+          :to="card.to"
+          class="kpi-link"
+        >
+          <VCard
+            class="kpi-card h-100"
+            elevation="0"
+            rounded="lg"
+            border
+          >
             <VCardItem>
               <div class="d-flex align-center justify-space-between mb-1">
                 <div :class="`kpi-icon kpi-icon-${card.color}`">
-                  <VIcon size="20" color="white">{{ card.icon }}</VIcon>
+                  <VIcon
+                    size="20"
+                    color="white"
+                  >
+                    {{ card.icon }}
+                  </VIcon>
                 </div>
-                <VIcon size="16" color="grey-darken-1">ri-arrow-left-s-line</VIcon>
+                <VIcon
+                  size="16"
+                  color="grey-darken-1"
+                >
+                  ri-arrow-left-s-line
+                </VIcon>
               </div>
-              <VSkeletonLoader v-if="isLoading" type="text" />
+              <VSkeletonLoader
+                v-if="isLoading"
+                type="text"
+              />
               <template v-else>
-                <div class="kpi-value" :class="{ 'kpi-value-text': card.isText }">{{ card.value }}</div>
+                <div
+                  class="kpi-value"
+                  :class="{ 'kpi-value-text': card.isText }"
+                >
+                  {{ card.value }}
+                </div>
               </template>
-              <div class="kpi-label">{{ card.label }}</div>
-              <div class="kpi-sub">{{ card.sub }}</div>
+              <div class="kpi-label">
+                {{ card.label }}
+              </div>
+              <div class="kpi-sub">
+                {{ card.sub }}
+              </div>
             </VCardItem>
           </VCard>
         </RouterLink>
@@ -428,46 +551,119 @@ onMounted(async () => {
     <!-- 3. MAIN GRID — left wide, right rail =================== -->
     <VRow dense>
       <!-- ------ LEFT (8 cols on lg) ---------------------------- -->
-      <VCol cols="12" lg="8">
+      <VCol
+        cols="12"
+        lg="8"
+      >
         <!-- Today's sessions -->
-        <VCard class="mb-4 panel" elevation="0" rounded="lg" border>
+        <VCard
+          class="mb-4 panel"
+          elevation="0"
+          rounded="lg"
+          border
+        >
           <VCardTitle class="panel-head">
-            <VIcon color="primary" class="me-2">ri-calendar-event-line</VIcon>
+            <VIcon
+              color="primary"
+              class="me-2"
+            >
+              ri-calendar-event-line
+            </VIcon>
             <span>حصص اليوم</span>
             <VSpacer />
-            <VChip size="small" color="primary" variant="tonal">
+            <VChip
+              size="small"
+              color="primary"
+              variant="tonal"
+            >
               {{ upcomingToday.length }} {{ upcomingToday.length === 1 ? "حصة" : "حصص" }}
             </VChip>
           </VCardTitle>
           <VDivider />
           <VCardItem v-if="isLoadingSessions">
-            <VSkeletonLoader v-for="n in 3" :key="n" type="list-item-avatar" class="mb-1" />
+            <VSkeletonLoader
+              v-for="n in 3"
+              :key="n"
+              type="list-item-avatar"
+              class="mb-1"
+            />
           </VCardItem>
           <VCardItem v-else-if="!upcomingToday.length">
             <div class="empty-block">
-              <VIcon size="40" color="grey-lighten-1" class="mb-2">ri-calendar-line</VIcon>
-              <h4 class="text-subtitle-1 mb-1">لا توجد حصص لليوم</h4>
-              <p class="text-caption mb-3">جدولك خفيف اليوم — استمتع بوقتك!</p>
-              <VBtn size="small" color="primary" variant="tonal" prepend-icon="ri-add-line"
-                to="/teacher/sessions/manage-sessions">إضافة حصة</VBtn>
+              <VIcon
+                size="40"
+                color="grey-lighten-1"
+                class="mb-2"
+              >
+                ri-calendar-line
+              </VIcon>
+              <h4 class="text-subtitle-1 mb-1">
+                لا توجد حصص لليوم
+              </h4>
+              <p class="text-caption mb-3">
+                جدولك خفيف اليوم — استمتع بوقتك!
+              </p>
+              <VBtn
+                size="small"
+                color="primary"
+                variant="tonal"
+                prepend-icon="ri-add-line"
+                to="/teacher/sessions/manage-sessions"
+              >
+                إضافة حصة
+              </VBtn>
             </div>
           </VCardItem>
-          <VList v-else class="session-list">
-            <VListItem v-for="s in upcomingToday" :key="s.sessionId" class="session-item">
+          <VList
+            v-else
+            class="session-list"
+          >
+            <VListItem
+              v-for="s in upcomingToday"
+              :key="s.sessionId"
+              class="session-item"
+            >
               <template #prepend>
-                <VAvatar :color="stateColor(s.state)" size="44" class="me-2">
-                  <VIcon color="white">ri-time-line</VIcon>
+                <VAvatar
+                  :color="stateColor(s.state)"
+                  size="44"
+                  class="me-2"
+                >
+                  <VIcon color="white">
+                    ri-time-line
+                  </VIcon>
                 </VAvatar>
               </template>
-              <VListItemTitle class="font-weight-bold">{{ s.title || s.courseName || "حصة" }}</VListItemTitle>
+              <VListItemTitle class="font-weight-bold">
+                {{ s.title || s.courseName || "حصة" }}
+              </VListItemTitle>
               <VListItemSubtitle class="d-flex align-center gap-2 flex-wrap mt-1">
-                <span class="text-body-2"><VIcon size="14" class="me-1">ri-book-2-line</VIcon>{{ s.courseName || "—" }}</span>
-                <span class="text-body-2"><VIcon size="14" class="me-1">ri-time-line</VIcon>{{ formatTimeRange(s.startTime, s.endTime) }}</span>
-                <VChip size="x-small" :color="stateColor(s.state)" variant="tonal">{{ stateLabel(s.state) }}</VChip>
+                <span class="text-body-2"><VIcon
+                  size="14"
+                  class="me-1"
+                >ri-book-2-line</VIcon>{{ s.courseName || "—" }}</span>
+                <span class="text-body-2"><VIcon
+                  size="14"
+                  class="me-1"
+                >ri-time-line</VIcon>{{ formatTimeRange(s.startTime, s.endTime) }}</span>
+                <VChip
+                  size="x-small"
+                  :color="stateColor(s.state)"
+                  variant="tonal"
+                >
+                  {{ stateLabel(s.state) }}
+                </VChip>
               </VListItemSubtitle>
               <template #append>
-                <VBtn size="small" variant="text" color="primary" :to="`/teacher/sessions/manage-sessions`"
-                  prepend-icon="ri-eye-line">عرض</VBtn>
+                <VBtn
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  to="/teacher/sessions/manage-sessions"
+                  prepend-icon="ri-eye-line"
+                >
+                  عرض
+                </VBtn>
               </template>
             </VListItem>
           </VList>
@@ -475,13 +671,32 @@ onMounted(async () => {
 
         <!-- Financial snapshot — 2 mini cards -->
         <VRow dense>
-          <VCol cols="12" md="6">
-            <VCard class="panel h-100" elevation="0" rounded="lg" border>
+          <VCol
+            cols="12"
+            md="6"
+          >
+            <VCard
+              class="panel h-100"
+              elevation="0"
+              rounded="lg"
+              border
+            >
               <VCardTitle class="panel-head">
-                <VIcon color="info" class="me-2">ri-wallet-3-line</VIcon>
+                <VIcon
+                  color="info"
+                  class="me-2"
+                >
+                  ri-wallet-3-line
+                </VIcon>
                 <span>فواتير العربون</span>
                 <VSpacer />
-                <VChip size="x-small" color="success" variant="tonal">{{ depositPct }}%</VChip>
+                <VChip
+                  size="x-small"
+                  color="success"
+                  variant="tonal"
+                >
+                  {{ depositPct }}%
+                </VChip>
               </VCardTitle>
               <VDivider />
               <VCardItem>
@@ -497,22 +712,54 @@ onMounted(async () => {
                   <span class="text-warning">المتبقّي</span>
                   <strong class="text-warning">{{ formatIQD(stats.remainingDeposit) }}</strong>
                 </div>
-                <VProgressLinear :model-value="depositPct" color="success" rounded height="6" class="mt-3" />
-                <VBtn block size="small" color="primary" variant="tonal" rounded="lg" class="mt-3"
+                <VProgressLinear
+                  :model-value="depositPct"
+                  color="success"
+                  rounded
+                  height="6"
+                  class="mt-3"
+                />
+                <VBtn
+                  block
+                  size="small"
+                  color="primary"
+                  variant="tonal"
+                  rounded="lg"
+                  class="mt-3"
                   prepend-icon="ri-arrow-left-line"
-                  to="/teacher/payments/reservations/show-reservation-payments">
+                  to="/teacher/payments/reservations/show-reservation-payments"
+                >
                   إدارة فواتير العربون
                 </VBtn>
               </VCardItem>
             </VCard>
           </VCol>
-          <VCol cols="12" md="6">
-            <VCard class="panel h-100" elevation="0" rounded="lg" border>
+          <VCol
+            cols="12"
+            md="6"
+          >
+            <VCard
+              class="panel h-100"
+              elevation="0"
+              rounded="lg"
+              border
+            >
               <VCardTitle class="panel-head">
-                <VIcon color="error" class="me-2">ri-bill-line</VIcon>
+                <VIcon
+                  color="error"
+                  class="me-2"
+                >
+                  ri-bill-line
+                </VIcon>
                 <span>فواتير الطلاب</span>
                 <VSpacer />
-                <VChip size="x-small" color="success" variant="tonal">{{ studentPaidPct }}%</VChip>
+                <VChip
+                  size="x-small"
+                  color="success"
+                  variant="tonal"
+                >
+                  {{ studentPaidPct }}%
+                </VChip>
               </VCardTitle>
               <VDivider />
               <VCardItem>
@@ -528,9 +775,23 @@ onMounted(async () => {
                   <span class="text-warning">المتبقّي</span>
                   <strong class="text-warning">{{ formatIQD(stats.studentAmountRemaining) }}</strong>
                 </div>
-                <VProgressLinear :model-value="studentPaidPct" color="success" rounded height="6" class="mt-3" />
-                <VBtn block size="small" color="primary" variant="tonal" rounded="lg" class="mt-3"
-                  prepend-icon="ri-arrow-left-line" to="/teacher/invoices/manage-invoices">
+                <VProgressLinear
+                  :model-value="studentPaidPct"
+                  color="success"
+                  rounded
+                  height="6"
+                  class="mt-3"
+                />
+                <VBtn
+                  block
+                  size="small"
+                  color="primary"
+                  variant="tonal"
+                  rounded="lg"
+                  class="mt-3"
+                  prepend-icon="ri-arrow-left-line"
+                  to="/teacher/invoices/manage-invoices"
+                >
                   إدارة فواتير الطلاب
                 </VBtn>
               </VCardItem>
@@ -539,17 +800,37 @@ onMounted(async () => {
         </VRow>
 
         <!-- Section nav grid -->
-        <VCard class="mt-4 panel" elevation="0" rounded="lg" border>
+        <VCard
+          class="mt-4 panel"
+          elevation="0"
+          rounded="lg"
+          border
+        >
           <VCardTitle class="panel-head">
-            <VIcon color="primary" class="me-2">ri-grid-line</VIcon>
+            <VIcon
+              color="primary"
+              class="me-2"
+            >
+              ri-grid-line
+            </VIcon>
             <span>الأقسام</span>
           </VCardTitle>
           <VDivider />
           <VCardItem>
             <div class="nav-grid">
-              <RouterLink v-for="s in sectionsNav" :key="s.title" :to="s.to" class="nav-tile">
+              <RouterLink
+                v-for="s in sectionsNav"
+                :key="s.title"
+                :to="s.to"
+                class="nav-tile"
+              >
                 <div class="nav-tile-icon">
-                  <VIcon size="22" color="primary">{{ s.icon }}</VIcon>
+                  <VIcon
+                    size="22"
+                    color="primary"
+                  >
+                    {{ s.icon }}
+                  </VIcon>
                 </div>
                 <span class="nav-tile-label">{{ s.title }}</span>
               </RouterLink>
@@ -559,120 +840,260 @@ onMounted(async () => {
       </VCol>
 
       <!-- ------ RIGHT RAIL (4 cols on lg) ---------------------- -->
-      <VCol cols="12" lg="4">
+      <VCol
+        cols="12"
+        lg="4"
+      >
         <!-- Subscription capacity -->
-        <VCard class="mb-4 panel" elevation="0" rounded="lg" border>
+        <VCard
+          class="mb-4 panel"
+          elevation="0"
+          rounded="lg"
+          border
+        >
           <VCardTitle class="panel-head">
-            <VIcon color="primary" class="me-2">ri-account-circle-line</VIcon>
+            <VIcon
+              color="primary"
+              class="me-2"
+            >
+              ri-account-circle-line
+            </VIcon>
             <span>سعة الاشتراك</span>
             <VSpacer />
-            <VBtn icon="ri-refresh-line" size="x-small" variant="text" :loading="capacityLoading"
-              @click="loadCapacity" />
+            <VBtn
+              icon="ri-refresh-line"
+              size="x-small"
+              variant="text"
+              :loading="capacityLoading"
+              @click="loadCapacity"
+            />
           </VCardTitle>
           <VDivider />
           <VCardItem>
-            <VAlert v-if="capacityError" type="error" variant="tonal" density="compact" class="mb-3">
+            <VAlert
+              v-if="capacityError"
+              type="error"
+              variant="tonal"
+              density="compact"
+              class="mb-3"
+            >
               {{ capacityError }}
             </VAlert>
             <div class="capacity-wrap">
-              <VProgressCircular :model-value="capacityPct" :size="138" :width="11"
-                :color="capacity.canAdd ? 'success' : 'error'">
+              <VProgressCircular
+                :model-value="capacityPct"
+                :size="138"
+                :width="11"
+                :color="capacity.canAdd ? 'success' : 'error'"
+              >
                 <div class="text-center">
-                  <div class="cap-current">{{ capacity.currentStudents }}</div>
-                  <div class="cap-max">من {{ capacity.maxStudents }}</div>
+                  <div class="cap-current">
+                    {{ capacity.currentStudents }}
+                  </div>
+                  <div class="cap-max">
+                    من {{ capacity.maxStudents }}
+                  </div>
                 </div>
               </VProgressCircular>
             </div>
             <div class="d-flex justify-space-between mt-3">
               <div class="text-center flex-grow-1">
-                <div class="text-caption text-medium-emphasis">المتبقّي</div>
-                <div class="text-h6 font-weight-bold text-success">{{ capacity.remaining }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  المتبقّي
+                </div>
+                <div class="text-h6 font-weight-bold text-success">
+                  {{ capacity.remaining }}
+                </div>
               </div>
               <VDivider vertical />
               <div class="text-center flex-grow-1">
-                <div class="text-caption text-medium-emphasis">الحالة</div>
-                <div class="text-subtitle-2 font-weight-bold" :class="capacity.canAdd ? 'text-success' : 'text-error'">
+                <div class="text-caption text-medium-emphasis">
+                  الحالة
+                </div>
+                <div
+                  class="text-subtitle-2 font-weight-bold"
+                  :class="capacity.canAdd ? 'text-success' : 'text-error'"
+                >
                   {{ capacity.canAdd ? "متاحة" : "ممتلئة" }}
                 </div>
               </div>
             </div>
-            <VBtn block size="small" color="warning" variant="tonal" rounded="lg" class="mt-3"
-              prepend-icon="ri-vip-crown-line" to="/teacher/billing/pricing">
+            <VBtn
+              block
+              size="small"
+              color="warning"
+              variant="tonal"
+              rounded="lg"
+              class="mt-3"
+              prepend-icon="ri-vip-crown-line"
+              to="/teacher/billing/pricing"
+            >
               ترقية الباقة
             </VBtn>
           </VCardItem>
         </VCard>
 
         <!-- QR card -->
-        <VCard class="mb-4 panel" elevation="0" rounded="lg" border>
+        <VCard
+          class="mb-4 panel"
+          elevation="0"
+          rounded="lg"
+          border
+        >
           <VCardTitle class="panel-head">
-            <VIcon color="primary" class="me-2">ri-qr-code-line</VIcon>
+            <VIcon
+              color="primary"
+              class="me-2"
+            >
+              ri-qr-code-line
+            </VIcon>
             <span>رمز حضور الطلاب</span>
           </VCardTitle>
           <VDivider />
           <VCardItem class="text-center">
-            <div v-if="user?.qr" class="qr-wrap">
-              <img :src="resolveAsset(user.qr)" alt="رمز حضور الطلاب" class="qr-img" />
+            <div
+              v-if="user?.qr"
+              class="qr-wrap"
+            >
+              <img
+                :src="resolveAsset(user.qr)"
+                alt="رمز حضور الطلاب"
+                class="qr-img"
+              >
             </div>
-            <div v-else class="empty-block">
-              <VIcon size="40" color="grey-lighten-1">ri-qr-code-line</VIcon>
-              <p class="text-caption text-medium-emphasis mt-2">جارٍ إنشاء الرمز…</p>
+            <div
+              v-else
+              class="empty-block"
+            >
+              <VIcon
+                size="40"
+                color="grey-lighten-1"
+              >
+                ri-qr-code-line
+              </VIcon>
+              <p class="text-caption text-medium-emphasis mt-2">
+                جارٍ إنشاء الرمز…
+              </p>
             </div>
-            <VBtn v-if="user?.qr" block size="small" color="primary" variant="tonal" rounded="lg" class="mt-3"
-              prepend-icon="ri-printer-line" @click="printQr">
+            <VBtn
+              v-if="user?.qr"
+              block
+              size="small"
+              color="primary"
+              variant="tonal"
+              rounded="lg"
+              class="mt-3"
+              prepend-icon="ri-printer-line"
+              @click="printQr"
+            >
               طباعة الرمز (A4)
             </VBtn>
           </VCardItem>
         </VCard>
 
         <!-- Referral — collapsible -->
-        <VCard class="panel" elevation="0" rounded="lg" border>
-          <VCardTitle class="panel-head cursor-pointer" @click="referralPanelOpen = !referralPanelOpen">
-            <VIcon color="warning" class="me-2">ri-share-forward-line</VIcon>
+        <VCard
+          class="panel"
+          elevation="0"
+          rounded="lg"
+          border
+        >
+          <VCardTitle
+            class="panel-head cursor-pointer"
+            @click="referralPanelOpen = !referralPanelOpen"
+          >
+            <VIcon
+              color="warning"
+              class="me-2"
+            >
+              ri-share-forward-line
+            </VIcon>
             <span>برنامج الإحالة</span>
             <VSpacer />
-            <VChip v-if="referral.total" size="x-small" color="warning" variant="tonal" class="me-2">
+            <VChip
+              v-if="referral.total"
+              size="x-small"
+              color="warning"
+              variant="tonal"
+              class="me-2"
+            >
               {{ referral.total }} إحالة
             </VChip>
-            <VIcon size="20">{{ referralPanelOpen ? "ri-arrow-up-s-line" : "ri-arrow-down-s-line" }}</VIcon>
+            <VIcon size="20">
+              {{ referralPanelOpen ? "ri-arrow-up-s-line" : "ri-arrow-down-s-line" }}
+            </VIcon>
           </VCardTitle>
           <VExpandTransition>
             <div v-show="referralPanelOpen">
               <VDivider />
               <VCardItem>
-                <div v-if="referralLoading" class="text-center py-4">
-                  <VProgressCircular indeterminate color="primary" size="32" />
+                <div
+                  v-if="referralLoading"
+                  class="text-center py-4"
+                >
+                  <VProgressCircular
+                    indeterminate
+                    color="primary"
+                    size="32"
+                  />
                 </div>
                 <template v-else>
                   <div class="ref-row">
                     <span class="ref-label">كود الدعوة</span>
                     <div class="d-flex align-center gap-1">
                       <code class="ref-code">{{ referral.referralCode.slice(0, 12) }}…</code>
-                      <VBtn icon="ri-file-copy-line" size="x-small" variant="text"
-                        @click="copyToClipboard(referral.referralCode)" />
+                      <VBtn
+                        icon="ri-file-copy-line"
+                        size="x-small"
+                        variant="text"
+                        @click="copyToClipboard(referral.referralCode)"
+                      />
                     </div>
                   </div>
                   <div class="ref-stats mt-3">
                     <div>
-                      <div class="ref-num text-primary">{{ referral.total }}</div>
-                      <div class="ref-cap">الإجمالي</div>
+                      <div class="ref-num text-primary">
+                        {{ referral.total }}
+                      </div>
+                      <div class="ref-cap">
+                        الإجمالي
+                      </div>
                     </div>
                     <div>
-                      <div class="ref-num text-success">{{ referral.completed }}</div>
-                      <div class="ref-cap">مكتملة</div>
+                      <div class="ref-num text-success">
+                        {{ referral.completed }}
+                      </div>
+                      <div class="ref-cap">
+                        مكتملة
+                      </div>
                     </div>
                     <div>
-                      <div class="ref-num text-warning">{{ referral.pending }}</div>
-                      <div class="ref-cap">معلّقة</div>
+                      <div class="ref-num text-warning">
+                        {{ referral.pending }}
+                      </div>
+                      <div class="ref-cap">
+                        معلّقة
+                      </div>
                     </div>
                     <div>
-                      <div class="ref-num text-info">{{ referral.bonusSeats }}</div>
-                      <div class="ref-cap">مقاعد إضافية</div>
+                      <div class="ref-num text-info">
+                        {{ referral.bonusSeats }}
+                      </div>
+                      <div class="ref-cap">
+                        مقاعد إضافية
+                      </div>
                     </div>
                   </div>
-                  <VBtn block size="small" color="warning" variant="tonal" rounded="lg" class="mt-3"
+                  <VBtn
+                    block
+                    size="small"
+                    color="warning"
+                    variant="tonal"
+                    rounded="lg"
+                    class="mt-3"
                     prepend-icon="ri-link"
-                    @click="copyToClipboard('https://mulhimiq.com' + referral.referralLink)">
+                    @click="copyToClipboard('https://mulhimiq.com' + referral.referralLink)"
+                  >
                     نسخ رابط الدعوة
                   </VBtn>
                 </template>
@@ -684,7 +1105,13 @@ onMounted(async () => {
     </VRow>
 
     <!-- Snackbar -->
-    <VSnackbar v-model="snackbar.show" :color="snackbar.color" location="bottom" timeout="2400" rounded="pill">
+    <VSnackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      location="bottom"
+      timeout="2400"
+      rounded="pill"
+    >
       <div class="d-flex align-center gap-2">
         <VIcon>{{ snackbar.color === "success" ? "ri-check-line" : "ri-error-warning-line" }}</VIcon>
         {{ snackbar.text }}

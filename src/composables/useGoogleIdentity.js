@@ -25,10 +25,14 @@ function decodeJwtPayload (idToken) {
     const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/')
     const padded = payload + '='.repeat((4 - payload.length % 4) % 4)
     const decoded = atob(padded)
+
+
     // Properly decode UTF-8 (atob returns bytes-as-chars).
     const utf8 = decodeURIComponent(
       decoded.split('').map(c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0')).join(''),
     )
+
+    
     return JSON.parse(utf8)
   } catch (_) {
     return null
@@ -58,21 +62,24 @@ export function useGoogleIdentity () {
       // Caller can retry later when SDK becomes available.
       // eslint-disable-next-line no-console
       console.warn('useGoogleIdentity: Google SDK or VITE_GOOGLE_CLIENT_ID unavailable')
+      
       return false
     }
 
     google.accounts.id.initialize({
       client_id: clientId,
-      callback: (response) => {
+      callback: response => {
         const idToken = response?.credential
         if (!idToken) return
         const payload = decodeJwtPayload(idToken) || {}
+
         const identity = {
           idToken,
           email: payload.email || '',
           name: payload.name || '',
           picture: payload.picture || '',
         }
+
         lastIdentity.value = identity
         try {
           onIdentity(identity)
@@ -98,6 +105,7 @@ export function useGoogleIdentity () {
       width: 320,
       ...opts,
     })
+    
     return true
   }
 

@@ -1,50 +1,105 @@
 <template>
-  <v-container class="py-10">
-    <v-row>
-      <v-col cols="12" class="text-center mb-6">
-        <h1 class="text-h4 font-weight-bold">تواصل معنا</h1>
-        <p class="text-medium-emphasis">نرحب باستفساراتك وملاحظاتك دائمًا</p>
-      </v-col>
+  <VContainer class="py-10">
+    <VRow>
+      <VCol
+        cols="12"
+        class="text-center mb-6"
+      >
+        <h1 class="text-h4 font-weight-bold">
+          تواصل معنا
+        </h1>
+        <p class="text-medium-emphasis">
+          نرحب باستفساراتك وملاحظاتك دائمًا
+        </p>
+      </VCol>
 
-      <v-col cols="12" md="8" class="mx-auto">
-        <v-alert v-if="contactError" type="error" variant="tonal" class="mb-4" closable
-          @click:close="contactError = ''">
+      <VCol
+        cols="12"
+        md="8"
+        class="mx-auto"
+      >
+        <VAlert
+          v-if="contactError"
+          type="error"
+          variant="tonal"
+          class="mb-4"
+          closable
+          @click:close="contactError = ''"
+        >
           {{ contactError }}
-        </v-alert>
-        <v-alert v-if="contactSuccess" type="success" variant="tonal" class="mb-4" closable
-          @click:close="contactSuccess = ''">
+        </VAlert>
+        <VAlert
+          v-if="contactSuccess"
+          type="success"
+          variant="tonal"
+          class="mb-4"
+          closable
+          @click:close="contactSuccess = ''"
+        >
           {{ contactSuccess }}
-        </v-alert>
+        </VAlert>
 
-        <v-card class="pa-6">
-          <v-form @submit.prevent="submitContact">
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field v-model="contactForm.name" label="الاسم الكامل" prepend-inner-icon="mdi-account" />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field v-model="contactForm.email" type="email" label="البريد الإلكتروني"
-                  prepend-inner-icon="mdi-email" />
-              </v-col>
-              <v-col cols="12">
-                <v-text-field v-model="contactForm.subject" label="الموضوع" prepend-inner-icon="mdi-text-short" />
-              </v-col>
-              <v-col cols="12">
-                <v-textarea v-model="contactForm.message" label="نص الرسالة" rows="6" auto-grow
-                  prepend-inner-icon="mdi-message-text" />
-              </v-col>
-              <v-col cols="12" class="d-flex justify-end">
-                <v-btn type="submit" color="primary" :loading="contactLoading">
-                  <v-icon start>mdi-send</v-icon>
+        <VCard class="pa-6">
+          <VForm @submit.prevent="submitContact">
+            <VRow>
+              <VCol
+                cols="12"
+                md="6"
+              >
+                <VTextField
+                  v-model="contactForm.name"
+                  label="الاسم الكامل"
+                  prepend-inner-icon="mdi-account"
+                />
+              </VCol>
+              <VCol
+                cols="12"
+                md="6"
+              >
+                <VTextField
+                  v-model="contactForm.email"
+                  type="email"
+                  label="البريد الإلكتروني"
+                  prepend-inner-icon="mdi-email"
+                />
+              </VCol>
+              <VCol cols="12">
+                <VTextField
+                  v-model="contactForm.subject"
+                  label="الموضوع"
+                  prepend-inner-icon="mdi-text-short"
+                />
+              </VCol>
+              <VCol cols="12">
+                <VTextarea
+                  v-model="contactForm.message"
+                  label="نص الرسالة"
+                  rows="6"
+auto-grow
+                  prepend-inner-icon="mdi-message-text"
+                />
+              </VCol>
+              <VCol
+                cols="12"
+                class="d-flex justify-end"
+              >
+                <VBtn
+type="submit"
+                      color="primary"
+:loading="contactLoading"
+>
+                  <VIcon start>
+mdi-send
+</VIcon>
                   إرسال الرسالة
-                </v-btn>
-              </v-col>
-            </v-row>
-          </v-form>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+                </VBtn>
+              </VCol>
+            </VRow>
+          </VForm>
+        </VCard>
+      </VCol>
+    </VRow>
+  </VContainer>
 </template>
 
 <script>
@@ -66,13 +121,16 @@ export default {
       try {
         this.contactError = ''
         this.contactSuccess = ''
+
         const { name, email, subject, message } = this.contactForm
         if (!name || !email || !message) {
           this.contactError = 'يرجى تعبئة الاسم والبريد والرسالة'
+          
           return
         }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (!/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(email)) {
           this.contactError = 'يرجى إدخال بريد إلكتروني صالح'
+          
           return
         }
         this.contactLoading = true
@@ -112,4 +170,4 @@ definePage({
 })
 </script>
 
-<style scoped></style>
+

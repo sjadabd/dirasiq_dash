@@ -1,66 +1,59 @@
-import axiosInstance from "@/utils/axios.js";
+import axiosInstance from "@/utils/axios.js"
 
 class TeacherApi {
   // profile
   async completeProfile(userData) {
-    const response = await axiosInstance.post(`/auth/complete-profile`, userData);
-    return response;
+    return await axiosInstance.post(`/auth/complete-profile`, userData)
   }
   async uploadIntroVideo(payload, config = {}) {
     if (payload instanceof FormData) {
-      const response = await axiosInstance.post("/teacher/profile/intro-video", payload, {
+      return await axiosInstance.post("/teacher/profile/intro-video", payload, {
         ...config,
+
         // Do NOT set Content-Type manually; Axios will set the correct multipart boundary
       })
-      return response
     }
+
     // Fallback: JSON payload (base64)
-    const response = await axiosInstance.post("/teacher/profile/intro-video", payload, config)
-    return response
+    return await axiosInstance.post("/teacher/profile/intro-video", payload, config)
   }
 
   async getIntroVideo() {
-    const response = await axiosInstance.get("/teacher/profile/intro-video")
-    return response
+    return await axiosInstance.get("/teacher/profile/intro-video")
   }
 
 
   // Academic years (Teacher)
   async getAcademicYears() {
-    const response = await axiosInstance.get(`/teacher/academic-years`)
-    return response
+    return await axiosInstance.get(`/teacher/academic-years`)
   }
   async getDashboard() {
-    const response = await axiosInstance.get(`/teacher/dashboard`);
-    return response;
+    return await axiosInstance.get(`/teacher/dashboard`)
   }
   async getReferralDashboard() {
-    const response = await axiosInstance.get(`/teacher/dashboard/referrals`);
-    return response;
+    return await axiosInstance.get(`/teacher/dashboard/referrals`)
   }
+
   // (Phase 7) getActivePackages removed — subscription model is gone.
   async getPublicNews() {
-    const response = await axiosInstance.get(`/public/news`);
-    return response;
+    return await axiosInstance.get(`/public/news`)
   }
+
   // Public — list of governorates the platform covers. Used by the landing
   // "live stats" strip to advertise coverage. Anonymous-callable.
   async getGovernorates() {
-    const response = await axiosInstance.get(`/teacher-search/governorates`);
-    return response;
+    return await axiosInstance.get(`/teacher-search/governorates`)
   }
 
   // wallet (Teacher)
   async getWallet() {
-    const response = await axiosInstance.get(`/teacher/wallet`)
-    return response
+    return await axiosInstance.get(`/teacher/wallet`)
   }
 
   async getWalletTransactions(page = 1, limit = 20) {
-    const response = await axiosInstance.get(`/teacher/wallet/transactions`, {
+    return await axiosInstance.get(`/teacher/wallet/transactions`, {
       params: { page, limit },
     })
-    return response
   }
 
   // (Phase 7) Wayl topup + subscription link + package activation removed.
@@ -73,60 +66,58 @@ class TeacherApi {
   //   params: { page, limit, studyYear?, from?, to?, category?, paymentMethod?, search?, deleted? }
   //   response: { data: TeacherExpense[], meta: { pagination, summary: { totalAmount, count, byCategory } } }
   async getExpenses(params) {
-    const response = await axiosInstance.get(`/teacher/expenses`, { params })
-    return response
+    return await axiosInstance.get(`/teacher/expenses`, { params })
   }
+
   // POST /teacher/expenses
   //   body: { amount, note?, expense_date?, category?, paymentMethod? }
   async addExpense(payload) {
-    const response = await axiosInstance.post(`/teacher/expenses`, payload)
-    return response
+    return await axiosInstance.post(`/teacher/expenses`, payload)
   }
+
   // PATCH /teacher/expenses/:id
   async updateExpense(id, payload) {
-    const response = await axiosInstance.patch(`/teacher/expenses/${encodeURIComponent(id)}`, payload)
-    return response
+    return await axiosInstance.patch(`/teacher/expenses/${encodeURIComponent(id)}`, payload)
   }
+
   // DELETE /teacher/expenses/:id  (soft delete)
   async deleteExpense(id) {
-    const response = await axiosInstance.delete(`/teacher/expenses/${encodeURIComponent(id)}`)
-    return response
+    return await axiosInstance.delete(`/teacher/expenses/${encodeURIComponent(id)}`)
   }
+
   // PATCH /teacher/expenses/:id/restore
   async restoreExpense(id) {
-    const response = await axiosInstance.patch(`/teacher/expenses/${encodeURIComponent(id)}/restore`)
-    return response
+    return await axiosInstance.patch(`/teacher/expenses/${encodeURIComponent(id)}/restore`)
   }
+
   // expenses
 
   // reports
   async getFinancialReport(params) {
-    const response = await axiosInstance.get(`/teacher/reports/financial`, { params })
-    return response
+    return await axiosInstance.get(`/teacher/reports/financial`, { params })
   }
+
   // reports
 
   // dashboard
   async getUpcomingToday() {
     // returns: { success, message, data: [ { sessionId, courseId, courseName, title, startTime, endTime, startAt, endAt, state } ], count }
-    const response = await axiosInstance.get(`/teacher/dashboard/upcoming-today`);
-    return response;
+    return await axiosInstance.get(`/teacher/dashboard/upcoming-today`)
   }
+
   // dashboard
 
   // grades
   async getAllGrades() {
-    const response = await axiosInstance.get(`/grades/all`);
-    return response;
+    return await axiosInstance.get(`/grades/all`)
   }
   async getAllGradess() {
-    const response = await axiosInstance.get(`/grades/all-student`);
-    return response;
+    return await axiosInstance.get(`/grades/all-student`)
   }
   async getAllMyGrades() {
-    const response = await axiosInstance.get(`/grades/my-grades`);
-    return response;
+    return await axiosInstance.get(`/grades/my-grades`)
   }
+
   // grades
 
   // subjects
@@ -134,37 +125,36 @@ class TeacherApi {
   //   params: { page, limit, search?, is_deleted? }
   //   response: { data: Subject[], meta: { pagination } }
   async getSubjects(opts = {}) {
-    const o = opts.options || opts;
+    const o = opts.options || opts
+
     const params = {
       page: o.page || 1,
       limit: o.limit || 10,
-    };
-    if (o.search != null && o.search !== '') params.search = o.search;
+    }
+
+    if (o.search != null && o.search !== '') params.search = o.search
+
     // Only forward is_deleted when explicitly true/false; null = "all" → omit.
-    if (o.is_deleted === true || o.is_deleted === false) params.is_deleted = o.is_deleted;
-    const response = await axiosInstance.get(`/teacher/subjects`, { params });
-    return response;
+    if (o.is_deleted === true || o.is_deleted === false) params.is_deleted = o.is_deleted
+    
+    return await axiosInstance.get(`/teacher/subjects`, { params })
   }
   async getAllSubjects() {
-    const response = await axiosInstance.get(`/teacher/subjects/all`);
-    return response;
+    return await axiosInstance.get(`/teacher/subjects/all`)
   }
   async addSubjects(payload) {
-    const response = await axiosInstance.post(`/teacher/subjects`, payload);
-    return response;
+    return await axiosInstance.post(`/teacher/subjects`, payload)
   }
   async editSubjects(id, payload) {
-    const response = await axiosInstance.put(`/teacher/subjects/${encodeURIComponent(id)}`, payload);
-    return response;
+    return await axiosInstance.put(`/teacher/subjects/${encodeURIComponent(id)}`, payload)
   }
   async deleteSubjects(id) {
-    const response = await axiosInstance.delete(`/teacher/subjects/${encodeURIComponent(id)}`);
-    return response;
+    return await axiosInstance.delete(`/teacher/subjects/${encodeURIComponent(id)}`)
   }
   async restoreSubjects(id) {
-    const response = await axiosInstance.patch(`/teacher/subjects/${encodeURIComponent(id)}/restore`);
-    return response;
+    return await axiosInstance.patch(`/teacher/subjects/${encodeURIComponent(id)}/restore`)
   }
+
   // subjects
 
   // course
@@ -172,38 +162,38 @@ class TeacherApi {
   //   params: { page, limit, search?, study_year?, grade_id?, subject_id?, deleted? }
   //   response: { data: Course[], meta: { pagination } }
   async getCourse(opts = {}) {
-    const o = opts.options || opts;
+    const o = opts.options || opts
+
     const params = {
       page: o.page || 1,
       limit: o.limit || 12,
-    };
-    if (o.search != null && o.search !== '') params.search = o.search;
-    if (o.study_year) params.study_year = o.study_year;
-    if (o.grade_id) params.grade_id = o.grade_id;
-    if (o.subject_id) params.subject_id = o.subject_id;
+    }
+
+    if (o.search != null && o.search !== '') params.search = o.search
+    if (o.study_year) params.study_year = o.study_year
+    if (o.grade_id) params.grade_id = o.grade_id
+    if (o.subject_id) params.subject_id = o.subject_id
+
     // Map UI's `is_deleted` (legacy name) to backend's `deleted`. Only forward
     // when explicitly true/false; null = "all" → omit.
-    const del = o.deleted ?? o.is_deleted;
-    if (del === true || del === false) params.deleted = del;
-    const response = await axiosInstance.get(`/teacher/courses`, { params });
-    return response;
+    const del = o.deleted ?? o.is_deleted
+    if (del === true || del === false) params.deleted = del
+    
+    return await axiosInstance.get(`/teacher/courses`, { params })
   }
   async addCourse(payload) {
-    const response = await axiosInstance.post(`/teacher/courses`, payload);
-    return response;
+    return await axiosInstance.post(`/teacher/courses`, payload)
   }
   async editCourse(id, payload) {
-    const response = await axiosInstance.put(`/teacher/courses/${encodeURIComponent(id)}`, payload);
-    return response;
+    return await axiosInstance.put(`/teacher/courses/${encodeURIComponent(id)}`, payload)
   }
   async deleteCourse(id) {
-    const response = await axiosInstance.delete(`/teacher/courses/${encodeURIComponent(id)}`);
-    return response;
+    return await axiosInstance.delete(`/teacher/courses/${encodeURIComponent(id)}`)
   }
   async restoreCourse(id) {
-    const response = await axiosInstance.patch(`/teacher/courses/${encodeURIComponent(id)}/restore`);
-    return response;
+    return await axiosInstance.patch(`/teacher/courses/${encodeURIComponent(id)}/restore`)
   }
+
   // course
 
   // bookings
@@ -211,56 +201,50 @@ class TeacherApi {
   //   params: { page, limit, studyYear (required), status?, search? }
   //   response: { data: Booking[], meta: { pagination } }
   async getBookings(opts = {}) {
-    const o = opts.options || opts;
+    const o = opts.options || opts
+
     const params = {
       page: o.page || 1,
       limit: o.limit || 12,
       studyYear: o.studyYear || o.study_year,
-    };
-    if (o.status) params.status = o.status;
-    if (o.search != null && o.search !== '') params.search = o.search;
-    const response = await axiosInstance.get(`/teacher/bookings`, { params });
-    return response;
+    }
+
+    if (o.status) params.status = o.status
+    if (o.search != null && o.search !== '') params.search = o.search
+    
+    return await axiosInstance.get(`/teacher/bookings`, { params })
   }
   async getBookingById(id) {
-    const response = await axiosInstance.get(`/teacher/bookings/${id}`);
-    return response;
+    return await axiosInstance.get(`/teacher/bookings/${id}`)
   }
   async preApproveBookings(id, teacherResponse) {
-    const response = await axiosInstance.patch(`/teacher/bookings/${id}/pre-approve`, { teacherResponse: teacherResponse });
-    return response;
+    return await axiosInstance.patch(`/teacher/bookings/${id}/pre-approve`, { teacherResponse: teacherResponse })
   }
   async consentBookings(id, payload) {
-    const response = await axiosInstance.patch(`/teacher/bookings/${id}/confirm`, payload);
-    return response;
+    return await axiosInstance.patch(`/teacher/bookings/${id}/confirm`, payload)
   }
   async rejectBooking(id, payload) {
     // payload: { rejectionReason: string, teacherResponse?: string }
-    const response = await axiosInstance.patch(`/teacher/bookings/${id}/reject`, payload);
-    return response;
+    return await axiosInstance.patch(`/teacher/bookings/${id}/reject`, payload)
   }
   async updateBookingResponse(id, teacherResponse) {
-    const response = await axiosInstance.patch(`/teacher/bookings/${id}/response`, { teacherResponse });
-    return response;
+    return await axiosInstance.patch(`/teacher/bookings/${id}/response`, { teacherResponse })
   }
   async deleteBooking(id) {
-    const response = await axiosInstance.delete(`/teacher/bookings/${id}`);
-    return response;
+    return await axiosInstance.delete(`/teacher/bookings/${id}`)
   }
   async reactivateBooking(id, teacherResponse) {
-    const response = await axiosInstance.patch(`/teacher/bookings/${id}/reactivate`, { teacherResponse });
-    return response;
+    return await axiosInstance.patch(`/teacher/bookings/${id}/reactivate`, { teacherResponse })
   }
   async getBookingStats(studyYear) {
-    const response = await axiosInstance.get(`/teacher/bookings/stats/summary?studyYear=${encodeURIComponent(studyYear)}`);
-    return response;
+    return await axiosInstance.get(`/teacher/bookings/stats/summary?studyYear=${encodeURIComponent(studyYear)}`)
   }
+
   // bookings
 
   // Subscription capacity (Teacher)
   async getRemainingStudents() {
-    const response = await axiosInstance.get('/teacher/bookings/subscription/remaining-students')
-    return response
+    return await axiosInstance.get('/teacher/bookings/subscription/remaining-students')
   }
 
   // sessions
@@ -268,70 +252,63 @@ class TeacherApi {
   //   params: { page, limit, weekday?, courseId?, search? }
   //   response: { data: Session[], meta: { pagination } }
   async getSessions(opts = {}) {
-    const o = opts.options || opts;
+    const o = opts.options || opts
+
     const params = {
       page: o.page || 1,
       limit: o.limit || 50,
-    };
-    if (typeof o.weekday === 'number' && o.weekday >= 0 && o.weekday <= 6) params.weekday = o.weekday;
-    const courseId = o.courseId || o.course_id;
-    if (courseId) params.courseId = courseId;
-    if (o.search != null && o.search !== '') params.search = o.search;
-    const response = await axiosInstance.get(`/teacher/sessions`, { params });
-    return response;
+    }
+
+    if (typeof o.weekday === 'number' && o.weekday >= 0 && o.weekday <= 6) params.weekday = o.weekday
+    const courseId = o.courseId || o.course_id
+    if (courseId) params.courseId = courseId
+    if (o.search != null && o.search !== '') params.search = o.search
+    
+    return await axiosInstance.get(`/teacher/sessions`, { params })
   }
   async createSession(payload) {
-    const response = await axiosInstance.post(`/teacher/sessions`, payload);
-    return response;
+    return await axiosInstance.post(`/teacher/sessions`, payload)
   }
   async updateSession(id, payload) {
-    const response = await axiosInstance.put(`/teacher/sessions/${encodeURIComponent(id)}`, payload);
-    return response;
+    return await axiosInstance.put(`/teacher/sessions/${encodeURIComponent(id)}`, payload)
   }
   async deleteSession(id) {
-    const response = await axiosInstance.delete(`/teacher/sessions/${encodeURIComponent(id)}`);
-    return response;
+    return await axiosInstance.delete(`/teacher/sessions/${encodeURIComponent(id)}`)
   }
   async addSessionAttendees(id, studentIds) {
-    const response = await axiosInstance.post(`/teacher/sessions/${encodeURIComponent(id)}/attendees`, { studentIds });
-    return response;
+    return await axiosInstance.post(`/teacher/sessions/${encodeURIComponent(id)}/attendees`, { studentIds })
   }
   async getSessionAttendees(id) {
-    const response = await axiosInstance.get(`/teacher/sessions/${encodeURIComponent(id)}/attendees`);
-    return response;
+    return await axiosInstance.get(`/teacher/sessions/${encodeURIComponent(id)}/attendees`)
   }
   async removeSessionAttendees(id, studentIds) {
-    const response = await axiosInstance.delete(`/teacher/sessions/${encodeURIComponent(id)}/attendees`, { data: { studentIds } });
-    return response;
+    return await axiosInstance.delete(`/teacher/sessions/${encodeURIComponent(id)}/attendees`, { data: { studentIds } })
   }
   async endSession(id) {
-    const response = await axiosInstance.post(`/teacher/sessions/${encodeURIComponent(id)}/end`);
-    return response;
+    return await axiosInstance.post(`/teacher/sessions/${encodeURIComponent(id)}/end`)
   }
+
   // sessions
 
   // confirmed students for a course (to add to a session)
   async getCourseConfirmedStudents(courseId) {
-    const response = await axiosInstance.get(`/teacher/sessions/courses/${courseId}/confirmed-students`);
-    return response;
+    return await axiosInstance.get(`/teacher/sessions/courses/${courseId}/confirmed-students`)
   }
 
   // attendance
   async getSessionAttendanceByDate(id, dateISO) {
-    const url = `/teacher/sessions/${id}/attendance` + (dateISO ? `?date=${encodeURIComponent(dateISO)}` : ``);
-    const response = await axiosInstance.get(url);
-    return response;
+    const url = `/teacher/sessions/${id}/attendance` + (dateISO ? `?date=${encodeURIComponent(dateISO)}` : ``)
+    
+    return await axiosInstance.get(url)
   }
   async bulkSetSessionAttendance(id, payload) {
     // payload: { date: 'YYYY-MM-DD', items: [{ studentId, status }] }
-    const response = await axiosInstance.post(`/teacher/sessions/${id}/attendance`, payload);
-    return response;
+    return await axiosInstance.post(`/teacher/sessions/${id}/attendance`, payload)
   }
 
   // course names for teacher
   async getCourseNames() {
-    const response = await axiosInstance.get(`/teacher/courses/names`);
-    return response;
+    return await axiosInstance.get(`/teacher/courses/names`)
   }
 
   // notifications
@@ -342,177 +319,150 @@ class TeacherApi {
     const params = {
       page: options.page ?? 1,
       limit: options.limit ?? 20,
-    };
-    if (options.q && options.q !== '') params.q = options.q;
-    if (options.type && options.type !== '') params.type = options.type;
-    if (options.subType && options.subType !== '') params.subType = options.subType;
-    if (options.courseId && options.courseId !== '') params.courseId = options.courseId;
-    const response = await axiosInstance.get(`/teacher/notifications`, { params });
-    return response;
+    }
+
+    if (options.q && options.q !== '') params.q = options.q
+    if (options.type && options.type !== '') params.type = options.type
+    if (options.subType && options.subType !== '') params.subType = options.subType
+    if (options.courseId && options.courseId !== '') params.courseId = options.courseId
+    
+    return await axiosInstance.get(`/teacher/notifications`, { params })
   }
   async getUnreadNotifications(limit = 20) {
-    const response = await axiosInstance.get(`/teacher/notifications/unread`, { params: { limit } });
-    return response;
+    return await axiosInstance.get(`/teacher/notifications/unread`, { params: { limit } })
   }
   async markNotificationRead(id) {
-    const response = await axiosInstance.put(`/notifications/${encodeURIComponent(id)}/read`);
-    return response;
+    return await axiosInstance.put(`/notifications/${encodeURIComponent(id)}/read`)
   }
   async createNotification(payload) {
     // payload should include: type, subType, title, message, courseId, subjectId, link, recipients{mode, studentIds}, attachments{pdfBase64, imagesBase64}, priority
-    const response = await axiosInstance.post(`/teacher/notifications`, payload);
-    return response;
+    return await axiosInstance.post(`/teacher/notifications`, payload)
   }
   async deleteNotification(id) {
-    const response = await axiosInstance.delete(`/teacher/notifications/${id}`);
-    return response;
+    return await axiosInstance.delete(`/teacher/notifications/${id}`)
   }
 
   // Roster: Students
   async getTeacherStudents() {
-    const response = await axiosInstance.get(`/teacher/students`);
-    return response;
+    return await axiosInstance.get(`/teacher/students`)
   }
   async getStudentsByCourse(courseId) {
-    const response = await axiosInstance.get(`/teacher/students/by-course/${encodeURIComponent(courseId)}`);
-    return response;
+    return await axiosInstance.get(`/teacher/students/by-course/${encodeURIComponent(courseId)}`)
   }
   async getStudentsByCoursePaginated(courseId, options = {}) {
-    const page = options.page ?? 1;
-    const limit = options.limit ?? 10;
-    const q = options.q ?? "";
-    const url = `/teacher/students/by-course/${encodeURIComponent(courseId)}/paginated?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}&q=${encodeURIComponent(q)}`;
-    const response = await axiosInstance.get(url);
-    return response;
+    const page = options.page ?? 1
+    const limit = options.limit ?? 10
+    const q = options.q ?? ""
+    const url = `/teacher/students/by-course/${encodeURIComponent(courseId)}/paginated?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}&q=${encodeURIComponent(q)}`
+    
+    return await axiosInstance.get(url)
   }
   async getStudentsBySession(sessionId) {
-    const response = await axiosInstance.get(`/teacher/students/by-session/${encodeURIComponent(sessionId)}`);
-    return response;
+    return await axiosInstance.get(`/teacher/students/by-session/${encodeURIComponent(sessionId)}`)
   }
+
   // Roster: Sessions (names)
   async getSessionNames() {
-    const response = await axiosInstance.get(`/teacher/sessions/names`);
-    return response;
+    return await axiosInstance.get(`/teacher/sessions/names`)
   }
 
   // assignments
   async getAssignments(userData = {}) {
-    const page = userData?.options?.page ?? 1;
-    const limit = userData?.options?.limit ?? 10;
-    const url = `/teacher/assignments?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}`;
-    const response = await axiosInstance.get(url);
-    return response;
+    const page = userData?.options?.page ?? 1
+    const limit = userData?.options?.limit ?? 10
+    const url = `/teacher/assignments?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}`
+    
+    return await axiosInstance.get(url)
   }
   async createAssignment(payload) {
-    const response = await axiosInstance.post(`/teacher/assignments`, payload);
-    return response;
+    return await axiosInstance.post(`/teacher/assignments`, payload)
   }
   async updateAssignment(id, payload) {
-    const response = await axiosInstance.patch(`/teacher/assignments/${encodeURIComponent(id)}`, payload);
-    return response;
+    return await axiosInstance.patch(`/teacher/assignments/${encodeURIComponent(id)}`, payload)
   }
   async deleteAssignment(id) {
-    const response = await axiosInstance.delete(`/teacher/assignments/${encodeURIComponent(id)}`);
-    return response;
+    return await axiosInstance.delete(`/teacher/assignments/${encodeURIComponent(id)}`)
   }
   async getAssignmentById(id) {
-    const response = await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(id)}`);
-    return response;
+    return await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(id)}`)
   }
   async setAssignmentRecipients(id, studentIds) {
-    const response = await axiosInstance.put(`/teacher/assignments/${encodeURIComponent(id)}/recipients`, { studentIds });
-    return response;
+    return await axiosInstance.put(`/teacher/assignments/${encodeURIComponent(id)}/recipients`, { studentIds })
   }
   async gradeAssignment(assignmentId, studentId, payload) {
-    const response = await axiosInstance.put(`/teacher/assignments/${encodeURIComponent(assignmentId)}/grade/${encodeURIComponent(studentId)}`, payload);
-    return response;
+    return await axiosInstance.put(`/teacher/assignments/${encodeURIComponent(assignmentId)}/grade/${encodeURIComponent(studentId)}`, payload)
   }
   async getAssignmentRecipients(id) {
-    const response = await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(id)}/students`);
-    return response;
+    return await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(id)}/students`)
   }
   async getAssignmentSubmission(assignmentId, studentId) {
-    const response = await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(assignmentId)}/submission/${encodeURIComponent(studentId)}`);
-    return response;
+    return await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(assignmentId)}/submission/${encodeURIComponent(studentId)}`)
   }
   async getAssignmentOverview(id) {
-    const response = await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(id)}/overview`);
-    return response;
+    return await axiosInstance.get(`/teacher/assignments/${encodeURIComponent(id)}/overview`)
   }
+
   // Exams
   async listExams(params = {}) {
-    const response = await axiosInstance.get('/teacher/exams', { params });
-    return response;
+    return await axiosInstance.get('/teacher/exams', { params })
   }
   async createExam(payload) {
-    const response = await axiosInstance.post('/teacher/exams', payload);
-    return response;
+    return await axiosInstance.post('/teacher/exams', payload)
   }
   async getExamById(id) {
-    const response = await axiosInstance.get(`/teacher/exams/${encodeURIComponent(id)}`);
-    return response;
+    return await axiosInstance.get(`/teacher/exams/${encodeURIComponent(id)}`)
   }
   async updateExam(id, payload) {
-    const response = await axiosInstance.patch(`/teacher/exams/${encodeURIComponent(id)}`, payload);
-    return response;
+    return await axiosInstance.patch(`/teacher/exams/${encodeURIComponent(id)}`, payload)
   }
   async deleteExam(id) {
-    const response = await axiosInstance.delete(`/teacher/exams/${encodeURIComponent(id)}`);
-    return response;
+    return await axiosInstance.delete(`/teacher/exams/${encodeURIComponent(id)}`)
   }
   async getExamStudents(id, sessionId) {
-    const params = sessionId ? { sessionId } : undefined;
-    const response = await axiosInstance.get(`/teacher/exams/${encodeURIComponent(id)}/students`, { params });
-    return response;
+    const params = sessionId ? { sessionId } : undefined
+    
+    return await axiosInstance.get(`/teacher/exams/${encodeURIComponent(id)}/students`, { params })
   }
   async gradeExam(examId, studentId, payload) {
-    const response = await axiosInstance.put(`/teacher/exams/${encodeURIComponent(examId)}/grade/${encodeURIComponent(studentId)}`, payload);
-    return response;
+    return await axiosInstance.put(`/teacher/exams/${encodeURIComponent(examId)}/grade/${encodeURIComponent(studentId)}`, payload)
   }
 
   // Student Evaluations (Teacher)
   async listEvaluations(params = {}) {
-    const response = await axiosInstance.get('/teacher/evaluations', { params });
-    return response;
+    return await axiosInstance.get('/teacher/evaluations', { params })
   }
   async bulkUpsertEvaluations(payload) {
-    const response = await axiosInstance.post('/teacher/evaluations/bulk-upsert', payload);
-    return response;
+    return await axiosInstance.post('/teacher/evaluations/bulk-upsert', payload)
   }
   async getEvaluationById(id) {
-    const response = await axiosInstance.get(`/teacher/evaluations/${encodeURIComponent(id)}`);
-    return response;
+    return await axiosInstance.get(`/teacher/evaluations/${encodeURIComponent(id)}`)
   }
   async updateEvaluation(id, payload) {
-    const response = await axiosInstance.patch(`/teacher/evaluations/${encodeURIComponent(id)}`, payload);
-    return response;
+    return await axiosInstance.patch(`/teacher/evaluations/${encodeURIComponent(id)}`, payload)
   }
   async getStudentsWithEval(params = {}) {
-    const response = await axiosInstance.get('/teacher/evaluations/students-with-eval', { params });
-    return response;
+    return await axiosInstance.get('/teacher/evaluations/students-with-eval', { params })
   }
 
   // Reservation Payments (Teacher)
   async getReservationPayments(userData = {}) {
-    const page = userData?.options?.page ?? 1;
-    const limit = userData?.options?.limit ?? 10;
-    const studyYear = userData?.options?.study_year ?? '';
-    const url = `/teacher/payments/reservations?studyYear=${encodeURIComponent(studyYear)}&page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}`;
-    const response = await axiosInstance.get(url);
-    return response;
+    const page = userData?.options?.page ?? 1
+    const limit = userData?.options?.limit ?? 10
+    const studyYear = userData?.options?.study_year ?? ''
+    const url = `/teacher/payments/reservations?studyYear=${encodeURIComponent(studyYear)}&page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}`
+    
+    return await axiosInstance.get(url)
   }
   async getReservationPaymentsReport(studyYear) {
-    const url = `/teacher/payments/reservations/report?studyYear=${encodeURIComponent(studyYear)}`;
-    const response = await axiosInstance.get(url);
-    return response;
+    const url = `/teacher/payments/reservations/report?studyYear=${encodeURIComponent(studyYear)}`
+    
+    return await axiosInstance.get(url)
   }
   async getReservationPaymentByBooking(bookingId) {
-    const response = await axiosInstance.get(`/teacher/payments/reservations/${encodeURIComponent(bookingId)}`);
-    return response;
+    return await axiosInstance.get(`/teacher/payments/reservations/${encodeURIComponent(bookingId)}`)
   }
   async markReservationPaymentPaid(bookingId) {
-    const response = await axiosInstance.patch(`/teacher/payments/reservations/${encodeURIComponent(bookingId)}/mark-paid`);
-    return response;
+    return await axiosInstance.patch(`/teacher/payments/reservations/${encodeURIComponent(bookingId)}/mark-paid`)
   }
 
   // ============================================================
@@ -531,50 +481,41 @@ class TeacherApi {
   async listInvoices(params = {}) {
     // params: { studyYear, status?, studentId?, courseId?, paymentMode?,
     //          search?, deleted?, page?, limit? }
-    const response = await axiosInstance.get('/teacher/invoices', { params });
-    return response;
+    return await axiosInstance.get('/teacher/invoices', { params })
   }
   async getInvoicesSummary(params = {}) {
     // returns: { totalAmount, totalPaid, totalDiscount, totalRemaining,
     //           totalCount, paidCount, partialCount, pendingCount,
     //           overdueCount, discountCount }
-    const response = await axiosInstance.get('/teacher/invoices/summary', { params });
-    return response;
+    return await axiosInstance.get('/teacher/invoices/summary', { params })
   }
   async getInvoiceFull(invoiceId) {
     // returns: { invoice, installments[], totals }
     // (Replaces v1 trio: getInvoiceDetails / getInvoiceFull / getInvoiceInstallments / getInvoiceEntries)
-    const response = await axiosInstance.get(`/teacher/invoices/${encodeURIComponent(invoiceId)}`);
-    return response;
+    return await axiosInstance.get(`/teacher/invoices/${encodeURIComponent(invoiceId)}`)
   }
   async createInvoice(payload) {
     // For installments: pass either `installmentsCount` (auto-split) or `installments[]` (manual).
-    const response = await axiosInstance.post('/teacher/invoices', payload);
-    return response;
+    return await axiosInstance.post('/teacher/invoices', payload)
   }
   async addInvoicePayment(invoiceId, payload) {
     // payload: { amount, paymentMethod, installmentId?, paidAt?, notes? }
     // Supports partial payments. Omit `installmentId` to auto-allocate across pending.
-    const response = await axiosInstance.post(`/teacher/invoices/${encodeURIComponent(invoiceId)}/payments`, payload);
-    return response;
+    return await axiosInstance.post(`/teacher/invoices/${encodeURIComponent(invoiceId)}/payments`, payload)
   }
   async updateInvoiceMeta(invoiceId, payload) {
     // payload: { invoiceDate?, dueDate?, notes? }  — pass null to clear a field.
-    const response = await axiosInstance.patch(`/teacher/invoices/${encodeURIComponent(invoiceId)}/meta`, payload);
-    return response;
+    return await axiosInstance.patch(`/teacher/invoices/${encodeURIComponent(invoiceId)}/meta`, payload)
   }
   async setInvoiceDiscount(invoiceId, discountAmount) {
     // Sets the discount to an exact value (not additive).
-    const response = await axiosInstance.patch(`/teacher/invoices/${encodeURIComponent(invoiceId)}/discount`, { discountAmount });
-    return response;
+    return await axiosInstance.patch(`/teacher/invoices/${encodeURIComponent(invoiceId)}/discount`, { discountAmount })
   }
   async softDeleteInvoice(invoiceId) {
-    const response = await axiosInstance.delete(`/teacher/invoices/${encodeURIComponent(invoiceId)}`);
-    return response;
+    return await axiosInstance.delete(`/teacher/invoices/${encodeURIComponent(invoiceId)}`)
   }
   async restoreInvoice(invoiceId) {
-    const response = await axiosInstance.patch(`/teacher/invoices/${encodeURIComponent(invoiceId)}/restore`);
-    return response;
+    return await axiosInstance.patch(`/teacher/invoices/${encodeURIComponent(invoiceId)}/restore`)
   }
 
   // --- Removed in v2 (backend endpoints no longer exist) ---
@@ -589,9 +530,11 @@ class TeacherApi {
 
   async listMyVideoCourses({ page = 1, limit = 20, status } = {}) {
     const params = new URLSearchParams()
+
     params.set('page', String(page))
     params.set('limit', String(limit))
     if (status) params.set('status', status)
+    
     return axiosInstance.get(`/teacher/video-courses?${params.toString()}`)
   }
 
@@ -617,7 +560,9 @@ class TeacherApi {
 
   async uploadVideoCourseCoverImage(id, file) {
     const fd = new FormData()
+
     fd.append('file', file)
+    
     return axiosInstance.post(`/teacher/video-courses/${id}/cover-image`, fd, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
@@ -690,6 +635,7 @@ class TeacherApi {
   uploadBytesToBunny(upload, file, { onProgress } = {}) {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
+
       xhr.open(upload.method || 'PUT', upload.url, true)
       for (const [k, v] of Object.entries(upload.headers || {})) {
         try {
@@ -708,6 +654,7 @@ class TeacherApi {
           resolve({ ok: true, status: xhr.status })
         } else {
           const err = new Error('upload-failed')
+
           err.status = xhr.status
           err.detail = xhr.responseText
           reject(err)
@@ -719,4 +666,4 @@ class TeacherApi {
     })
   }
 }
-export default new TeacherApi();
+export default new TeacherApi()

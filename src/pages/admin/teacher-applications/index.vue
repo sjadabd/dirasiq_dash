@@ -58,7 +58,9 @@ async function fetchPage () {
       status: activeStatus.value,
       search: search.value || undefined,
     })
+
     const body = res?.data || {}
+
     items.value = Array.isArray(body.data) ? body.data : []
     total.value = Number(body.meta?.pagination?.total ?? 0)
   } catch (err) {
@@ -129,10 +131,21 @@ onMounted(fetchPage)
     <AppBreadcrumbs :items="breadcrumbItems" />
 
     <!-- Header strip -->
-    <VCard class="my-4" elevation="3" rounded="lg">
+    <VCard
+      class="my-4"
+      elevation="3"
+      rounded="lg"
+    >
       <VCardTitle class="d-flex align-center py-4 px-6">
-        <VIcon icon="ri-user-add-line" color="primary" class="me-2" size="24" />
-        <h3 class="text-h5 font-weight-bold">طلبات انضمام الأساتذة</h3>
+        <VIcon
+          icon="ri-user-add-line"
+          color="primary"
+          class="me-2"
+          size="24"
+        />
+        <h3 class="text-h5 font-weight-bold">
+          طلبات انضمام الأساتذة
+        </h3>
         <VSpacer />
         <VBtn
           color="primary"
@@ -141,13 +154,17 @@ onMounted(fetchPage)
           size="small"
           icon="ri-refresh-line"
           :loading="loading"
-          @click="fetchPage()"
+          @click="fetchPage"
         />
       </VCardTitle>
     </VCard>
 
     <!-- Tabs -->
-    <VCard class="mb-4" rounded="lg" elevation="2">
+    <VCard
+      class="mb-4"
+      rounded="lg"
+      elevation="2"
+    >
       <VTabs
         :model-value="activeStatus"
         color="primary"
@@ -160,17 +177,27 @@ onMounted(fetchPage)
           :key="s.value"
           :value="s.value"
         >
-          <VIcon :icon="s.icon" class="me-2" />
+          <VIcon
+            :icon="s.icon"
+            class="me-2"
+          />
           {{ s.label }}
         </VTab>
       </VTabs>
     </VCard>
 
     <!-- Filters -->
-    <VCard class="mb-4" elevation="2" rounded="lg">
+    <VCard
+      class="mb-4"
+      elevation="2"
+      rounded="lg"
+    >
       <VCardItem>
         <VRow class="align-center">
-          <VCol cols="12" md="6">
+          <VCol
+            cols="12"
+            md="6"
+          >
             <VTextField
               v-model="search"
               label="بحث بالاسم أو البريد أو الهاتف أو المادة"
@@ -182,8 +209,15 @@ onMounted(fetchPage)
               @click:clear="clearSearch"
             />
           </VCol>
-          <VCol cols="12" md="6" class="d-flex justify-end align-center">
-            <VChip color="primary" variant="elevated">
+          <VCol
+            cols="12"
+            md="6"
+            class="d-flex justify-end align-center"
+          >
+            <VChip
+              color="primary"
+              variant="elevated"
+            >
               {{ total.toLocaleString('ar-IQ') }} سجل
             </VChip>
           </VCol>
@@ -192,7 +226,10 @@ onMounted(fetchPage)
     </VCard>
 
     <!-- Table card -->
-    <VCard elevation="3" rounded="lg">
+    <VCard
+      elevation="3"
+      rounded="lg"
+    >
       <VCardItem>
         <!-- Error banner -->
         <VAlert
@@ -233,7 +270,11 @@ onMounted(fetchPage)
         </div>
 
         <!-- Data table -->
-        <VTable v-else density="comfortable" class="text-no-wrap">
+        <VTable
+          v-else
+          density="comfortable"
+          class="text-no-wrap"
+        >
           <thead>
             <tr>
               <th
@@ -253,10 +294,16 @@ onMounted(fetchPage)
               @click="viewDetail(row)"
             >
               <td>{{ row.fullName }}</td>
-              <td dir="ltr">{{ row.email }}</td>
-              <td dir="ltr">{{ row.phone }}</td>
+              <td dir="ltr">
+                {{ row.email }}
+              </td>
+              <td dir="ltr">
+                {{ row.phone }}
+              </td>
               <td>{{ row.subject }}</td>
-              <td class="text-center">{{ row.yearsOfExperience }} سنة</td>
+              <td class="text-center">
+                {{ row.yearsOfExperience }} سنة
+              </td>
               <td>{{ row.city }}</td>
               <td>{{ formatDate(row.createdAt) }}</td>
               <td class="text-center">
@@ -275,7 +322,10 @@ onMounted(fetchPage)
 
       <!-- Pagination -->
       <VDivider v-if="items.length" />
-      <VCardActions v-if="items.length" class="justify-center py-4">
+      <VCardActions
+        v-if="items.length"
+        class="justify-center py-4"
+      >
         <VPagination
           :model-value="page"
           :length="totalPages"

@@ -11,6 +11,7 @@ const chat = useChatRealtime()
 
 onMounted(async () => {
   const id = String(route.params.id ?? "")
+
   await chat.initialize()
   if (id) await chat.openConversation(id)
   router.replace({ name: "chat-conversations" })
@@ -18,7 +19,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="d-flex justify-center align-center" style="height: 50vh;">
-    <VProgressCircular indeterminate color="primary" size="36" />
+  <div
+    class="d-flex justify-center align-center"
+    style="height: 50vh;"
+  >
+    <VProgressCircular
+      indeterminate
+      color="primary"
+      size="36"
+    />
   </div>
 </template>

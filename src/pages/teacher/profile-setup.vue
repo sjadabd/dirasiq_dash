@@ -11,32 +11,33 @@
 //   • AppDateTimePicker component (birth date)
 // =====================================================
 
-import TeacherApi from "@/api/teacher/teacher_api";
-import VideoUploadEditor from "@/components/teacher/VideoUploadEditor.vue";
-import axiosInstance from "@/utils/axios";
-import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import TeacherApi from "@/api/teacher/teacher_api"
+import VideoUploadEditor from "@/components/teacher/VideoUploadEditor.vue"
+import axiosInstance from "@/utils/axios"
+import { computed, onMounted, ref } from "vue"
+import { useRouter } from "vue-router"
 
-const router = useRouter();
+const router = useRouter()
 
 // ---- Source: hydrate from localStorage user ------------------------------
 const storedUser = (() => {
-  try { return JSON.parse(localStorage.getItem("user") || "{}"); }
-  catch { return {}; }
-})();
-const contentUrl = ref(localStorage.getItem("content_url") || "");
+  try { return JSON.parse(localStorage.getItem("user") || "{}") }
+  catch { return {} }
+})()
+
+const contentUrl = ref(localStorage.getItem("content_url") || "")
 
 // ---- Reactive state ------------------------------------------------------
-const formRef = ref(null);
-const isLoading = ref(false);
-const error = ref("");
-const success = ref("");
+const formRef = ref(null)
+const isLoading = ref(false)
+const error = ref("")
+const success = ref("")
 
 const formData = ref({
   name: storedUser.name || "",
   phone: storedUser.phone || "",
   studyYear: (() => {
-    try { return JSON.parse(localStorage.getItem("studyYear")); } catch { return null; }
+    try { return JSON.parse(localStorage.getItem("studyYear")) } catch { return null }
   })(),
   bio: storedUser.bio || "",
   experienceYears: storedUser.experienceYears ?? "",
@@ -47,206 +48,255 @@ const formData = ref({
   latitude: parseFloat(storedUser?.location?.latitude) || 33.3152,
   longitude: parseFloat(storedUser?.location?.longitude) || 44.3661,
   profileImageBase64: null,
-});
+})
 
-const grades = ref([]);
-const gradesLoading = ref(false);
+const grades = ref([])
+const gradesLoading = ref(false)
 
 const genderOptions = [
   { text: "ذكر", value: "male" },
   { text: "أنثى", value: "female" },
-];
+]
 
 // Vuetify rule contract: each rule must return exactly `true` or a `string`
 // (the error message). Returning a number/array/etc throws "X is not a valid
 // value." — that's the source of the console error on the multi-select.
 const rules = {
-  required: (v) => {
-    if (v === null || v === undefined || v === "") return "هذا الحقل مطلوب";
-    return true;
+  required: v => {
+    if (v === null || v === undefined || v === "") return "هذا الحقل مطلوب"
+    
+    return true
   },
-  phone: (v) => /^[0-9]{10,15}$/.test(String(v ?? "")) || "رقم الهاتف يجب أن يكون 10-15 رقم",
-  positiveInt: (v) => {
-    if (v === null || v === undefined || v === "") return "يجب أن يكون رقماً موجباً";
-    const n = Number(v);
-    if (Number.isNaN(n) || n < 0) return "يجب أن يكون رقماً موجباً";
-    return true;
+  phone: v => /^\d{10,15}$/.test(String(v ?? "")) || "رقم الهاتف يجب أن يكون 10-15 رقم",
+  positiveInt: v => {
+    if (v === null || v === undefined || v === "") return "يجب أن يكون رقماً موجباً"
+    const n = Number(v)
+    if (Number.isNaN(n) || n < 0) return "يجب أن يكون رقماً موجباً"
+    
+    return true
   },
-  gradesRequired: (v) => {
-    if (Array.isArray(v) && v.length > 0) return true;
-    return "اختر صفاً واحداً على الأقل";
+  gradesRequired: v => {
+    if (Array.isArray(v) && v.length > 0) return true
+    
+    return "اختر صفاً واحداً على الأقل"
   },
-};
+}
 
 // Avatar preview
-const avatarPreviewSrc = ref(null);
+const avatarPreviewSrc = ref(null)
 
 function resolveAsset(path) {
-  if (!path) return "";
-  if (/^https?:\/\//i.test(path) || path.startsWith("data:")) return path;
+  if (!path) return ""
+  if (/^https?:\/\//i.test(path) || path.startsWith("data:")) return path
+
   const base = (contentUrl.value || axiosInstance?.defaults?.baseURL?.replace(/\/api\/?$/, "") || "")
-    .replace(/\/+$/, "");
-  return base + (path.startsWith("/") ? path : "/" + path);
+    .replace(/\/+$/, "")
+
+  
+  return base + (path.startsWith("/") ? path : "/" + path)
 }
 
 if (storedUser?.profileImagePath) {
-  avatarPreviewSrc.value = resolveAsset(storedUser.profileImagePath);
+  avatarPreviewSrc.value = resolveAsset(storedUser.profileImagePath)
 }
 
 // ---- Derived: progress / completion % ------------------------------------
-const requiredFields = ["name", "phone", "gender", "birthDate", "experienceYears", "address", "bio"];
+const requiredFields = ["name", "phone", "gender", "birthDate", "experienceYears", "address", "bio"]
+
 const completionPercent = computed(() => {
-  let done = 0;
+  let done = 0
   for (const f of requiredFields) {
-    const v = formData.value[f];
-    if (v !== null && v !== undefined && String(v).trim() !== "") done++;
+    const v = formData.value[f]
+    if (v !== null && v !== undefined && String(v).trim() !== "") done++
   }
-  if (Array.isArray(formData.value.gradeIds) && formData.value.gradeIds.length) done++;
-  if (formData.value.latitude && formData.value.longitude) done++;
+  if (Array.isArray(formData.value.gradeIds) && formData.value.gradeIds.length) done++
+  if (formData.value.latitude && formData.value.longitude) done++
+
   // Total = 7 required text fields + grades + location = 9
-  return Math.round((done / 9) * 100);
-});
+  return Math.round((done / 9) * 100)
+})
 
 const selectedGradeNames = computed(() => {
-  if (!Array.isArray(formData.value.gradeIds) || !formData.value.gradeIds.length) return [];
+  if (!Array.isArray(formData.value.gradeIds) || !formData.value.gradeIds.length) return []
+  
   return grades.value
     .filter(g => formData.value.gradeIds.includes(g.id))
-    .map(g => g.name);
-});
+    .map(g => g.name)
+})
 
 const genderLabel = computed(() =>
-  (genderOptions.find(o => o.value === formData.value.gender)?.text) || "—"
-);
+  (genderOptions.find(o => o.value === formData.value.gender)?.text) || "—",
+)
 
 // ---- Helpers --------------------------------------------------------------
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+    const reader = new FileReader()
+
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
 }
 
 async function onAvatarSelected(files) {
   try {
-    const file = Array.isArray(files) ? files[0] : files?.target?.files?.[0] || files;
-    if (!file) return;
-    const base64 = await fileToBase64(file);
-    formData.value.profileImageBase64 = base64;
-    avatarPreviewSrc.value = base64;
+    const file = Array.isArray(files) ? files[0] : files?.target?.files?.[0] || files
+    if (!file) return
+    const base64 = await fileToBase64(file)
+
+    formData.value.profileImageBase64 = base64
+    avatarPreviewSrc.value = base64
   } catch (e) {
-    console.error("avatar select error:", e);
-    error.value = "تعذّر قراءة الصورة المختارة";
+    console.error("avatar select error:", e)
+    error.value = "تعذّر قراءة الصورة المختارة"
   }
 }
 
 function handleLocationUpdate(coords) {
-  formData.value.latitude = coords.latitude;
-  formData.value.longitude = coords.longitude;
+  formData.value.latitude = coords.latitude
+  formData.value.longitude = coords.longitude
 }
 
 function handleVideoUploadSuccess() {
-  success.value = "تم رفع الفيديو بنجاح! سيتم معالجته قريباً.";
+  success.value = "تم رفع الفيديو بنجاح! سيتم معالجته قريباً."
 }
 
 function validateForm() {
-  const f = formData.value;
-  if (!f.name?.trim()) return "اسم المعلم مطلوب";
-  if (!f.phone?.trim()) return "رقم الهاتف مطلوب";
-  if (!/^[0-9]{10,15}$/.test(f.phone)) return "رقم الهاتف يجب أن يكون 10-15 رقم";
-  if (!f.bio?.trim()) return "النبذة الشخصية مطلوبة";
-  if (f.experienceYears === null || f.experienceYears === undefined || f.experienceYears === "") return "سنوات الخبرة مطلوبة";
-  if (Number.isNaN(Number(f.experienceYears)) || Number(f.experienceYears) < 0) return "سنوات الخبرة يجب أن تكون رقماً موجباً";
-  if (!Array.isArray(f.gradeIds) || !f.gradeIds.length) return "اختر صفاً دراسياً واحداً على الأقل";
-  if (!f.address?.trim()) return "العنوان مطلوب";
-  if (!f.gender) return "الجنس مطلوب";
-  if (!f.birthDate) return "تاريخ الميلاد مطلوب";
-  return null;
+  const f = formData.value
+  if (!f.name?.trim()) return "اسم المعلم مطلوب"
+  if (!f.phone?.trim()) return "رقم الهاتف مطلوب"
+  if (!/^\d{10,15}$/.test(f.phone)) return "رقم الهاتف يجب أن يكون 10-15 رقم"
+  if (!f.bio?.trim()) return "النبذة الشخصية مطلوبة"
+  if (f.experienceYears === null || f.experienceYears === undefined || f.experienceYears === "") return "سنوات الخبرة مطلوبة"
+  if (Number.isNaN(Number(f.experienceYears)) || Number(f.experienceYears) < 0) return "سنوات الخبرة يجب أن تكون رقماً موجباً"
+  if (!Array.isArray(f.gradeIds) || !f.gradeIds.length) return "اختر صفاً دراسياً واحداً على الأقل"
+  if (!f.address?.trim()) return "العنوان مطلوب"
+  if (!f.gender) return "الجنس مطلوب"
+  if (!f.birthDate) return "تاريخ الميلاد مطلوب"
+  
+  return null
 }
 
 // ---- Data loaders ---------------------------------------------------------
 async function loadGrades() {
-  gradesLoading.value = true;
+  gradesLoading.value = true
   try {
-    const res = await TeacherApi.getAllGrades();
-    const payload = res?.data?.data ?? res?.data ?? [];
-    grades.value = Array.isArray(payload) ? payload : (Array.isArray(payload.data) ? payload.data : []);
+    const res = await TeacherApi.getAllGrades()
+    const payload = res?.data?.data ?? res?.data ?? []
+
+    grades.value = Array.isArray(payload) ? payload : (Array.isArray(payload.data) ? payload.data : [])
   } catch (e) {
-    console.warn("Failed to load grades:", e);
-    error.value = e?.response?.data?.message || "تعذّر تحميل قائمة الصفوف";
+    console.warn("Failed to load grades:", e)
+    error.value = e?.response?.data?.message || "تعذّر تحميل قائمة الصفوف"
   } finally {
-    gradesLoading.value = false;
+    gradesLoading.value = false
   }
 }
 
 async function handleSubmit() {
   // Native validate first (Vuetify rules)
   if (formRef.value?.validate) {
-    const { valid } = await formRef.value.validate();
+    const { valid } = await formRef.value.validate()
     if (!valid) {
-      error.value = "يرجى تصحيح الحقول الناقصة في النموذج";
-      return;
+      error.value = "يرجى تصحيح الحقول الناقصة في النموذج"
+      
+      return
     }
   }
 
-  const ve = validateForm();
-  if (ve) { error.value = ve; return; }
+  const ve = validateForm()
+  if (ve) { error.value = ve 
 
-  isLoading.value = true;
-  error.value = "";
-  success.value = "";
+    return }
+
+  isLoading.value = true
+  error.value = ""
+  success.value = ""
 
   try {
-    const payload = { ...formData.value };
-    const response = await TeacherApi.completeProfile(payload);
+    const payload = { ...formData.value }
+    const response = await TeacherApi.completeProfile(payload)
 
     if (response.status === 200 || response.status === 201) {
-      const updatedUser = response.data?.data?.user || payload;
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      localStorage.setItem("isProfileComplete", response.data?.data?.isProfileComplete ?? true);
-      success.value = "تم حفظ بياناتك بنجاح! جارٍ التوجيه للوحة التحكم…";
-      setTimeout(() => router.push("/teacher/dashboard"), 900);
+      const updatedUser = response.data?.data?.user || payload
+
+      localStorage.setItem("user", JSON.stringify(updatedUser))
+      localStorage.setItem("isProfileComplete", response.data?.data?.isProfileComplete ?? true)
+      success.value = "تم حفظ بياناتك بنجاح! جارٍ التوجيه للوحة التحكم…"
+      setTimeout(() => router.push("/teacher/dashboard"), 900)
     }
   } catch (err) {
-    console.error("Error saving profile:", err);
+    console.error("Error saving profile:", err)
     error.value = err?.response?.data?.message || err?.response?.data?.errors?.[0]?.message
-      || "حدث خطأ أثناء حفظ البيانات. يرجى المحاولة مرة أخرى.";
+      || "حدث خطأ أثناء حفظ البيانات. يرجى المحاولة مرة أخرى."
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
 }
 
 // ---- Lifecycle ------------------------------------------------------------
 onMounted(() => {
-  loadGrades();
-});
+  loadGrades()
+})
 </script>
 
 <template>
   <div class="profile-setup">
     <!-- 1. HERO ============================================== -->
-    <VCard class="hero-card mb-4" elevation="0" rounded="lg">
+    <VCard
+      class="hero-card mb-4"
+      elevation="0"
+      rounded="lg"
+    >
       <div class="hero-mesh" />
       <VCardItem class="position-relative">
-        <VRow align="center" class="g-3">
-          <VCol cols="12" md="8">
+        <VRow
+          align="center"
+          class="g-3"
+        >
+          <VCol
+            cols="12"
+            md="8"
+          >
             <div class="d-flex align-center gap-3 flex-wrap">
-              <VAvatar size="64" color="warning" class="hero-avatar">
-                <VIcon size="32" color="white">ri-user-settings-line</VIcon>
+              <VAvatar
+                size="64"
+                color="warning"
+                class="hero-avatar"
+              >
+                <VIcon
+                  size="32"
+                  color="white"
+                >
+                  ri-user-settings-line
+                </VIcon>
               </VAvatar>
               <div class="flex-grow-1">
-                <div class="hero-greet">إعداد ملفك الشخصي</div>
-                <h1 class="hero-name">أكمل بياناتك لبدء استقبال الطلاب</h1>
+                <div class="hero-greet">
+                  إعداد ملفك الشخصي
+                </div>
+                <h1 class="hero-name">
+                  أكمل بياناتك لبدء استقبال الطلاب
+                </h1>
                 <div class="hero-sub">
                   املأ المعلومات أدناه. كلما اكتمل ملفك، زادت ثقة الطلاب بك وفرص حصولك على حجوزات.
                 </div>
               </div>
             </div>
           </VCol>
-          <VCol cols="12" md="4" class="text-md-end">
-            <VBtn color="white" variant="text" prepend-icon="ri-arrow-right-line"
-              to="/teacher/dashboard" class="back-link">
+          <VCol
+            cols="12"
+            md="4"
+            class="text-md-end"
+          >
+            <VBtn
+              color="white"
+              variant="text"
+              prepend-icon="ri-arrow-right-line"
+              to="/teacher/dashboard"
+              class="back-link"
+            >
               عودة للوحة التحكم
             </VBtn>
           </VCol>
@@ -255,41 +305,99 @@ onMounted(() => {
     </VCard>
 
     <!-- Alerts (sticky on top) -->
-    <VAlert v-if="error" type="error" variant="tonal" closable class="mb-4" @click:close="error = ''">
+    <VAlert
+      v-if="error"
+      type="error"
+      variant="tonal"
+      closable
+      class="mb-4"
+      @click:close="error = ''"
+    >
       {{ error }}
     </VAlert>
-    <VAlert v-if="success" type="success" variant="tonal" closable class="mb-4" @click:close="success = ''">
+    <VAlert
+      v-if="success"
+      type="success"
+      variant="tonal"
+      closable
+      class="mb-4"
+      @click:close="success = ''"
+    >
       {{ success }}
     </VAlert>
 
     <!-- 2. MAIN GRID ========================================== -->
     <VRow dense>
       <!-- LEFT: form sections -->
-      <VCol cols="12" lg="8">
+      <VCol
+        cols="12"
+        lg="8"
+      >
         <VForm ref="formRef">
           <!-- Section 1: Personal -->
-          <VCard class="panel mb-4" elevation="0" rounded="lg" border>
+          <VCard
+            class="panel mb-4"
+            elevation="0"
+            rounded="lg"
+            border
+          >
             <VCardTitle class="panel-head">
-              <div class="panel-step">1</div>
-              <VIcon color="primary" class="me-2">ri-user-line</VIcon>
+              <div class="panel-step">
+                1
+              </div>
+              <VIcon
+                color="primary"
+                class="me-2"
+              >
+                ri-user-line
+              </VIcon>
               <span>المعلومات الشخصية</span>
             </VCardTitle>
             <VDivider />
             <VCardItem>
               <!-- Avatar uploader -->
               <div class="avatar-uploader">
-                <VAvatar size="84" class="avatar-shadow" color="grey-lighten-3">
-                  <img v-if="avatarPreviewSrc" :src="avatarPreviewSrc" alt="avatar" class="avatar-preview-img" />
-                  <VIcon v-else size="36" color="grey-darken-1">ri-user-3-line</VIcon>
+                <VAvatar
+                  size="84"
+                  class="avatar-shadow"
+                  color="grey-lighten-3"
+                >
+                  <img
+                    v-if="avatarPreviewSrc"
+                    :src="avatarPreviewSrc"
+                    alt="avatar"
+                    class="avatar-preview-img"
+                  >
+                  <VIcon
+                    v-else
+                    size="36"
+                    color="grey-darken-1"
+                  >
+                    ri-user-3-line
+                  </VIcon>
                 </VAvatar>
                 <div class="flex-grow-1">
-                  <div class="uploader-title">الصورة الشخصية <span class="uploader-optional">(اختياري)</span></div>
-                  <VFileInput accept="image/*" variant="outlined" density="comfortable" show-size
-                    prepend-icon="" prepend-inner-icon="ri-image-add-line"
-                    label="اختر صورة من جهازك" hide-details
-                    @change="onAvatarSelected" />
+                  <div class="uploader-title">
+                    الصورة الشخصية <span class="uploader-optional">(اختياري)</span>
+                  </div>
+                  <VFileInput
+                    accept="image/*"
+                    variant="outlined"
+                    density="comfortable"
+                    show-size
+                    prepend-icon=""
+                    prepend-inner-icon="ri-image-add-line"
+                    label="اختر صورة من جهازك"
+                    hide-details
+                    @change="onAvatarSelected"
+                  />
                   <div class="uploader-hint">
-                    <VIcon size="14" class="me-1">ri-information-line</VIcon>
+                    <VIcon
+                      size="14"
+                      class="me-1"
+                    >
+                      ri-information-line
+                    </VIcon>
                     PNG أو JPG · يفضّل أقل من 2 ميجابايت · مربعة الشكل للنتيجة الأفضل
                   </div>
                 </div>
@@ -298,89 +406,220 @@ onMounted(() => {
               <VDivider class="my-4" />
 
               <VRow dense>
-                <VCol cols="12" md="6">
-                  <VTextField v-model="formData.name" label="الاسم الكامل *" placeholder="مثال: أحمد محمد"
-                    prepend-inner-icon="ri-user-line" variant="outlined" density="comfortable" color="primary"
-                    :rules="[rules.required]" />
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VTextField
+                    v-model="formData.name"
+                    label="الاسم الكامل *"
+                    placeholder="مثال: أحمد محمد"
+                    prepend-inner-icon="ri-user-line"
+                    variant="outlined"
+                    density="comfortable"
+                    color="primary"
+                    :rules="[rules.required]"
+                  />
                 </VCol>
-                <VCol cols="12" md="6">
-                  <VTextField v-model="formData.phone" label="رقم الهاتف *" placeholder="07700000000"
-                    prepend-inner-icon="ri-phone-line" variant="outlined" density="comfortable" color="primary"
-                    :rules="[rules.required, rules.phone]" />
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VTextField
+                    v-model="formData.phone"
+                    label="رقم الهاتف *"
+                    placeholder="07700000000"
+                    prepend-inner-icon="ri-phone-line"
+                    variant="outlined"
+                    density="comfortable"
+                    color="primary"
+                    :rules="[rules.required, rules.phone]"
+                  />
                 </VCol>
-                <VCol cols="12" md="6">
-                  <VSelect v-model="formData.gender" label="الجنس *" :items="genderOptions"
-                    item-title="text" item-value="value" prepend-inner-icon="ri-user-2-line"
-                    variant="outlined" density="comfortable" color="primary" :rules="[rules.required]" />
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VSelect
+                    v-model="formData.gender"
+                    label="الجنس *"
+                    :items="genderOptions"
+                    item-title="text"
+                    item-value="value"
+                    prepend-inner-icon="ri-user-2-line"
+                    variant="outlined"
+                    density="comfortable"
+                    color="primary"
+                    :rules="[rules.required]"
+                  />
                 </VCol>
-                <VCol cols="12" md="6">
-                  <AppDateTimePicker id="birth-date" v-model="formData.birthDate" label="تاريخ الميلاد *"
-                    variant="outlined" density="comfortable" prepend-inner-icon="ri-calendar-line"
-                    :rules="[rules.required]" />
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <AppDateTimePicker
+                    id="birth-date"
+                    v-model="formData.birthDate"
+                    label="تاريخ الميلاد *"
+                    variant="outlined"
+                    density="comfortable"
+                    prepend-inner-icon="ri-calendar-line"
+                    :rules="[rules.required]"
+                  />
                 </VCol>
-                <VCol cols="12" md="6">
-                  <VTextField v-model="formData.experienceYears" label="سنوات الخبرة *" placeholder="مثال: 5"
-                    type="number" min="0" prepend-inner-icon="ri-medal-line"
-                    variant="outlined" density="comfortable" color="primary"
-                    :rules="[rules.required, rules.positiveInt]" />
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VTextField
+                    v-model="formData.experienceYears"
+                    label="سنوات الخبرة *"
+                    placeholder="مثال: 5"
+                    type="number"
+                    min="0"
+                    prepend-inner-icon="ri-medal-line"
+                    variant="outlined"
+                    density="comfortable"
+                    color="primary"
+                    :rules="[rules.required, rules.positiveInt]"
+                  />
                 </VCol>
-                <VCol cols="12" md="6">
-                  <VTextField v-model="formData.address" label="العنوان *" placeholder="بغداد - الكرادة"
-                    prepend-inner-icon="ri-map-pin-line" variant="outlined" density="comfortable" color="primary"
-                    :rules="[rules.required]" />
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VTextField
+                    v-model="formData.address"
+                    label="العنوان *"
+                    placeholder="بغداد - الكرادة"
+                    prepend-inner-icon="ri-map-pin-line"
+                    variant="outlined"
+                    density="comfortable"
+                    color="primary"
+                    :rules="[rules.required]"
+                  />
                 </VCol>
                 <VCol cols="12">
-                  <VTextarea v-model="formData.bio" label="نبذة عن نفسك *"
+                  <VTextarea
+                    v-model="formData.bio"
+                    label="نبذة عن نفسك *"
                     placeholder="معلم رياضيات وفيزياء بخبرة 10 سنوات في تدريس المراحل المتوسطة والإعدادية..."
-                    prepend-inner-icon="ri-file-text-line" variant="outlined" density="comfortable"
-                    color="primary" rows="4" auto-grow counter="500" maxlength="500"
-                    :rules="[rules.required]" />
+                    prepend-inner-icon="ri-file-text-line"
+                    variant="outlined"
+                    density="comfortable"
+                    color="primary"
+                    rows="4"
+                    auto-grow
+                    counter="500"
+                    maxlength="500"
+                    :rules="[rules.required]"
+                  />
                 </VCol>
               </VRow>
             </VCardItem>
           </VCard>
 
           <!-- Section 2: Academic -->
-          <VCard class="panel mb-4" elevation="0" rounded="lg" border>
+          <VCard
+            class="panel mb-4"
+            elevation="0"
+            rounded="lg"
+            border
+          >
             <VCardTitle class="panel-head">
-              <div class="panel-step">2</div>
-              <VIcon color="primary" class="me-2">ri-graduation-cap-line</VIcon>
+              <div class="panel-step">
+                2
+              </div>
+              <VIcon
+                color="primary"
+                class="me-2"
+              >
+                ri-graduation-cap-line
+              </VIcon>
               <span>المعلومات الأكاديمية</span>
             </VCardTitle>
             <VDivider />
             <VCardItem>
-              <VAutocomplete v-model="formData.gradeIds" label="الصفوف الدراسية التي تدرسها *"
-                placeholder="ابحث أو اختر من القائمة" prepend-inner-icon="ri-stack-line"
-                :items="grades" item-title="name" item-value="id"
-                variant="outlined" density="comfortable" color="primary"
-                multiple chips closable-chips :loading="gradesLoading"
+              <VAutocomplete
+                v-model="formData.gradeIds"
+                label="الصفوف الدراسية التي تدرسها *"
+                placeholder="ابحث أو اختر من القائمة"
+                prepend-inner-icon="ri-stack-line"
+                :items="grades"
+                item-title="name"
+                item-value="id"
+                variant="outlined"
+                density="comfortable"
+                color="primary"
+                multiple
+                chips
+                closable-chips
+                :loading="gradesLoading"
                 :rules="[rules.gradesRequired]"
-                no-data-text="لا توجد صفوف متاحة">
+                no-data-text="لا توجد صفوف متاحة"
+              >
                 <template #chip="{ props, item }">
-                  <VChip v-bind="props" color="primary" variant="tonal" closable class="font-weight-bold">
+                  <VChip
+                    v-bind="props"
+                    color="primary"
+                    variant="tonal"
+                    closable
+                    class="font-weight-bold"
+                  >
                     {{ item.raw.name }}
                   </VChip>
                 </template>
               </VAutocomplete>
               <div class="field-hint mt-2">
-                <VIcon size="14" class="me-1" color="info">ri-information-line</VIcon>
+                <VIcon
+                  size="14"
+                  class="me-1"
+                  color="info"
+                >
+                  ri-information-line
+                </VIcon>
                 ستظهر هذه الصفوف للطلاب عند البحث عن معلمين في منطقتك.
               </div>
             </VCardItem>
           </VCard>
 
           <!-- Section 3: Intro video (external component) -->
-          <VCard class="panel mb-4 panel-video" elevation="0" rounded="lg" border>
+          <VCard
+            class="panel mb-4 panel-video"
+            elevation="0"
+            rounded="lg"
+            border
+          >
             <VCardTitle class="panel-head">
-              <div class="panel-step">3</div>
-              <VIcon color="primary" class="me-2">ri-video-line</VIcon>
+              <div class="panel-step">
+                3
+              </div>
+              <VIcon
+                color="primary"
+                class="me-2"
+              >
+                ri-video-line
+              </VIcon>
               <span>فيديو تعريفي</span>
-              <VChip size="x-small" color="grey" variant="tonal" class="ms-2">اختياري</VChip>
+              <VChip
+                size="x-small"
+                color="grey"
+                variant="tonal"
+                class="ms-2"
+              >
+                اختياري
+              </VChip>
             </VCardTitle>
             <VDivider />
             <VCardItem>
               <div class="field-hint mb-3">
-                <VIcon size="14" class="me-1" color="info">ri-information-line</VIcon>
+                <VIcon
+                  size="14"
+                  class="me-1"
+                  color="info"
+                >
+                  ri-information-line
+                </VIcon>
                 فيديو قصير (دقيقة-دقيقتين) تعرّف فيه عن نفسك ومنهجك التدريسي. يعزّز ثقة الطلاب بك.
               </div>
               <VideoUploadEditor @upload-success="handleVideoUploadSuccess" />
@@ -388,72 +627,145 @@ onMounted(() => {
           </VCard>
 
           <!-- Section 4: Location -->
-          <VCard class="panel mb-4 panel-map" elevation="0" rounded="lg" border>
+          <VCard
+            class="panel mb-4 panel-map"
+            elevation="0"
+            rounded="lg"
+            border
+          >
             <VCardTitle class="panel-head">
-              <div class="panel-step">4</div>
-              <VIcon color="primary" class="me-2">ri-map-pin-line</VIcon>
+              <div class="panel-step">
+                4
+              </div>
+              <VIcon
+                color="primary"
+                class="me-2"
+              >
+                ri-map-pin-line
+              </VIcon>
               <span>الموقع الجغرافي</span>
             </VCardTitle>
             <VDivider />
             <VCardItem>
               <div class="field-hint mb-3">
-                <VIcon size="14" class="me-1" color="info">ri-information-line</VIcon>
+                <VIcon
+                  size="14"
+                  class="me-1"
+                  color="info"
+                >
+                  ri-information-line
+                </VIcon>
                 اضغط على الخريطة لتحديد موقعك. سيتم استخدامه ليجدك الطلاب القريبون منك.
               </div>
-              <MapPicker :initial-lat="formData.latitude" :initial-lng="formData.longitude"
-                @location-update="handleLocationUpdate" />
+              <MapPicker
+                :initial-lat="formData.latitude"
+                :initial-lng="formData.longitude"
+                @location-update="handleLocationUpdate"
+              />
             </VCardItem>
           </VCard>
         </VForm>
       </VCol>
 
       <!-- RIGHT: live preview + completion summary (sticky on lg+) -->
-      <VCol cols="12" lg="4">
+      <VCol
+        cols="12"
+        lg="4"
+      >
         <div class="preview-rail">
           <!-- Completion -->
-          <VCard class="panel mb-4" elevation="0" rounded="lg" border>
+          <VCard
+            class="panel mb-4"
+            elevation="0"
+            rounded="lg"
+            border
+          >
             <VCardTitle class="panel-head">
-              <VIcon color="primary" class="me-2">ri-progress-3-line</VIcon>
+              <VIcon
+                color="primary"
+                class="me-2"
+              >
+                ri-progress-3-line
+              </VIcon>
               <span>اكتمال الملف</span>
               <VSpacer />
-              <VChip size="small" :color="completionPercent >= 100 ? 'success' : completionPercent >= 60 ? 'warning' : 'error'"
-                variant="tonal">{{ completionPercent }}%</VChip>
+              <VChip
+                size="small"
+                :color="completionPercent >= 100 ? 'success' : completionPercent >= 60 ? 'warning' : 'error'"
+                variant="tonal"
+              >
+                {{ completionPercent }}%
+              </VChip>
             </VCardTitle>
             <VDivider />
             <VCardItem>
-              <VProgressLinear :model-value="completionPercent"
+              <VProgressLinear
+                :model-value="completionPercent"
                 :color="completionPercent >= 100 ? 'success' : completionPercent >= 60 ? 'warning' : 'error'"
-                rounded height="10" />
+                rounded
+                height="10"
+              />
               <div class="text-caption text-medium-emphasis mt-2">
                 {{ completionPercent >= 100
                   ? "ملفك جاهز للحفظ — أضف التغييرات النهائية واضغط حفظ."
                   : completionPercent >= 60
-                  ? "أنت قريب من الاكتمال. أكمل الحقول المتبقية."
-                  : "ابدأ بتعبئة الحقول الأساسية في الأقسام أعلاه." }}
+                    ? "أنت قريب من الاكتمال. أكمل الحقول المتبقية."
+                    : "ابدأ بتعبئة الحقول الأساسية في الأقسام أعلاه." }}
               </div>
             </VCardItem>
           </VCard>
 
           <!-- Live preview card -->
-          <VCard class="preview-card panel mb-4" elevation="0" rounded="lg" border>
+          <VCard
+            class="preview-card panel mb-4"
+            elevation="0"
+            rounded="lg"
+            border
+          >
             <VCardTitle class="panel-head">
-              <VIcon color="primary" class="me-2">ri-eye-line</VIcon>
+              <VIcon
+                color="primary"
+                class="me-2"
+              >
+                ri-eye-line
+              </VIcon>
               <span>كيف يراك الطلاب</span>
             </VCardTitle>
             <VDivider />
             <VCardItem>
               <div class="preview-header">
-                <VAvatar size="76" color="grey-lighten-3">
-                  <img v-if="avatarPreviewSrc" :src="avatarPreviewSrc" alt="avatar" class="avatar-preview-img" />
-                  <VIcon v-else size="34" color="grey-darken-1">ri-user-3-line</VIcon>
+                <VAvatar
+                  size="76"
+                  color="grey-lighten-3"
+                >
+                  <img
+                    v-if="avatarPreviewSrc"
+                    :src="avatarPreviewSrc"
+                    alt="avatar"
+                    class="avatar-preview-img"
+                  >
+                  <VIcon
+                    v-else
+                    size="34"
+                    color="grey-darken-1"
+                  >
+                    ri-user-3-line
+                  </VIcon>
                 </VAvatar>
                 <div class="preview-id">
-                  <h3 class="preview-name">{{ formData.name || "اسم المعلم" }}</h3>
+                  <h3 class="preview-name">
+                    {{ formData.name || "اسم المعلم" }}
+                  </h3>
                   <div class="preview-sub">
-                    <VIcon size="14" class="me-1">ri-medal-line</VIcon>
+                    <VIcon
+                      size="14"
+                      class="me-1"
+                    >
+                      ri-medal-line
+                    </VIcon>
                     {{ formData.experienceYears !== "" && formData.experienceYears !== null
-                       ? formData.experienceYears + " سنوات خبرة"
-                       : "أضف سنوات الخبرة" }}
+                      ? formData.experienceYears + " سنوات خبرة"
+                      : "أضف سنوات الخبرة" }}
                   </div>
                 </div>
               </div>
@@ -462,10 +774,26 @@ onMounted(() => {
                 {{ formData.bio || "ستظهر نبذة عنك هنا — اكتب ما يميّز أسلوبك التدريسي ومنهجك مع الطلاب." }}
               </p>
 
-              <div class="preview-tags" v-if="selectedGradeNames.length">
-                <VChip v-for="g in selectedGradeNames.slice(0, 4)" :key="g"
-                  size="x-small" color="primary" variant="tonal" class="me-1 mb-1">{{ g }}</VChip>
-                <VChip v-if="selectedGradeNames.length > 4" size="x-small" variant="tonal" color="grey">
+              <div
+                v-if="selectedGradeNames.length"
+                class="preview-tags"
+              >
+                <VChip
+                  v-for="g in selectedGradeNames.slice(0, 4)"
+                  :key="g"
+                  size="x-small"
+                  color="primary"
+                  variant="tonal"
+                  class="me-1 mb-1"
+                >
+                  {{ g }}
+                </VChip>
+                <VChip
+                  v-if="selectedGradeNames.length > 4"
+                  size="x-small"
+                  variant="tonal"
+                  color="grey"
+                >
                   +{{ selectedGradeNames.length - 4 }}
                 </VChip>
               </div>
@@ -474,19 +802,39 @@ onMounted(() => {
 
               <div class="preview-meta">
                 <div class="meta-row">
-                  <VIcon size="16" color="primary">ri-phone-line</VIcon>
+                  <VIcon
+                    size="16"
+                    color="primary"
+                  >
+                    ri-phone-line
+                  </VIcon>
                   <span>{{ formData.phone || "—" }}</span>
                 </div>
                 <div class="meta-row">
-                  <VIcon size="16" color="primary">ri-map-pin-line</VIcon>
+                  <VIcon
+                    size="16"
+                    color="primary"
+                  >
+                    ri-map-pin-line
+                  </VIcon>
                   <span>{{ formData.address || "—" }}</span>
                 </div>
                 <div class="meta-row">
-                  <VIcon size="16" color="primary">ri-user-2-line</VIcon>
+                  <VIcon
+                    size="16"
+                    color="primary"
+                  >
+                    ri-user-2-line
+                  </VIcon>
                   <span>{{ genderLabel }}</span>
                 </div>
                 <div class="meta-row">
-                  <VIcon size="16" color="primary">ri-calendar-line</VIcon>
+                  <VIcon
+                    size="16"
+                    color="primary"
+                  >
+                    ri-calendar-line
+                  </VIcon>
                   <span>{{ formData.birthDate || "—" }}</span>
                 </div>
               </div>
@@ -494,10 +842,16 @@ onMounted(() => {
           </VCard>
 
           <!-- Help tip -->
-          <VCard class="panel tip-card" elevation="0" rounded="lg">
+          <VCard
+            class="panel tip-card"
+            elevation="0"
+            rounded="lg"
+          >
             <VCardItem>
               <div class="d-flex align-center gap-2 mb-2">
-                <VIcon color="warning">ri-lightbulb-line</VIcon>
+                <VIcon color="warning">
+                  ri-lightbulb-line
+                </VIcon>
                 <span class="font-weight-bold">نصيحة</span>
               </div>
               <div class="text-body-2">
@@ -515,7 +869,10 @@ onMounted(() => {
     <div class="save-bar">
       <div class="save-bar-inner">
         <div class="save-bar-status">
-          <VIcon :color="completionPercent >= 100 ? 'success' : 'warning'" size="22">
+          <VIcon
+            :color="completionPercent >= 100 ? 'success' : 'warning'"
+            size="22"
+          >
             {{ completionPercent >= 100 ? "ri-check-double-line" : "ri-error-warning-line" }}
           </VIcon>
           <div>
@@ -530,12 +887,26 @@ onMounted(() => {
           </div>
         </div>
         <div class="d-flex gap-2 align-center">
-          <VBtn variant="text" color="grey-darken-1" to="/teacher/dashboard" :disabled="isLoading">
+          <VBtn
+            variant="text"
+            color="grey-darken-1"
+            to="/teacher/dashboard"
+            :disabled="isLoading"
+          >
             إلغاء
           </VBtn>
-          <VBtn color="primary" size="large" rounded="lg" :loading="isLoading"
-            :disabled="isLoading" class="save-cta" @click="handleSubmit">
-            <VIcon start>ri-save-line</VIcon>
+          <VBtn
+            color="primary"
+            size="large"
+            rounded="lg"
+            :loading="isLoading"
+            :disabled="isLoading"
+            class="save-cta"
+            @click="handleSubmit"
+          >
+            <VIcon start>
+              ri-save-line
+            </VIcon>
             حفظ البيانات
           </VBtn>
         </div>

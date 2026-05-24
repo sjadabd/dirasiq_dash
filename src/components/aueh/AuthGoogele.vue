@@ -1,11 +1,11 @@
 <template>
-  <div id="google-login"></div>
+  <div id="google-login" />
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { onMounted } from "vue"
 
-const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 onMounted(() => {
   window.google.accounts.id.initialize({
@@ -15,9 +15,9 @@ onMounted(() => {
     cancel_on_tap_outside: false,
     prompt_parent_id: "google-login",
     context: "signin",
-  });
+  })
 
-  window.google.accounts.id.prompt((notification) => {
+  window.google.accounts.id.prompt(notification => {
     if (
       notification.isNotDisplayed() ||
       notification.isSkippedMoment() ||
@@ -26,14 +26,14 @@ onMounted(() => {
       console.warn(
         "OneTap not shown:",
         notification.getNotDisplayedReason?.() ||
-          notification.getSkippedReason?.()
-      );
+          notification.getSkippedReason?.(),
+      )
     }
-  });
-});
+  })
+})
 
 async function handleCredentialResponse(response) {
-  const token = response.credential;
+  const token = response.credential
 
   // إرسال التوكن إلى السيرفر
   // const res = await fetch('/api/auth/google-login', {

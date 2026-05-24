@@ -1,17 +1,15 @@
 <template>
-  <v-dialog
+  <VDialog
     v-model="dialogModel"
     max-width="500"
     persistent
     transition="dialog-transition"
     class="message-dialog"
   >
-    <v-card
+    <VCard
+      class="message-card elevation-24 rounded-xl"
       :class="[
-        'message-card',
         `message-card--${type}`,
-        'elevation-24',
-        'rounded-xl',
       ]"
       style="overflow: visible"
     >
@@ -22,13 +20,13 @@
           :style="{
             background: `radial-gradient(circle, ${getTypeColor()}20 0%, transparent 70%)`,
           }"
-        ></div>
+        />
         <div
           class="pattern-circle pattern-circle--2"
           :style="{
             background: `radial-gradient(circle, ${getTypeColor()}10 0%, transparent 70%)`,
           }"
-        ></div>
+        />
       </div>
 
       <!-- Decorative Elements -->
@@ -36,19 +34,19 @@
         <div
           class="deco-dot deco-dot--1"
           :style="{ backgroundColor: getTypeColor() }"
-        ></div>
+        />
         <div
           class="deco-dot deco-dot--2"
           :style="{ backgroundColor: getTypeColor() }"
-        ></div>
+        />
         <div
           class="deco-dot deco-dot--3"
           :style="{ backgroundColor: getTypeColor() }"
-        ></div>
+        />
       </div>
 
       <!-- Close Button -->
-      <v-btn
+      <VBtn
         v-if="closable"
         icon
         size="small"
@@ -56,10 +54,10 @@
         class="close-btn"
         @click="closeDialog"
       >
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
+        <VIcon>mdi-close</VIcon>
+      </VBtn>
 
-      <v-card-text class="text-center pa-8 position-relative">
+      <VCardText class="text-center pa-8 position-relative">
         <!-- Icon Section -->
         <div class="icon-container mb-6">
           <div
@@ -69,12 +67,12 @@
               border: `3px solid ${getTypeColor()}30`,
             }"
           >
-            <v-icon
+            <VIcon
               :icon="getTypeIcon()"
               size="48"
               :color="getTypeColor()"
               class="icon-main"
-            ></v-icon>
+            />
           </div>
         </div>
 
@@ -89,8 +87,11 @@
         </p>
 
         <!-- Action Button -->
-        <div v-if="closable" class="action-section">
-          <v-btn
+        <div
+          v-if="closable"
+          class="action-section"
+        >
+          <VBtn
             :color="getTypeColor()"
             variant="elevated"
             size="large"
@@ -98,17 +99,19 @@
             class="action-btn px-8"
             @click="closeDialog"
           >
-            <v-icon start>mdi-check</v-icon>
+            <VIcon start>
+              mdi-check
+            </VIcon>
             {{ closeText || "إغلاق" }}
-          </v-btn>
+          </VBtn>
         </div>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+      </VCardText>
+    </VCard>
+  </VDialog>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed } from "vue"
 
 const props = defineProps({
   modelValue: {
@@ -118,7 +121,7 @@ const props = defineProps({
   type: {
     type: String,
     default: "info",
-    validator: (value) =>
+    validator: value =>
       ["success", "error", "warning", "info"].includes(value),
   },
   title: {
@@ -137,14 +140,14 @@ const props = defineProps({
     type: String,
     default: "",
   },
-});
+})
 
-const emit = defineEmits(["update:modelValue", "close"]);
+const emit = defineEmits(["update:modelValue", "close"])
 
 const dialogModel = computed({
   get: () => props.modelValue,
-  set: (value) => emit("update:modelValue", value),
-});
+  set: value => emit("update:modelValue", value),
+})
 
 const typeConfig = {
   success: {
@@ -167,18 +170,20 @@ const typeConfig = {
     color: "#2196F3",
     title: "معلومة مهمة",
   },
-};
+}
 
-const getTypeIcon = () => typeConfig[props.type]?.icon || typeConfig.info.icon;
+const getTypeIcon = () => typeConfig[props.type]?.icon || typeConfig.info.icon
+
 const getTypeColor = () =>
-  typeConfig[props.type]?.color || typeConfig.info.color;
+  typeConfig[props.type]?.color || typeConfig.info.color
+
 const getDefaultTitle = () =>
-  typeConfig[props.type]?.title || typeConfig.info.title;
+  typeConfig[props.type]?.title || typeConfig.info.title
 
 const closeDialog = () => {
-  dialogModel.value = false;
-  emit("close");
-};
+  dialogModel.value = false
+  emit("close")
+}
 </script>
 
 <style scoped>

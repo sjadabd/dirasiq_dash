@@ -36,17 +36,34 @@ const BULLETS = [
 
 <template>
   <div class="apply-landing">
-    <router-link to="/" class="back-home" aria-label="الرجوع للصفحة الرئيسية">
-      <VIcon icon="ri-arrow-right-line" size="20" />
-    </router-link>
+    <RouterLink
+      to="/"
+      class="back-home"
+      aria-label="الرجوع للصفحة الرئيسية"
+    >
+      <VIcon
+        icon="ri-arrow-right-line"
+        size="20"
+      />
+    </RouterLink>
 
     <div class="apply-container">
       <div class="apply-card">
         <div class="brand">
-          <VAvatar color="primary" size="64" class="brand-avatar">
-            <VIcon icon="ri-graduation-cap-line" size="36" color="white" />
+          <VAvatar
+            color="primary"
+            size="64"
+            class="brand-avatar"
+          >
+            <VIcon
+              icon="ri-graduation-cap-line"
+              size="36"
+              color="white"
+            />
           </VAvatar>
-          <h1 class="brand-heading">انضم إلى مُلهِم IQ كأستاذ</h1>
+          <h1 class="brand-heading">
+            انضم إلى مُلهِم IQ كأستاذ
+          </h1>
           <p class="brand-sub">
             قدّم طلب الانضمام، أرفق مستنداتك، وسيتواصل معك فريق الإدارة فور
             المراجعة.
@@ -54,13 +71,25 @@ const BULLETS = [
         </div>
 
         <div class="bullets">
-          <div v-for="b in BULLETS" :key="b.title" class="bullet">
+          <div
+            v-for="b in BULLETS"
+            :key="b.title"
+            class="bullet"
+          >
             <div class="bullet-icon">
-              <VIcon :icon="b.icon" size="22" color="primary" />
+              <VIcon
+                :icon="b.icon"
+                size="22"
+                color="primary"
+              />
             </div>
             <div class="bullet-body">
-              <div class="bullet-title">{{ b.title }}</div>
-              <div class="bullet-sub">{{ b.subtitle }}</div>
+              <div class="bullet-title">
+                {{ b.title }}
+              </div>
+              <div class="bullet-sub">
+                {{ b.subtitle }}
+              </div>
             </div>
           </div>
         </div>
@@ -73,7 +102,11 @@ const BULLETS = [
             rounded="lg"
             @click="router.push('/apply-as-teacher/form')"
           >
-            <VIcon start size="20" icon="ri-edit-line" />
+            <VIcon
+              start
+              size="20"
+              icon="ri-edit-line"
+            />
             ابدأ تقديم الطلب
           </VBtn>
           <VBtn
@@ -84,7 +117,11 @@ const BULLETS = [
             class="mt-3"
             @click="router.push('/check-application-status')"
           >
-            <VIcon start size="18" icon="ri-search-line" />
+            <VIcon
+              start
+              size="18"
+              icon="ri-search-line"
+            />
             سبق وقدّمت — تحقّق من حالة طلبي
           </VBtn>
         </div>
@@ -96,7 +133,9 @@ const BULLETS = [
 
         <div class="login-link">
           لديك حساب أستاذ مفعّل بالفعل؟
-          <router-link to="/login">تسجيل الدخول</router-link>
+          <RouterLink to="/login">
+            تسجيل الدخول
+          </RouterLink>
         </div>
       </div>
     </div>

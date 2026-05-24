@@ -1,7 +1,7 @@
 export default [
   // super_admin
   {
-    heading: 'لوحة التحكم', type: 'super_admin'
+    heading: 'لوحة التحكم', type: 'super_admin',
   },
   {
     title: 'الصفحة الرئيسية',
@@ -27,6 +27,7 @@ export default [
     type: 'super_admin',
     icon: { icon: 'ri-team-line' },
   },
+
   // super_admin
 
   // teacher
@@ -125,5 +126,6 @@ export default [
     type: 'teacher',
     icon: { icon: 'ri-file-list-3-line' },
   },
+
   // teacher
 ]

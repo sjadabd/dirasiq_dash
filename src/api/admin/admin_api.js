@@ -1,4 +1,4 @@
-import axiosInstance from "@/utils/axios.js";
+import axiosInstance from "@/utils/axios.js"
 
 /**
  * Build a query string from an options bag, dropping null / undefined /
@@ -7,96 +7,88 @@ import axiosInstance from "@/utils/axios.js";
  * Bug fix: previous `?foo=${opts.foo}` interpolation sent "null".
  */
 function buildQuery(opts = {}) {
-  const q = new URLSearchParams();
+  const q = new URLSearchParams()
   for (const [k, v] of Object.entries(opts)) {
-    if (v === null || v === undefined) continue;
-    const s = String(v).trim();
-    if (s === "" || s === "null" || s === "undefined") continue;
-    q.set(k, s);
+    if (v === null || v === undefined) continue
+    const s = String(v).trim()
+    if (s === "" || s === "null" || s === "undefined") continue
+    q.set(k, s)
   }
-  const qs = q.toString();
-  return qs ? `?${qs}` : "";
+  const qs = q.toString()
+  
+  return qs ? `?${qs}` : ""
 }
 
 class Admin {
   // academic-years
   async createAcademicYear(userData) {
-    const response = await axiosInstance.post(`/academic-years`, userData);
-    return response;
+    return await axiosInstance.post(`/academic-years`, userData)
   }
   async getAcademicYear(userData) {
-    const opts = userData?.options || {};
-    const response = await axiosInstance.get(`/academic-years${buildQuery({
+    const opts = userData?.options || {}
+
+    return await axiosInstance.get(`/academic-years${buildQuery({
       page: opts.page, limit: opts.limit, search: opts.search, is_active: opts.is_active,
-    })}`);
-    return response;
+    })}`)
   }
   async getAcademicYearById(id) {
-    const response = await axiosInstance.get(`/academic-years/${id}`);
-    return response;
+    return await axiosInstance.get(`/academic-years/${id}`)
   }
   async getActiveAcademicYear() {
-    const response = await axiosInstance.get(`/academic-years/active`);
-    return response;
+    return await axiosInstance.get(`/academic-years/active`)
   }
   async updateAcademicYear(id, payload) {
-    const response = await axiosInstance.put(`/academic-years/${id}`, payload);
-    return response;
+    return await axiosInstance.put(`/academic-years/${id}`, payload)
   }
   async activateAcademicYear(id) {
-    const response = await axiosInstance.patch(`/academic-years/${id}/activate`);
-    return response;
+    return await axiosInstance.patch(`/academic-years/${id}/activate`)
   }
   async deleteAcademicYear(id) {
-    const response = await axiosInstance.delete(`/academic-years/${id}`);
-    return response;
+    return await axiosInstance.delete(`/academic-years/${id}`)
   }
+
   //   academic-years
 
   // grades
   async createGrade(userData) {
-    const response = await axiosInstance.post(`/grades`, userData);
-    return response;
+    return await axiosInstance.post(`/grades`, userData)
   }
   async getGrade(userData) {
-    const opts = userData?.options || {};
-    const response = await axiosInstance.get(`/grades${buildQuery({
+    const opts = userData?.options || {}
+
+    return await axiosInstance.get(`/grades${buildQuery({
       page: opts.page, limit: opts.limit, search: opts.search, is_active: opts.is_active,
-    })}`);
-    return response;
+    })}`)
   }
   async getGradeById(id) {
-    const response = await axiosInstance.get(`/grades/${id}`);
-    return response;
+    return await axiosInstance.get(`/grades/${id}`)
   }
   async editGrade(id, userData) {
-    const response = await axiosInstance.put(`/grades/${id}`, userData);
-    return response;
+    return await axiosInstance.put(`/grades/${id}`, userData)
   }
   async activateGrade(id) {
-    const response = await axiosInstance.patch(`/grades/${id}/activate`);
-    return response;
+    return await axiosInstance.patch(`/grades/${id}/activate`)
   }
   async deleteGrade(id) {
-    const response = await axiosInstance.delete(`/grades/${id}`);
-    return response;
+    return await axiosInstance.delete(`/grades/${id}`)
   }
+
   //   grades
 
   // teachers (super-admin view)
   async getTeachers(params = {}) {
-    const q = new URLSearchParams();
-    if (params.page) q.set("page", params.page);
-    if (params.limit) q.set("limit", params.limit);
-    if (params.search) q.set("search", params.search);
-    const qs = q.toString();
-    const response = await axiosInstance.get(`/super-admin/teachers${qs ? `?${qs}` : ""}`);
-    return response;
+    const q = new URLSearchParams()
+    if (params.page) q.set("page", params.page)
+    if (params.limit) q.set("limit", params.limit)
+    if (params.search) q.set("search", params.search)
+    const qs = q.toString()
+    
+    return await axiosInstance.get(`/super-admin/teachers${qs ? `?${qs}` : ""}`)
   }
   async getTeacherById(id) {
-    const response = await axiosInstance.get(`/super-admin/teachers/${id}`);
-    return response;
+    return await axiosInstance.get(`/super-admin/teachers/${id}`)
   }
+
   // teachers (super-admin view)
 
   // (Phase 7) subscription-package CRUD removed alongside the subscription
@@ -104,86 +96,79 @@ class Admin {
 
   // super-admin settings
   async getBookingConfirmFee() {
-    const response = await axiosInstance.get(`/super-admin/settings/booking-confirm-fee`)
-    return response
+    return await axiosInstance.get(`/super-admin/settings/booking-confirm-fee`)
   }
 
   async setBookingConfirmFee(feeIqd) {
-    const response = await axiosInstance.put(`/super-admin/settings/booking-confirm-fee`, { feeIqd })
-    return response
+    return await axiosInstance.put(`/super-admin/settings/booking-confirm-fee`, { feeIqd })
   }
+
   // super-admin settings
 
   // dashboard
   async getDashboardStats() {
-    const response = await axiosInstance.get(`/super-admin/dashboard/stats`);
-    return response;
+    return await axiosInstance.get(`/super-admin/dashboard/stats`)
   }
+
   // dashboard
 
   // news
   async createNews(payload) {
-    const response = await axiosInstance.post(`/news`, payload);
-    return response;
+    return await axiosInstance.post(`/news`, payload)
   }
   async getNews(params = {}) {
-    const q = new URLSearchParams();
-    if (params.page) q.set("page", params.page);
-    if (params.limit) q.set("limit", params.limit);
-    if (params.search) q.set("search", params.search);
-    if (params.newsType) q.set("newsType", params.newsType);
+    const q = new URLSearchParams()
+    if (params.page) q.set("page", params.page)
+    if (params.limit) q.set("limit", params.limit)
+    if (params.search) q.set("search", params.search)
+    if (params.newsType) q.set("newsType", params.newsType)
     if (params.isActive !== undefined && params.isActive !== null && params.isActive !== "") {
-      q.set("isActive", params.isActive);
+      q.set("isActive", params.isActive)
     }
-    const qs = q.toString();
-    const response = await axiosInstance.get(`/news${qs ? `?${qs}` : ""}`);
-    return response;
+    const qs = q.toString()
+    
+    return await axiosInstance.get(`/news${qs ? `?${qs}` : ""}`)
   }
   async getNewsById(id) {
-    const response = await axiosInstance.get(`/news/${id}`);
-    return response;
+    return await axiosInstance.get(`/news/${id}`)
   }
   async updateNews(id, payload) {
-    const response = await axiosInstance.put(`/news/${id}`, payload);
-    return response;
+    return await axiosInstance.put(`/news/${id}`, payload)
   }
   async deleteNews(id) {
-    const response = await axiosInstance.delete(`/news/${id}`);
-    return response;
+    return await axiosInstance.delete(`/news/${id}`)
   }
   async publishNews(id) {
-    const response = await axiosInstance.patch(`/news/${id}/publish`);
-    return response;
+    return await axiosInstance.patch(`/news/${id}/publish`)
   }
+
   // news
 
   // notifications (admin)
   async getAdminNotifications(params = {}) {
-    const q = new URLSearchParams();
-    if (params.page) q.set("page", params.page);
-    if (params.limit) q.set("limit", params.limit);
-    if (params.type) q.set("type", params.type);
-    if (params.status) q.set("status", params.status);
-    if (params.priority) q.set("priority", params.priority);
-    if (params.recipientType) q.set("recipientType", params.recipientType);
-    if (params.dateFrom) q.set("dateFrom", params.dateFrom);
-    if (params.dateTo) q.set("dateTo", params.dateTo);
-    const qs = q.toString();
-    const response = await axiosInstance.get(`/notifications${qs ? `?${qs}` : ""}`);
-    return response;
+    const q = new URLSearchParams()
+    if (params.page) q.set("page", params.page)
+    if (params.limit) q.set("limit", params.limit)
+    if (params.type) q.set("type", params.type)
+    if (params.status) q.set("status", params.status)
+    if (params.priority) q.set("priority", params.priority)
+    if (params.recipientType) q.set("recipientType", params.recipientType)
+    if (params.dateFrom) q.set("dateFrom", params.dateFrom)
+    if (params.dateTo) q.set("dateTo", params.dateTo)
+    const qs = q.toString()
+    
+    return await axiosInstance.get(`/notifications${qs ? `?${qs}` : ""}`)
   }
   async getNotificationStatistics() {
-    const response = await axiosInstance.get(`/notifications/statistics`);
-    return response;
+    return await axiosInstance.get(`/notifications/statistics`)
   }
   async processPendingNotifications() {
-    const response = await axiosInstance.post(`/notifications/process-pending`);
-    return response;
+    return await axiosInstance.post(`/notifications/process-pending`)
   }
   async deleteNotification(id) {
-    const response = await axiosInstance.delete(`/notifications/${id}`);
-    return response;
+    return await axiosInstance.delete(`/notifications/${id}`)
   }
+
   // notifications (admin)
 
   // ===========================================================================
@@ -200,43 +185,38 @@ class Admin {
   //   GET    /super-admin/teacher-applications/:id/files/:fileId  (streams bytes)
 
   async listTeacherApplications({ page = 1, limit = 20, status, search } = {}) {
-    const qs = buildQuery({ page, limit, status, search });
-    const response = await axiosInstance.get(`/super-admin/teacher-applications${qs}`);
-    return response;
+    const qs = buildQuery({ page, limit, status, search })
+    
+    return await axiosInstance.get(`/super-admin/teacher-applications${qs}`)
   }
 
   async getTeacherApplication(id) {
-    const response = await axiosInstance.get(`/super-admin/teacher-applications/${id}`);
-    return response;
+    return await axiosInstance.get(`/super-admin/teacher-applications/${id}`)
   }
 
   async approveTeacherApplication(id, { adminNotes } = {}) {
-    const response = await axiosInstance.patch(
+    return await axiosInstance.patch(
       `/super-admin/teacher-applications/${id}/approve`,
       adminNotes ? { adminNotes } : {},
-    );
-    return response;
+    )
   }
 
   async rejectTeacherApplication(id, { rejectionReason, adminNotes } = {}) {
-    const response = await axiosInstance.patch(
+    return await axiosInstance.patch(
       `/super-admin/teacher-applications/${id}/reject`,
       { rejectionReason, ...(adminNotes ? { adminNotes } : {}) },
-    );
-    return response;
+    )
   }
 
   async requestMoreInfoTeacherApplication(id, { adminNotes } = {}) {
-    const response = await axiosInstance.patch(
+    return await axiosInstance.patch(
       `/super-admin/teacher-applications/${id}/request-more-info`,
       { adminNotes },
-    );
-    return response;
+    )
   }
 
   async listTeacherApplicationFiles(id) {
-    const response = await axiosInstance.get(`/super-admin/teacher-applications/${id}/files`);
-    return response;
+    return await axiosInstance.get(`/super-admin/teacher-applications/${id}/files`)
   }
 
   // Returns the raw streaming endpoint URL — used in <img src=…> / <iframe src=…>.
@@ -245,7 +225,7 @@ class Admin {
   // (see file-preview helpers in the detail page) so files stream through the
   // auth-gated endpoint and never bypass the JWT check.
   teacherApplicationFileUrl(id, fileId) {
-    return `/super-admin/teacher-applications/${id}/files/${fileId}`;
+    return `/super-admin/teacher-applications/${id}/files/${fileId}`
   }
 
   // -------------------------------------------------------------------------
@@ -272,43 +252,38 @@ class Admin {
   } = {}) {
     const qs = buildQuery({
       page, limit, status, visibility, subject, teachingStage, teacherId, search,
-    });
-    const response = await axiosInstance.get(`/super-admin/video-courses${qs}`);
-    return response;
+    })
+
+    return await axiosInstance.get(`/super-admin/video-courses${qs}`)
   }
 
   async getVideoCourse(id) {
-    const response = await axiosInstance.get(`/super-admin/video-courses/${id}`);
-    return response;
+    return await axiosInstance.get(`/super-admin/video-courses/${id}`)
   }
 
   async approveVideoCourse(id, { reviewNotes } = {}) {
-    const response = await axiosInstance.patch(
+    return await axiosInstance.patch(
       `/super-admin/video-courses/${id}/approve`,
       reviewNotes ? { reviewNotes } : {},
-    );
-    return response;
+    )
   }
 
   async hideVideoCourse(id, { reviewNotes } = {}) {
-    const response = await axiosInstance.patch(
+    return await axiosInstance.patch(
       `/super-admin/video-courses/${id}/hide`,
       reviewNotes ? { reviewNotes } : {},
-    );
-    return response;
+    )
   }
 
   async rejectVideoCourse(id, { reviewNotes }) {
-    const response = await axiosInstance.patch(
+    return await axiosInstance.patch(
       `/super-admin/video-courses/${id}/reject`,
       { reviewNotes },
-    );
-    return response;
+    )
   }
 
   async deleteVideoCourse(id) {
-    const response = await axiosInstance.delete(`/super-admin/video-courses/${id}`);
-    return response;
+    return await axiosInstance.delete(`/super-admin/video-courses/${id}`)
   }
 }
-export default new Admin();
+export default new Admin()

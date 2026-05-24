@@ -5,7 +5,7 @@ import { themeConfig } from '@themeConfig'
 import { onMounted, onUnmounted, ref } from 'vue'
 
 // Components
-import logo from "@/assets/images/logo.png"
+import logo from "@images/logo.png"
 import Footer from '@/layouts/components/Footer.vue'
 import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
@@ -18,6 +18,7 @@ const breakpoint = 1024
 const checkScreenSize = () => {
   isMobile.value = window.innerWidth < breakpoint
 }
+
 const token = ref(null)
 
 onMounted(() => {
@@ -25,6 +26,7 @@ onMounted(() => {
   window.addEventListener('resize', checkScreenSize)
   try {
     const storedToken = localStorage.getItem("token")
+
     token.value = storedToken ? JSON.parse(storedToken) : null
   } catch (e) {
     token.value = null
@@ -35,16 +37,22 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', checkScreenSize)
 })
-
 </script>
 
 <template>
   <!-- Vertical Layout for Mobile/Small Screens -->
-  <VerticalNavLayout v-if="isMobile" :nav-items="navItemsVertical">
+  <VerticalNavLayout
+    v-if="isMobile"
+    :nav-items="navItemsVertical"
+  >
     <!-- 👉 navbar -->
     <template #navbar="{ toggleVerticalOverlayNavActive }">
       <div class="d-flex h-100 align-center">
-        <IconBtn id="vertical-nav-toggle-btn" class="ms-n2 d-lg-none" @click="toggleVerticalOverlayNavActive(true)">
+        <IconBtn
+          id="vertical-nav-toggle-btn"
+          class="ms-n2 d-lg-none"
+          @click="toggleVerticalOverlayNavActive(true)"
+        >
           <VIcon icon="ri-menu-line" />
         </IconBtn>
 
@@ -66,12 +74,21 @@ onUnmounted(() => {
   </VerticalNavLayout>
 
   <!-- Horizontal Layout for Desktop/Large Screens -->
-  <HorizontalNavLayout v-else :nav-items="navItemsHorizontal">
+  <HorizontalNavLayout
+    v-else
+    :nav-items="navItemsHorizontal"
+  >
     <!-- 👉 navbar -->
     <template #navbar>
-      <RouterLink to="/" class="d-flex align-start gap-x-4">
-        <img style="
-    background-color: white;inline-size: 60px;" :src="logo" />
+      <RouterLink
+        to="/"
+        class="d-flex align-start gap-x-4"
+      >
+        <img
+          style="
+    background-color: white;inline-size: 60px;"
+          :src="logo"
+        >
 
         <h1 class="leading-normal text-xl text-uppercase">
           {{ themeConfig.app.title }}

@@ -30,6 +30,7 @@ function pickBaseHost () {
 
   // Fallback: derive from the axios base URL by trimming the /api suffix.
   const baseURL = axiosInstance?.defaults?.baseURL || ''
+  
   return baseURL.replace(/\/api\/?$/, '').replace(/\/$/, '')
 }
 
@@ -50,6 +51,7 @@ export function resolveContentUrl (input) {
   const host = pickBaseHost()
   if (!host) return s // best-effort: caller gets the raw path back
   if (s.startsWith('/')) return `${host}${s}`
+  
   return `${host}/${s}`
 }
 

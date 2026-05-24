@@ -1,15 +1,15 @@
 <script setup>
-import logo from "@/assets/images/logo.png";
-import { layoutConfig } from "@layouts";
+import logo from "@images/logo.png"
+import { layoutConfig } from "@layouts"
 import {
   VerticalNavGroup,
   VerticalNavLink,
   VerticalNavSectionTitle,
-} from "@layouts/components";
-import { useLayoutConfigStore } from "@layouts/stores/config";
-import { injectionKeyIsVerticalNavHovered } from "@layouts/symbols";
-import { computed, onMounted, ref } from "vue";
-import { PerfectScrollbar } from "vue3-perfect-scrollbar";
+} from "@layouts/components"
+import { useLayoutConfigStore } from "@layouts/stores/config"
+import { injectionKeyIsVerticalNavHovered } from "@layouts/symbols"
+import { computed, onMounted, ref } from "vue"
+import { PerfectScrollbar } from "vue3-perfect-scrollbar"
 
 const props = defineProps({
   tag: {
@@ -29,156 +29,174 @@ const props = defineProps({
     type: Function,
     required: true,
   },
-});
+})
 
-const refNav = ref();
-const isHovered = useElementHover(refNav);
+const refNav = ref()
+const isHovered = useElementHover(refNav)
 
-provide(injectionKeyIsVerticalNavHovered, isHovered);
+provide(injectionKeyIsVerticalNavHovered, isHovered)
 
-const configStore = useLayoutConfigStore();
+const configStore = useLayoutConfigStore()
 
 // متغيرات المستخدم
-const user = ref(null);
-const userType = ref(null);
+const user = ref(null)
+const userType = ref(null)
 
 // فلترة العناصر حسب نوع المستخدم
 const filteredNavItems = computed(() => {
   if (!userType.value) {
-    return [];
+    return []
   }
 
-  const isAllowed = (itemType) => {
+  const isAllowed = itemType => {
     // إذا لم يكن للعنصر نوع، نعرضه للجميع
-    if (!itemType) return true;
+    if (!itemType) return true
 
     // إذا كان نوع المستخدم يطابق نوع العنصر
-    if (itemType === userType.value) return true;
+    if (itemType === userType.value) return true
 
-    return false;
-  };
+    return false
+  }
 
   // فلترة العناصر مع الأخذ بالحسبان المجموعات والعناوين
   return props.navItems
-    .map((item) => {
+    .map(item => {
       // إذا كان عنوان قسم (heading)
       if ("heading" in item) {
         // إذا لم يكن له نوع، نعرضه للجميع، وإن كان له نوع فيجب أن يكون مسموحًا للمستخدم الحالي
-        return isAllowed(item.type) ? item : null;
+        return isAllowed(item.type) ? item : null
       }
 
       // إذا كان مجموعة تحتوي على عناصر فرعية
       if ("children" in item) {
-        const filteredChildren = item.children.filter((child) =>
-          isAllowed(child.type)
-        );
+        const filteredChildren = item.children.filter(child =>
+          isAllowed(child.type),
+        )
+
         if (filteredChildren.length > 0) {
-          return { ...item, children: filteredChildren };
+          return { ...item, children: filteredChildren }
         }
-        return null; // إخفاء المجموعة إن لم يكن فيها عناصر مسموح بها
+        
+        return null // إخفاء المجموعة إن لم يكن فيها عناصر مسموح بها
       }
 
       // عنصر رابط مفرد
-      return isAllowed(item.type) ? item : null;
+      return isAllowed(item.type) ? item : null
     })
-    .filter(Boolean); // إزالة العناصر null
-});
+    .filter(Boolean) // إزالة العناصر null
+})
 
 // جلب بيانات المستخدم
 const loadUserData = () => {
-  const userData = localStorage.getItem("user");
+  const userData = localStorage.getItem("user")
 
   if (userData) {
     try {
-      user.value = JSON.parse(userData);
-      userType.value = user.value?.userType;
+      user.value = JSON.parse(userData)
+      userType.value = user.value?.userType
     } catch (error) {
-      console.error("Error parsing user data:", error);
-      user.value = null;
-      userType.value = null;
+      console.error("Error parsing user data:", error)
+      user.value = null
+      userType.value = null
     }
   } else {
-    user.value = null;
-    userType.value = null;
+    user.value = null
+    userType.value = null
   }
-};
+}
 
 onMounted(() => {
-  loadUserData();
+  loadUserData()
 
   // الاستماع لتغييرات localStorage
-  window.addEventListener("storage", (e) => {
+  window.addEventListener("storage", e => {
     if (e.key === "user") {
-      loadUserData();
+      loadUserData()
     }
-  });
+  })
 
   // مراقبة تغييرات localStorage من نفس التبويب
-  const originalSetItem = localStorage.setItem;
-  const originalRemoveItem = localStorage.removeItem;
+  const originalSetItem = localStorage.setItem
+  const originalRemoveItem = localStorage.removeItem
 
   localStorage.setItem = function (key, value) {
-    originalSetItem.apply(this, arguments);
+    originalSetItem.apply(this, arguments)
     if (key === "user") {
-      loadUserData();
+      loadUserData()
     }
-  };
+  }
 
   localStorage.removeItem = function (key) {
-    originalRemoveItem.apply(this, arguments);
+    originalRemoveItem.apply(this, arguments)
     if (key === "user") {
-      loadUserData();
+      loadUserData()
     }
-  };
-});
+  }
+})
 
-const resolveNavItemComponent = (item) => {
-  if ("heading" in item) return VerticalNavSectionTitle;
-  if ("children" in item) return VerticalNavGroup;
+const resolveNavItemComponent = item => {
+  if ("heading" in item) return VerticalNavSectionTitle
+  if ("children" in item) return VerticalNavGroup
 
-  return VerticalNavLink;
-};
+  return VerticalNavLink
+}
 
 /*ℹ️ Close overlay side when route is changed
 Close overlay vertical nav when link is clicked
 */
-const route = useRoute();
+const route = useRoute()
 
 watch(
   () => route.name,
   () => {
-    props.toggleIsOverlayNavActive(false);
-  }
-);
+    props.toggleIsOverlayNavActive(false)
+  },
+)
 
-const isVerticalNavScrolled = ref(false);
-const updateIsVerticalNavScrolled = (val) =>
-  (isVerticalNavScrolled.value = val);
+const isVerticalNavScrolled = ref(false)
 
-const handleNavScroll = (evt) => {
-  isVerticalNavScrolled.value = evt.target.scrollTop > 0;
-};
+const updateIsVerticalNavScrolled = val =>
+  (isVerticalNavScrolled.value = val)
 
-const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered);
+const handleNavScroll = evt => {
+  isVerticalNavScrolled.value = evt.target.scrollTop > 0
+}
+
+const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
 </script>
 
 <template>
-  <Component :is="props.tag" ref="refNav" data-allow-mismatch class="layout-vertical-nav" :class="[
-    {
-      'overlay-nav': configStore.isLessThanOverlayNavBreakpoint,
-      hovered: isHovered,
-      visible: isOverlayNavActive,
-      scrolled: isVerticalNavScrolled,
-    },
-  ]">
+  <Component
+    :is="props.tag"
+    ref="refNav"
+    data-allow-mismatch
+    class="layout-vertical-nav"
+    :class="[
+      {
+        'overlay-nav': configStore.isLessThanOverlayNavBreakpoint,
+        hovered: isHovered,
+        visible: isOverlayNavActive,
+        scrolled: isVerticalNavScrolled,
+      },
+    ]"
+  >
     <!-- 👉 Header -->
     <div class="nav-header">
       <slot name="nav-header">
-        <RouterLink to="/" class="app-logo app-title-wrapper">
-          <img style="inline-size: 60px;" :src="logo" />
+        <RouterLink
+          to="/"
+          class="app-logo app-title-wrapper"
+        >
+          <img
+            style="inline-size: 60px;"
+            :src="logo"
+          >
 
           <Transition name="vertical-nav-app-title">
-            <h1 v-show="!hideTitleAndIcon" class="app-logo-title leading-normal">
+            <h1
+              v-show="!hideTitleAndIcon"
+              class="app-logo-title leading-normal"
+            >
               {{ layoutConfig.app.title }}
             </h1>
           </Transition>
@@ -186,31 +204,57 @@ const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered);
         <!-- 👉 Vertical nav actions -->
         <!-- Show toggle collapsible in >md and close button in <md -->
         <div class="header-action">
-          <Component :is="layoutConfig.app.iconRenderer || 'div'" v-show="configStore.isVerticalNavCollapsed"
-            class="d-none nav-unpin" :class="configStore.isVerticalNavCollapsed && 'd-lg-block'"
-            v-bind="layoutConfig.icons.verticalNavUnPinned" @click="
+          <Component
+            :is="layoutConfig.app.iconRenderer || 'div'"
+            v-show="configStore.isVerticalNavCollapsed"
+            class="d-none nav-unpin"
+            :class="configStore.isVerticalNavCollapsed && 'd-lg-block'"
+            v-bind="layoutConfig.icons.verticalNavUnPinned"
+            @click="
               configStore.isVerticalNavCollapsed =
-              !configStore.isVerticalNavCollapsed
-              " />
-          <Component :is="layoutConfig.app.iconRenderer || 'div'" v-show="!configStore.isVerticalNavCollapsed"
-            class="d-none nav-pin" :class="!configStore.isVerticalNavCollapsed && 'd-lg-block'"
-            v-bind="layoutConfig.icons.verticalNavPinned" @click="
+                !configStore.isVerticalNavCollapsed
+            "
+          />
+          <Component
+            :is="layoutConfig.app.iconRenderer || 'div'"
+            v-show="!configStore.isVerticalNavCollapsed"
+            class="d-none nav-pin"
+            :class="!configStore.isVerticalNavCollapsed && 'd-lg-block'"
+            v-bind="layoutConfig.icons.verticalNavPinned"
+            @click="
               configStore.isVerticalNavCollapsed =
-              !configStore.isVerticalNavCollapsed
-              " />
-          <Component :is="layoutConfig.app.iconRenderer || 'div'" class="d-lg-none" v-bind="layoutConfig.icons.close"
-            @click="toggleIsOverlayNavActive(false)" />
+                !configStore.isVerticalNavCollapsed
+            "
+          />
+          <Component
+            :is="layoutConfig.app.iconRenderer || 'div'"
+            class="d-lg-none"
+            v-bind="layoutConfig.icons.close"
+            @click="toggleIsOverlayNavActive(false)"
+          />
         </div>
       </slot>
     </div>
     <slot name="before-nav-items">
       <div class="vertical-nav-items-shadow" />
     </slot>
-    <slot name="nav-items" :update-is-vertical-nav-scrolled="updateIsVerticalNavScrolled">
-      <PerfectScrollbar :key="configStore.isAppRTL" tag="ul" class="nav-items" :options="{ wheelPropagation: false }"
-        @ps-scroll-y="handleNavScroll">
-        <Component :is="resolveNavItemComponent(item)" v-for="(item, index) in filteredNavItems" :key="index"
-          :item="item" />
+    <slot
+      name="nav-items"
+      :update-is-vertical-nav-scrolled="updateIsVerticalNavScrolled"
+    >
+      <PerfectScrollbar
+        :key="configStore.isAppRTL"
+        tag="ul"
+        class="nav-items"
+        :options="{ wheelPropagation: false }"
+        @ps-scroll-y="handleNavScroll"
+      >
+        <Component
+          :is="resolveNavItemComponent(item)"
+          v-for="(item, index) in filteredNavItems"
+          :key="index"
+          :item="item"
+        />
       </PerfectScrollbar>
     </slot>
 

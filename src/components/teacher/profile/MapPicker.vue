@@ -1,7 +1,12 @@
 <template>
-  <v-card class="pa-4">
+  <VCard class="pa-4">
     <div class="d-flex align-center mb-4">
-      <v-icon color="primary" class="me-2">mdi-map-marker</v-icon>
+      <VIcon
+        color="primary"
+        class="me-2"
+      >
+        mdi-map-marker
+      </VIcon>
       <span class="text-h6">تحديد الموقع</span>
     </div>
 
@@ -13,43 +18,52 @@
     </div>
 
     <div class="d-flex gap-2 mb-4">
-      <v-text-field
+      <VTextField
         v-model="searchQuery"
         placeholder="ابحث عن موقع..."
         variant="outlined"
         density="compact"
-        @keyup.enter="handleSearch"
         class="flex-grow-1"
+        @keyup.enter="handleSearch"
       />
-      <v-btn
-        @click="handleSearch"
+      <VBtn
         icon="mdi-magnify"
         variant="outlined"
         size="small"
+        @click="handleSearch"
       />
       <!-- زر تحديد الموقع الحالي -->
-      <v-btn
-        @click="locateUser"
+      <VBtn
         icon="mdi-crosshairs-gps"
         variant="outlined"
         size="small"
         color="primary"
         title="تحديد موقعي الحالي"
+        @click="locateUser"
       />
     </div>
 
     <div class="position-relative">
-      <div ref="mapContainer" class="map-container" />
-      <v-overlay
+      <div
+        ref="mapContainer"
+        class="map-container"
+      />
+      <VOverlay
         v-if="isLoading"
         contained
         class="d-flex align-center justify-center"
       >
         <div class="text-center">
-          <v-progress-circular indeterminate color="primary" class="mb-2" />
-          <div class="text-body-2">جاري تحميل الخريطة...</div>
+          <VProgressCircular
+            indeterminate
+            color="primary"
+            class="mb-2"
+          />
+          <div class="text-body-2">
+            جاري تحميل الخريطة...
+          </div>
         </div>
-      </v-overlay>
+      </VOverlay>
     </div>
 
     <div class="mt-4 text-body-2 text-medium-emphasis">
@@ -59,103 +73,108 @@
         يمكنك سحب العلامة أو النقر على الخريطة لتحديد الموقع
       </div>
     </div>
-  </v-card>
+  </VCard>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue"
 
 const props = defineProps({
   initialLat: { type: Number, default: 31.2001 },
   initialLng: { type: Number, default: 29.9187 },
-});
+})
 
-const emit = defineEmits(["locationUpdate"]);
+const emit = defineEmits(["locationUpdate"])
 
-const mapContainer = ref(null);
-const map = ref(null);
-const marker = ref(null);
-const searchQuery = ref("");
-const isLoading = ref(true);
+const mapContainer = ref(null)
+const map = ref(null)
+const marker = ref(null)
+const searchQuery = ref("")
+const isLoading = ref(true)
+
 const coordinates = ref({
   latitude: props.initialLat,
   longitude: props.initialLng,
-});
+})
 
 const updateLocation = (lat, lng) => {
   coordinates.value = {
     latitude: parseFloat(lat.toFixed(6)),
     longitude: parseFloat(lng.toFixed(6)),
-  };
-  emit("locationUpdate", coordinates.value);
-};
+  }
+  emit("locationUpdate", coordinates.value)
+}
 
 const handleSearch = async () => {
-  if (!searchQuery.value.trim()) return;
+  if (!searchQuery.value.trim()) return
 
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-        searchQuery.value
-      )}&limit=1`
-    );
-    const data = await response.json();
+        searchQuery.value,
+      )}&limit=1`,
+    )
+
+    const data = await response.json()
     if (data.length > 0 && map.value && marker.value) {
-      const lat = parseFloat(data[0].lat);
-      const lng = parseFloat(data[0].lon);
-      map.value.setView([lat, lng], 15);
-      marker.value.setLatLng([lat, lng]);
-      updateLocation(lat, lng);
+      const lat = parseFloat(data[0].lat)
+      const lng = parseFloat(data[0].lon)
+
+      map.value.setView([lat, lng], 15)
+      marker.value.setLatLng([lat, lng])
+      updateLocation(lat, lng)
     }
   } catch (err) {
-    console.error("Search error:", err);
+    console.error("Search error:", err)
   }
-};
+}
 
 // ================== زر تحديد الموقع الحالي ==================
 const locateUser = () => {
   if (!navigator.geolocation) {
-    alert("المتصفح لا يدعم تحديد الموقع.");
-    return;
+    alert("المتصفح لا يدعم تحديد الموقع.")
+    
+    return
   }
 
   navigator.geolocation.getCurrentPosition(
-    (position) => {
-      const { latitude, longitude } = position.coords;
+    position => {
+      const { latitude, longitude } = position.coords
       if (map.value && marker.value) {
-        map.value.setView([latitude, longitude], 15);
-        marker.value.setLatLng([latitude, longitude]);
-        updateLocation(latitude, longitude);
+        map.value.setView([latitude, longitude], 15)
+        marker.value.setLatLng([latitude, longitude])
+        updateLocation(latitude, longitude)
       }
     },
-    (err) => {
-      console.error("Geolocation error:", err);
-      alert("تعذّر الحصول على موقعك الحالي.");
+    err => {
+      console.error("Geolocation error:", err)
+      alert("تعذّر الحصول على موقعك الحالي.")
     },
-    { enableHighAccuracy: true }
-  );
-};
+    { enableHighAccuracy: true },
+  )
+}
 
 // ================== تحميل الخريطة ==================
 const loadMap = async () => {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined") return
 
   try {
-    const L = (await import("leaflet")).default;
+    const L = (await import("leaflet")).default
 
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    document.head.appendChild(link);
+    const link = document.createElement("link")
+
+    link.rel = "stylesheet"
+    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    document.head.appendChild(link)
 
     if (mapContainer.value && !map.value) {
       const newMap = L.map(mapContainer.value, {
         attributionControl: false, // 🚫 إخفاء النص
-      }).setView([props.initialLat, props.initialLng], 13);
+      }).setView([props.initialLat, props.initialLng], 13)
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "© OpenStreetMap contributors",
-      }).addTo(newMap);
+      }).addTo(newMap)
 
       const customIcon = L.divIcon({
         html: `<div class="bg-primary text-white rounded-circle pa-2 elevation-4" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
@@ -166,38 +185,40 @@ const loadMap = async () => {
         className: "custom-marker",
         iconSize: [40, 40],
         iconAnchor: [20, 40],
-      });
+      })
 
       const newMarker = L.marker([props.initialLat, props.initialLng], {
         draggable: true,
         icon: customIcon,
-      }).addTo(newMap);
+      }).addTo(newMap)
 
-      newMarker.on("moveend", (e) => {
-        const { lat, lng } = e.target.getLatLng();
-        updateLocation(lat, lng);
-      });
+      newMarker.on("moveend", e => {
+        const { lat, lng } = e.target.getLatLng()
 
-      newMap.on("click", (e) => {
-        const { lat, lng } = e.latlng;
-        newMarker.setLatLng([lat, lng]);
-        updateLocation(lat, lng);
-      });
+        updateLocation(lat, lng)
+      })
 
-      map.value = newMap;
-      marker.value = newMarker;
-      isLoading.value = false;
+      newMap.on("click", e => {
+        const { lat, lng } = e.latlng
+
+        newMarker.setLatLng([lat, lng])
+        updateLocation(lat, lng)
+      })
+
+      map.value = newMap
+      marker.value = newMarker
+      isLoading.value = false
     }
   } catch (err) {
-    console.error("Error loading map:", err);
-    isLoading.value = false;
+    console.error("Error loading map:", err)
+    isLoading.value = false
   }
-};
+}
 
-onMounted(loadMap);
+onMounted(loadMap)
 onUnmounted(() => {
-  if (map.value) map.value.remove();
-});
+  if (map.value) map.value.remove()
+})
 </script>
 
 

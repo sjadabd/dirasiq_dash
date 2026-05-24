@@ -3,6 +3,7 @@ import { useChatRealtime } from "@/composables/useChatRealtime"
 import { CHAT_BASE_URL as chatBase } from "@/utils/api-mode"
 
 const chat = useChatRealtime()
+
 const {
   conversations,
   conversationsLoading,
@@ -118,6 +119,7 @@ function isMine(message) {
 function resolveAttachmentUrl(att) {
   if (!att?.url) return ""
   if (att.url.startsWith("http")) return att.url
+
   // Single source of truth — `@/utils/api-mode` exports the chat origin.
   // Imported eagerly at module scope is fine; the value is a constant.
 
@@ -173,6 +175,7 @@ function triggerFilePick() {
 
 async function onFileChosen(e) {
   const file = e.target.files?.[0]
+
   e.target.value = ""
   if (!file) return
   uploading.value = true
@@ -195,6 +198,7 @@ function scrollToBottomSoon() {
   nextTick(() => {
     const el = messagesScrollEl.value
     if (!el) return
+
     // reverse-flex layout — "bottom" visually = scrollTop 0.
     el.scrollTop = 0
   })
@@ -341,7 +345,9 @@ watch(currentId, () => {
     <!-- ────────── Sidebar ────────── -->
     <aside class="chat-sidebar">
       <div class="chat-sidebar-head">
-        <h2 class="chat-sidebar-title">المحادثات</h2>
+        <h2 class="chat-sidebar-title">
+          المحادثات
+        </h2>
       </div>
       <div class="chat-sidebar-search">
         <VTextField
@@ -356,10 +362,20 @@ watch(currentId, () => {
         />
       </div>
       <div class="chat-sidebar-list">
-        <div v-if="conversationsLoading && !conversations.length" class="d-flex justify-center pa-4">
-          <VProgressCircular indeterminate color="primary" size="28" />
+        <div
+          v-if="conversationsLoading && !conversations.length"
+          class="d-flex justify-center pa-4"
+        >
+          <VProgressCircular
+            indeterminate
+            color="primary"
+            size="28"
+          />
         </div>
-        <div v-else-if="!conversations.length" class="text-medium-emphasis text-center pa-6">
+        <div
+          v-else-if="!conversations.length"
+          class="text-medium-emphasis text-center pa-6"
+        >
           لا توجد محادثات بعد.
         </div>
         <div
@@ -400,8 +416,15 @@ watch(currentId, () => {
     <main class="chat-main">
       <template v-if="!currentConversation">
         <div class="chat-empty">
-          <VIcon icon="ri-chat-smile-3-line" size="64" color="primary" class="mb-3" />
-          <div class="text-h6 font-weight-bold mb-1">اختر محادثة لبدء المراسلة</div>
+          <VIcon
+            icon="ri-chat-smile-3-line"
+            size="64"
+            color="primary"
+            class="mb-3"
+          />
+          <div class="text-h6 font-weight-bold mb-1">
+            اختر محادثة لبدء المراسلة
+          </div>
           <div class="text-body-2 text-medium-emphasis">
             القائمة تتحدّث آنيّاً مع وصول الرسائل.
           </div>
@@ -418,7 +441,9 @@ watch(currentId, () => {
             <VIcon :icon="currentConversation.type === 'group' ? 'ri-group-line' : 'ri-user-3-line'" />
           </VAvatar>
           <div class="chat-header-body">
-            <div class="chat-header-title">{{ displayName(currentConversation) }}</div>
+            <div class="chat-header-title">
+              {{ displayName(currentConversation) }}
+            </div>
             <div class="chat-header-subtitle">
               <template v-if="currentConversation.type === 'group'">
                 {{ currentMembers.filter(m => !m.leftAt).length }} عضو
@@ -439,7 +464,11 @@ watch(currentId, () => {
             variant="tonal"
             class="me-2"
           >
-            <VIcon icon="ri-megaphone-line" start size="14" />
+            <VIcon
+              icon="ri-megaphone-line"
+              start
+              size="14"
+            />
             إعلانات
           </VChip>
           <VChip
@@ -460,7 +489,12 @@ watch(currentId, () => {
           />
           <VMenu v-if="currentConversation.type === 'group' && canManage">
             <template #activator="{ props: act }">
-              <VBtn v-bind="act" icon="ri-more-2-line" variant="text" size="small" />
+              <VBtn
+                v-bind="act"
+                icon="ri-more-2-line"
+                variant="text"
+                size="small"
+              />
             </template>
             <VList density="compact">
               <VListItem
@@ -483,7 +517,11 @@ watch(currentId, () => {
           v-if="currentConversation.mode === 'announce_only'"
           class="chat-banner chat-banner--info"
         >
-          <VIcon icon="ri-megaphone-line" size="16" class="me-1" />
+          <VIcon
+            icon="ri-megaphone-line"
+            size="16"
+            class="me-1"
+          />
           هذه المجموعة للإعلانات فقط — {{ canManage ? "أنت والمشرفون يمكنكم الإرسال." : "القراءة فقط للأعضاء." }}
         </div>
 
@@ -492,8 +530,15 @@ watch(currentId, () => {
           class="chat-messages"
           @scroll="onMessagesScroll"
         >
-          <div v-if="messagesLoading && !messages.length" class="d-flex justify-center py-4">
-            <VProgressCircular indeterminate color="primary" size="28" />
+          <div
+            v-if="messagesLoading && !messages.length"
+            class="d-flex justify-center py-4"
+          >
+            <VProgressCircular
+              indeterminate
+              color="primary"
+              size="28"
+            />
           </div>
           <template v-else>
             <div
@@ -502,19 +547,38 @@ watch(currentId, () => {
               class="chat-bubble-row"
               :class="{ 'is-mine': isMine(m) }"
             >
-              <div class="chat-bubble" :class="{ 'is-mine': isMine(m), 'is-deleted': !!m.deletedAt }">
-                <div v-if="!isMine(m) && m.sender" class="chat-bubble-sender">
+              <div
+                class="chat-bubble"
+                :class="{ 'is-mine': isMine(m), 'is-deleted': !!m.deletedAt }"
+              >
+                <div
+                  v-if="!isMine(m) && m.sender"
+                  class="chat-bubble-sender"
+                >
                   {{ m.sender.name }}
                 </div>
-                <div v-if="m.isPinned" class="chat-bubble-pin">
-                  <VIcon icon="ri-pushpin-fill" size="12" />
+                <div
+                  v-if="m.isPinned"
+                  class="chat-bubble-pin"
+                >
+                  <VIcon
+                    icon="ri-pushpin-fill"
+                    size="12"
+                  />
                   <span>مثبّتة</span>
                 </div>
-                <div v-if="m.deletedAt" class="chat-bubble-deleted">
+                <div
+                  v-if="m.deletedAt"
+                  class="chat-bubble-deleted"
+                >
                   تم حذف هذه الرسالة
                 </div>
                 <template v-else>
-                  <div v-for="a in m.attachments ?? []" :key="a.id" class="chat-attachment">
+                  <div
+                    v-for="a in m.attachments ?? []"
+                    :key="a.id"
+                    class="chat-attachment"
+                  >
                     <img
                       v-if="a.mime?.startsWith('image/')"
                       :src="resolveAttachmentUrl(a)"
@@ -532,14 +596,22 @@ watch(currentId, () => {
                       <span>{{ a.originalName ?? "ملف" }}</span>
                     </a>
                   </div>
-                  <div v-if="(m.body ?? '').length" class="chat-bubble-body">
+                  <div
+                    v-if="(m.body ?? '').length"
+                    class="chat-bubble-body"
+                  >
                     {{ m.body }}
                   </div>
                 </template>
                 <div class="chat-bubble-meta">
                   <span>{{ bubbleTime(m.createdAt) }}</span>
                   <template v-if="isMine(m)">
-                    <VIcon v-if="m.status === 'sending'" icon="ri-time-line" size="11" class="ms-1" />
+                    <VIcon
+                      v-if="m.status === 'sending'"
+                      icon="ri-time-line"
+                      size="11"
+                      class="ms-1"
+                    />
                     <VIcon
                       v-else-if="m.status === 'failed'"
                       icon="ri-error-warning-line"
@@ -547,7 +619,12 @@ watch(currentId, () => {
                       color="error"
                       class="ms-1"
                     />
-                    <VIcon v-else icon="ri-check-line" size="11" class="ms-1" />
+                    <VIcon
+                      v-else
+                      icon="ri-check-line"
+                      size="11"
+                      class="ms-1"
+                    />
                     <a
                       v-if="m.status === 'failed'"
                       class="chat-bubble-retry"
@@ -583,15 +660,28 @@ watch(currentId, () => {
                 </VMenu>
               </div>
             </div>
-            <div v-if="messagesLoading && messages.length" class="d-flex justify-center py-2">
-              <VProgressCircular indeterminate color="primary" size="20" />
+            <div
+              v-if="messagesLoading && messages.length"
+              class="d-flex justify-center py-2"
+            >
+              <VProgressCircular
+                indeterminate
+                color="primary"
+                size="20"
+              />
             </div>
           </template>
         </section>
 
         <footer class="chat-composer">
-          <div v-if="composerDisabledReason" class="chat-composer-hint">
-            <VIcon icon="ri-information-line" size="14" />
+          <div
+            v-if="composerDisabledReason"
+            class="chat-composer-hint"
+          >
+            <VIcon
+              icon="ri-information-line"
+              size="14"
+            />
             <span>{{ composerDisabledReason }}</span>
           </div>
           <div class="chat-composer-row">
@@ -653,7 +743,11 @@ watch(currentId, () => {
           :class="{ 'opacity-50': m.leftAt }"
         >
           <template #prepend>
-            <VAvatar color="primary" variant="tonal" size="36">
+            <VAvatar
+              color="primary"
+              variant="tonal"
+              size="36"
+            >
               {{ (m.profile?.name ?? "?").charAt(0) }}
             </VAvatar>
           </template>
@@ -689,7 +783,12 @@ watch(currentId, () => {
           <template #append>
             <VMenu v-if="canManage && !m.leftAt && m.role === 'member'">
               <template #activator="{ props: act }">
-                <VBtn v-bind="act" icon="ri-more-2-line" variant="text" size="small" />
+                <VBtn
+                  v-bind="act"
+                  icon="ri-more-2-line"
+                  variant="text"
+                  size="small"
+                />
               </template>
               <VList density="compact">
                 <VListItem
@@ -724,7 +823,10 @@ watch(currentId, () => {
     </VNavigationDrawer>
 
     <!-- Edit dialog -->
-    <VDialog v-model="editDialog.open" max-width="520">
+    <VDialog
+      v-model="editDialog.open"
+      max-width="520"
+    >
       <VCard>
         <VCardTitle>تعديل المجموعة</VCardTitle>
         <VDivider />
@@ -758,10 +860,18 @@ watch(currentId, () => {
         <VDivider />
         <VCardActions>
           <VSpacer />
-          <VBtn variant="text" :disabled="editDialog.saving" @click="editDialog.open = false">
+          <VBtn
+            variant="text"
+            :disabled="editDialog.saving"
+            @click="editDialog.open = false"
+          >
             إلغاء
           </VBtn>
-          <VBtn color="primary" :loading="editDialog.saving" @click="saveEdit">
+          <VBtn
+            color="primary"
+            :loading="editDialog.saving"
+            @click="saveEdit"
+          >
             حفظ
           </VBtn>
         </VCardActions>
@@ -769,25 +879,44 @@ watch(currentId, () => {
     </VDialog>
 
     <!-- Confirm dialog -->
-    <VDialog v-model="confirm.open" max-width="460" persistent>
+    <VDialog
+      v-model="confirm.open"
+      max-width="460"
+      persistent
+    >
       <VCard>
         <VCardTitle>{{ confirm.title }}</VCardTitle>
         <VDivider />
-        <VCardText class="pt-4">{{ confirm.text }}</VCardText>
+        <VCardText class="pt-4">
+          {{ confirm.text }}
+        </VCardText>
         <VDivider />
         <VCardActions>
           <VSpacer />
-          <VBtn variant="text" :disabled="confirm.loading" @click="confirm.open = false">
+          <VBtn
+            variant="text"
+            :disabled="confirm.loading"
+            @click="confirm.open = false"
+          >
             إلغاء
           </VBtn>
-          <VBtn color="error" :loading="confirm.loading" @click="confirm.action && confirm.action()">
+          <VBtn
+            color="error"
+            :loading="confirm.loading"
+            @click="confirm.action && confirm.action()"
+          >
             متابعة
           </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
 
-    <VSnackbar v-model="alert.open" :color="alert.type" location="bottom" timeout="2500">
+    <VSnackbar
+      v-model="alert.open"
+      :color="alert.type"
+      location="bottom"
+      timeout="2500"
+    >
       {{ alert.text }}
     </VSnackbar>
   </div>

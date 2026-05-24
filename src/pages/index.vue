@@ -1,69 +1,149 @@
 <template>
-  <v-app>
-    <!-- =====================================================
-       Mulhim IQ — Landing v2 (smart platform redesign)
-       Single-file landing rebuilt 2026-05-16.
-       Data-driven sections wired to live Phase-1 APIs:
-         /health, /api/public/news,
-         /api/teacher-search/governorates,
-         /api/teacher/subscription-packages/active.
-    ===================================================== -->
+  <VApp>
+    <!--
+      =====================================================
+      Mulhim IQ — Landing v2 (smart platform redesign)
+      Single-file landing rebuilt 2026-05-16.
+      Data-driven sections wired to live Phase-1 APIs:
+      /health, /api/public/news,
+      /api/teacher-search/governorates,
+      /api/teacher/subscription-packages/active.
+      ===================================================== 
+    -->
 
     <!-- 1. NAVBAR ============================================ -->
-    <v-app-bar
+    <VAppBar
       app
       fixed
       elevation="0"
-      :scroll-behavior="'hide'"
+      scroll-behavior="hide"
       class="navbar-glass"
       :class="{ 'navbar-scrolled': isScrolled }"
     >
-      <v-container class="d-flex align-center" style="max-width:1280px;">
+      <VContainer
+        class="d-flex align-center"
+        style="max-width:1280px;"
+      >
         <!-- Brand -->
-        <router-link to="/" class="d-flex align-center text-decoration-none brand-link">
-          <v-img :src="logo" width="44" height="44" class="me-3 brand-logo" />
+        <RouterLink
+          to="/"
+          class="d-flex align-center text-decoration-none brand-link"
+        >
+          <VImg
+            :src="logo"
+            width="44"
+            height="44"
+            class="me-3 brand-logo"
+          />
           <div class="d-flex flex-column lh-1">
             <span class="brand-text">
               <span class="text-primary">Mulhim</span><span class="text-accent">IQ</span>
             </span>
             <span class="brand-sub d-none d-sm-block">منصة التعليم الذكي</span>
           </div>
-        </router-link>
+        </RouterLink>
 
-        <v-spacer />
+        <VSpacer />
 
         <!-- Desktop menu -->
         <div class="d-none d-md-flex align-center nav-links">
-          <v-btn variant="text" class="nav-link" @click="scrollToSection('hero')">الرئيسية</v-btn>
-          <v-btn variant="text" class="nav-link" @click="scrollToSection('features')">المميزات</v-btn>
-          <v-btn variant="text" class="nav-link" @click="scrollToSection('preview')">النظام</v-btn>
-          <v-btn variant="text" class="nav-link" @click="scrollToSection('how-it-works')">كيف يعمل</v-btn>
-          <v-btn variant="text" class="nav-link" :to="{ path: '/contact' }">تواصل</v-btn>
+          <VBtn
+            variant="text"
+            class="nav-link"
+            @click="scrollToSection('hero')"
+          >
+            الرئيسية
+          </VBtn>
+          <VBtn
+            variant="text"
+            class="nav-link"
+            @click="scrollToSection('features')"
+          >
+            المميزات
+          </VBtn>
+          <VBtn
+            variant="text"
+            class="nav-link"
+            @click="scrollToSection('preview')"
+          >
+            النظام
+          </VBtn>
+          <VBtn
+            variant="text"
+            class="nav-link"
+            @click="scrollToSection('how-it-works')"
+          >
+            كيف يعمل
+          </VBtn>
+          <VBtn
+            variant="text"
+            class="nav-link"
+            :to="{ path: '/contact' }"
+          >
+            تواصل
+          </VBtn>
         </div>
 
-        <v-spacer />
+        <VSpacer />
 
         <!-- Right actions -->
         <div class="d-flex align-center gap-2">
-          <v-menu v-if="isLoggedIn" v-model="notificationsMenu" location="bottom end" :close-on-content-click="false">
+          <VMenu
+            v-if="isLoggedIn"
+            v-model="notificationsMenu"
+            location="bottom end"
+            :close-on-content-click="false"
+          >
             <template #activator="{ props }">
-              <v-btn icon variant="text" v-bind="props" class="notif-trigger">
-                <v-badge v-if="unreadCount" color="error" :content="unreadCount" overlap>
-                  <v-icon>mdi-bell-outline</v-icon>
-                </v-badge>
-                <v-icon v-else>mdi-bell-outline</v-icon>
-              </v-btn>
+              <VBtn
+                icon
+                variant="text"
+                v-bind="props"
+                class="notif-trigger"
+              >
+                <VBadge
+                  v-if="unreadCount"
+                  color="error"
+                  :content="unreadCount"
+                  overlap
+                >
+                  <VIcon>mdi-bell-outline</VIcon>
+                </VBadge>
+                <VIcon v-else>
+                  mdi-bell-outline
+                </VIcon>
+              </VBtn>
             </template>
-            <v-card min-width="380" class="notif-card">
-              <v-card-title class="d-flex align-center pb-2">
-                <v-icon start class="me-2 text-primary">mdi-bell</v-icon>
+            <VCard
+              min-width="380"
+              class="notif-card"
+            >
+              <VCardTitle class="d-flex align-center pb-2">
+                <VIcon
+                  start
+                  class="me-2 text-primary"
+                >
+                  mdi-bell
+                </VIcon>
                 <span class="text-subtitle-1 font-weight-bold">الإشعارات</span>
-                <v-spacer />
-                <v-btn size="small" variant="text" :loading="notificationsLoading" @click="refreshNotifications">تحديث</v-btn>
-              </v-card-title>
-              <v-divider />
-              <v-list v-if="notificationsList.length" density="compact" max-height="420" class="overflow-y-auto">
-                <v-list-item
+                <VSpacer />
+                <VBtn
+                  size="small"
+                  variant="text"
+                  :loading="notificationsLoading"
+@click="refreshNotifications"
+                >
+                  تحديث
+                </VBtn>
+              </VCardTitle>
+              <VDivider />
+              <VList
+                v-if="notificationsList.length"
+                density="compact"
+                max-height="420"
+                class="overflow-y-auto"
+              >
+                <VListItem
                   v-for="n in notificationsList"
                   :key="n.id"
                   :title="n.title"
@@ -72,59 +152,150 @@
                   @click="openNotification(n)"
                 >
                   <template #prepend>
-                    <v-avatar size="36" :color="n.is_read ? 'grey-lighten-2' : 'primary'">
-                      <v-img v-if="n.image" :src="n.image" cover />
-                      <v-icon v-else :color="n.is_read ? 'grey' : 'white'" size="18">mdi-bell</v-icon>
-                    </v-avatar>
+                    <VAvatar
+size="36"
+                             :color="n.is_read ? 'grey-lighten-2' : 'primary'"
+>
+                      <VImg
+v-if="n.image"
+                            :src="n.image"
+cover
+/>
+                      <VIcon v-else
+:color="n.is_read ? 'grey' : 'white'" size="18">
+mdi-bell
+</VIcon>
+                    </VAvatar>
                   </template>
-                </v-list-item>
-              </v-list>
-              <div v-else class="text-center pa-6 text-medium-emphasis">
-                <v-icon size="40" color="grey-lighten-1" class="mb-2">mdi-bell-off-outline</v-icon>
+                </VListItem>
+              </VList>
+              <div
+                v-else
+                class="text-center pa-6 text-medium-emphasis"
+              >
+                <VIcon
+                  size="40"
+                  color="grey-lighten-1"
+                  class="mb-2"
+                >
+                  mdi-bell-off-outline
+                </VIcon>
                 <div>لا توجد إشعارات</div>
               </div>
-              <v-divider v-if="notificationsHasMore" />
-              <div v-if="notificationsHasMore" class="d-flex justify-center pa-2">
-                <v-btn size="small" :loading="notificationsLoading" variant="text" @click="loadMoreNotifications">عرض المزيد</v-btn>
+              <VDivider v-if="notificationsHasMore" />
+              <div
+                v-if="notificationsHasMore"
+                class="d-flex justify-center pa-2"
+              >
+                <VBtn
+                  size="small"
+                  :loading="notificationsLoading"
+                  variant="text"
+                  @click="loadMoreNotifications"
+                >
+                  عرض المزيد
+                </VBtn>
               </div>
-            </v-card>
-          </v-menu>
+            </VCard>
+          </VMenu>
 
           <!-- Primary CTA -->
-          <v-btn v-if="!isLoggedIn" class="d-none d-sm-flex cta-btn" color="primary" variant="elevated" rounded="lg" to="/login">
-            <v-icon start>mdi-rocket-launch-outline</v-icon>
+          <VBtn
+            v-if="!isLoggedIn"
+            class="d-none d-sm-flex cta-btn"
+            color="primary"
+            variant="elevated"
+            rounded="lg"
+            to="/login"
+          >
+            <VIcon start>
+              mdi-rocket-launch-outline
+            </VIcon>
             ابدأ الآن
-          </v-btn>
-          <v-btn v-else class="d-none d-sm-flex cta-btn" color="success" variant="elevated" rounded="lg" to="/teacher/dashboard">
-            <v-icon start>mdi-view-dashboard-outline</v-icon>
+          </VBtn>
+          <VBtn
+            v-else
+            class="d-none d-sm-flex cta-btn"
+            color="success"
+            variant="elevated"
+            rounded="lg"
+            to="/teacher/dashboard"
+          >
+            <VIcon start>
+              mdi-view-dashboard-outline
+            </VIcon>
             لوحة التحكم
-          </v-btn>
+          </VBtn>
 
           <!-- Mobile menu -->
-          <v-menu location="bottom end" class="d-md-none">
+          <VMenu
+            location="bottom end"
+            class="d-md-none"
+          >
             <template #activator="{ props }">
-              <v-btn icon variant="text" v-bind="props" class="d-md-none">
-                <v-icon>mdi-menu</v-icon>
-              </v-btn>
+              <VBtn
+                icon
+                variant="text"
+                v-bind="props"
+                class="d-md-none"
+              >
+                <VIcon>mdi-menu</VIcon>
+              </VBtn>
             </template>
-            <v-list density="compact" min-width="220">
-              <v-list-item @click="scrollToSection('hero')" title="الرئيسية" prepend-icon="mdi-home-outline" />
-              <v-list-item @click="scrollToSection('features')" title="المميزات" prepend-icon="mdi-star-outline" />
-              <v-list-item @click="scrollToSection('preview')" title="النظام" prepend-icon="mdi-monitor-dashboard" />
-              <v-list-item @click="scrollToSection('how-it-works')" title="كيف يعمل" prepend-icon="mdi-stairs" />
-              <v-list-item :to="{ path: '/contact' }" title="تواصل" prepend-icon="mdi-email-outline" />
-              <v-divider class="my-1" />
-              <v-list-item v-if="!isLoggedIn" to="/login" title="ابدأ الآن" prepend-icon="mdi-rocket-launch-outline" />
-              <v-list-item v-else to="/teacher/dashboard" title="لوحة التحكم" prepend-icon="mdi-view-dashboard-outline" />
-            </v-list>
-          </v-menu>
+            <VList
+              density="compact"
+              min-width="220"
+            >
+              <VListItem
+                title="الرئيسية"
+                prepend-icon="mdi-home-outline"
+                @click="scrollToSection('hero')"
+              />
+              <VListItem
+                title="المميزات"
+                prepend-icon="mdi-star-outline"
+                @click="scrollToSection('features')"
+              />
+              <VListItem
+                title="النظام"
+                prepend-icon="mdi-monitor-dashboard"
+                @click="scrollToSection('preview')"
+              />
+              <VListItem
+                title="كيف يعمل"
+                prepend-icon="mdi-stairs"
+                @click="scrollToSection('how-it-works')"
+              />
+              <VListItem
+                :to="{ path: '/contact' }"
+                title="تواصل"
+                prepend-icon="mdi-email-outline"
+              />
+              <VDivider class="my-1" />
+              <VListItem
+                v-if="!isLoggedIn"
+                to="/login"
+                title="ابدأ الآن"
+                prepend-icon="mdi-rocket-launch-outline"
+              />
+              <VListItem
+                v-else
+                to="/teacher/dashboard"
+                title="لوحة التحكم"
+                prepend-icon="mdi-view-dashboard-outline"
+              />
+            </VList>
+          </VMenu>
         </div>
-      </v-container>
-    </v-app-bar>
+      </VContainer>
+    </VAppBar>
 
-    <v-main>
+    <VMain>
       <!-- 2. HERO ============================================== -->
-      <section id="hero" class="hero-section">
+      <section
+        id="hero"
+        class="hero-section"
+      >
         <!-- Layered backgrounds: gradient mesh + grain + animated orbs -->
         <div class="hero-mesh" />
         <div class="hero-orb orb-1" />
@@ -132,14 +303,28 @@
         <div class="hero-orb orb-3" />
         <div class="hero-grain" />
 
-        <v-container class="hero-inner" style="max-width:1280px;">
-          <v-row align="center" class="hero-row">
+        <VContainer
+          class="hero-inner"
+          style="max-width:1280px;"
+        >
+          <VRow
+            align="center"
+            class="hero-row"
+          >
             <!-- Left: copy + CTAs + trust -->
-            <v-col cols="12" md="6" lg="7" class="hero-copy">
-              <v-slide-y-transition appear>
+            <VCol
+              cols="12"
+              md="6"
+              lg="7"
+              class="hero-copy"
+            >
+              <VSlideYTransition appear>
                 <div>
                   <div class="hero-eyebrow">
-                    <span class="live-dot" :class="{ ok: apiHealthy, down: apiHealthy === false }" />
+                    <span
+                      class="live-dot"
+                      :class="{ ok: apiHealthy, down: apiHealthy === false }"
+                    />
                     <span class="eyebrow-text">
                       {{ apiHealthy ? 'النظام يعمل بكفاءة الآن' : (apiHealthy === false ? 'تحقق من الاتصال' : 'جاري التحقق…') }}
                     </span>
@@ -157,58 +342,110 @@
 
                   <div class="hero-ctas">
                     <!-- Primary CTA = accent (orange) so it pops on the navy hero -->
-                    <v-btn size="x-large" color="warning" variant="elevated" rounded="lg" class="cta-primary" to="/login">
-                      <v-icon start size="22" color="white">mdi-rocket-launch-outline</v-icon>
+                    <VBtn
+                      size="x-large"
+                      color="warning"
+                      variant="elevated"
+rounded="lg" class="cta-primary" to="/login"
+                    >
+                      <VIcon
+start
+                             size="22"
+color="white"
+>
+                        mdi-rocket-launch-outline
+                      </VIcon>
                       <span class="cta-text">ابدأ مجاناً</span>
-                    </v-btn>
+                    </VBtn>
                     <!-- Secondary CTA = outlined white, with explicit text color override -->
-                    <v-btn size="x-large" variant="outlined" rounded="lg" color="white" class="cta-secondary" @click="scrollToSection('preview')">
-                      <v-icon start size="22" color="white">mdi-play-circle-outline</v-icon>
+                    <VBtn
+                      size="x-large"
+                      variant="outlined"
+                      rounded="lg"
+color="white" class="cta-secondary" @click="scrollToSection('preview')"
+                    >
+                      <VIcon
+start
+                             size="22"
+color="white"
+>
+                        mdi-play-circle-outline
+                      </VIcon>
                       <span class="cta-text">شاهد النظام</span>
-                    </v-btn>
+                    </VBtn>
                   </div>
 
                   <!-- Trust signals -->
                   <div class="hero-trust">
                     <div class="trust-item">
-                      <v-icon size="20" class="me-2 trust-icon">mdi-shield-check-outline</v-icon>
+                      <VIcon
+                        size="20"
+                        class="me-2 trust-icon"
+                      >
+                        mdi-shield-check-outline
+                      </VIcon>
                       <span>بيانات آمنة ومشفّرة</span>
                     </div>
                     <div class="trust-item">
-                      <v-icon size="20" class="me-2 trust-icon">mdi-translate</v-icon>
+                      <VIcon
+                        size="20"
+                        class="me-2 trust-icon"
+                      >
+                        mdi-translate
+                      </VIcon>
                       <span>عربي بالكامل · RTL</span>
                     </div>
                     <div class="trust-item">
-                      <v-icon size="20" class="me-2 trust-icon">mdi-cellphone-link</v-icon>
+                      <VIcon
+                        size="20"
+                        class="me-2 trust-icon"
+                      >
+                        mdi-cellphone-link
+                      </VIcon>
                       <span>تطبيق طالب على iOS و Android</span>
                     </div>
                   </div>
 
                   <div class="hero-stores">
                     <span class="stores-label">تطبيق الطلاب:</span>
-                    <a href="https://apps.apple.com/us/app/mulhimiq/id6754453929" target="_blank" rel="noopener" class="store-pill">
-                      <v-icon size="22">mdi-apple</v-icon>
+                    <a
+                      href="https://apps.apple.com/us/app/mulhimiq/id6754453929"
+                      target="_blank"
+                      rel="noopener"
+                      class="store-pill"
+                    >
+                      <VIcon size="22">mdi-apple</VIcon>
                       App Store
                     </a>
-                    <a href="https://play.google.com/store/apps/details?id=com.mulhimiq.app" target="_blank" rel="noopener" class="store-pill">
-                      <v-icon size="22">mdi-google-play</v-icon>
+                    <a
+                      href="https://play.google.com/store/apps/details?id=com.mulhimiq.app"
+                      target="_blank"
+                      rel="noopener"
+                      class="store-pill"
+                    >
+                      <VIcon size="22">mdi-google-play</VIcon>
                       Google Play
                     </a>
                   </div>
                 </div>
-              </v-slide-y-transition>
-            </v-col>
+              </VSlideYTransition>
+            </VCol>
 
             <!-- Right: phone mockup + floating widgets -->
-            <v-col cols="12" md="6" lg="5" class="hero-visual">
-              <v-fade-transition appear>
+            <VCol
+              cols="12"
+              md="6"
+              lg="5"
+              class="hero-visual"
+            >
+              <VFadeTransition appear>
                 <div class="phone-wrap">
                   <div class="phone-glow" />
                   <div class="phone-frame">
                     <div class="phone-notch" />
                     <div class="phone-screen">
                       <template v-if="appScreenshots.length">
-                        <v-carousel
+                        <VCarousel
                           v-model="carouselModel"
                           cycle
                           :interval="4500"
@@ -217,145 +454,250 @@
                           height="100%"
                           class="phone-carousel"
                         >
-                          <v-carousel-item v-for="(screen) in appScreenshots" :key="screen.id" :src="screen.image" cover @click="openNews(screen)" class="cursor-pointer">
+                          <VCarouselItem
+v-for="(screen) in appScreenshots"
+                                         :key="screen.id"
+:src="screen.image" cover class="cursor-pointer" @click="openNews(screen)"
+>
                             <div class="phone-caption">
                               <h4>{{ screen.title }}</h4>
                               <p>{{ screen.description }}</p>
                             </div>
-                          </v-carousel-item>
-                        </v-carousel>
+                          </VCarouselItem>
+                        </VCarousel>
                       </template>
                       <!-- Skeleton / empty state -->
-                      <div v-else class="phone-empty">
-                        <v-img :src="logo" width="80" height="80" class="mb-4 phone-empty-logo" />
-                        <div class="phone-empty-title">Mulhim<span class="text-accent">IQ</span></div>
-                        <div class="phone-empty-sub">منصة التعليم الذكي</div>
+                      <div
+                        v-else
+                        class="phone-empty"
+                      >
+                        <VImg
+                          :src="logo"
+                          width="80"
+                          height="80"
+                          class="mb-4 phone-empty-logo"
+                        />
+                        <div class="phone-empty-title">
+                          Mulhim<span class="text-accent">IQ</span>
+                        </div>
+                        <div class="phone-empty-sub">
+                          منصة التعليم الذكي
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   <!-- Floating data widgets (real numbers) -->
-                  <div class="float-card float-1" :class="{ 'is-loading': platformStatsLoading }">
-                    <v-avatar color="primary" size="40" class="float-avatar">
-                      <v-icon color="white">mdi-map-marker-outline</v-icon>
-                    </v-avatar>
+                  <div
+                    class="float-card float-1"
+                    :class="{ 'is-loading': platformStatsLoading }"
+                  >
+                    <VAvatar
+                      color="primary"
+                      size="40"
+                      class="float-avatar"
+                    >
+                      <VIcon color="white">
+                        mdi-map-marker-outline
+                      </VIcon>
+                    </VAvatar>
                     <div>
-                      <div class="float-label">محافظات مغطّاة</div>
-                      <div class="float-value">{{ platformStatsLoading ? '…' : platformStats.governoratesCount }}</div>
+                      <div class="float-label">
+                        محافظات مغطّاة
+                      </div>
+                      <div class="float-value">
+                        {{ platformStatsLoading ? '…' : platformStats.governoratesCount }}
+                      </div>
                     </div>
                   </div>
 
-                  <div class="float-card float-2" :class="{ 'is-loading': platformStatsLoading }">
-                    <v-avatar color="warning" size="40" class="float-avatar">
-                      <v-icon color="white">mdi-newspaper-variant-outline</v-icon>
-                    </v-avatar>
+                  <div
+                    class="float-card float-2"
+                    :class="{ 'is-loading': platformStatsLoading }"
+                  >
+                    <VAvatar
+                      color="warning"
+                      size="40"
+                      class="float-avatar"
+                    >
+                      <VIcon color="white">
+                        mdi-newspaper-variant-outline
+                      </VIcon>
+                    </VAvatar>
                     <div>
-                      <div class="float-label">منشورات نشطة</div>
-                      <div class="float-value">{{ platformStatsLoading ? '…' : platformStats.newsCount }}</div>
+                      <div class="float-label">
+                        منشورات نشطة
+                      </div>
+                      <div class="float-value">
+                        {{ platformStatsLoading ? '…' : platformStats.newsCount }}
+                      </div>
                     </div>
                   </div>
 
                   <!-- (Phase 7) packages-count card removed alongside subscriptions. -->
                 </div>
-              </v-fade-transition>
-            </v-col>
-          </v-row>
-        </v-container>
+              </VFadeTransition>
+            </VCol>
+          </VRow>
+        </VContainer>
 
         <div class="hero-fade-bottom" />
       </section>
 
       <!-- 3. LIVE STATS STRIP ================================== -->
       <section class="stats-strip">
-        <v-container style="max-width:1280px;">
+        <VContainer style="max-width:1280px;">
           <div class="stats-grid">
             <div class="stat-cell">
               <div class="stat-icon stat-icon-primary">
-                <v-icon color="primary">mdi-pulse</v-icon>
+                <VIcon color="primary">
+                  mdi-pulse
+                </VIcon>
               </div>
               <div>
-                <div class="stat-cell-label">حالة الخادم</div>
+                <div class="stat-cell-label">
+                  حالة الخادم
+                </div>
                 <div class="stat-cell-value">
-                  <span class="live-dot" :class="{ ok: apiHealthy, down: apiHealthy === false }" />
+                  <span
+                    class="live-dot"
+                    :class="{ ok: apiHealthy, down: apiHealthy === false }"
+                  />
                   {{ apiHealthy ? 'نشط' : (apiHealthy === false ? 'خارج الخدمة' : 'جارٍ الفحص') }}
                 </div>
               </div>
             </div>
             <div class="stat-cell">
               <div class="stat-icon stat-icon-accent">
-                <v-icon color="warning">mdi-map-marker-radius-outline</v-icon>
+                <VIcon color="warning">
+                  mdi-map-marker-radius-outline
+                </VIcon>
               </div>
               <div>
-                <div class="stat-cell-label">محافظات</div>
-                <div class="stat-cell-value">{{ platformStatsLoading ? '…' : platformStats.governoratesCount }}</div>
+                <div class="stat-cell-label">
+                  محافظات
+                </div>
+                <div class="stat-cell-value">
+                  {{ platformStatsLoading ? '…' : platformStats.governoratesCount }}
+                </div>
               </div>
             </div>
             <!-- (Phase 7) packages stat cell removed alongside subscriptions. -->
             <div class="stat-cell">
               <div class="stat-icon stat-icon-warning">
-                <v-icon color="warning">mdi-newspaper-variant</v-icon>
+                <VIcon color="warning">
+                  mdi-newspaper-variant
+                </VIcon>
               </div>
               <div>
-                <div class="stat-cell-label">منشورات</div>
-                <div class="stat-cell-value">{{ platformStatsLoading ? '…' : platformStats.newsCount }}</div>
+                <div class="stat-cell-label">
+                  منشورات
+                </div>
+                <div class="stat-cell-value">
+                  {{ platformStatsLoading ? '…' : platformStats.newsCount }}
+                </div>
               </div>
             </div>
             <div class="stat-cell">
               <div class="stat-icon stat-icon-secondary">
-                <v-icon color="secondary">mdi-translate</v-icon>
+                <VIcon color="secondary">
+                  mdi-translate
+                </VIcon>
               </div>
               <div>
-                <div class="stat-cell-label">واجهة</div>
-                <div class="stat-cell-value">عربي · RTL</div>
+                <div class="stat-cell-label">
+                  واجهة
+                </div>
+                <div class="stat-cell-value">
+                  عربي · RTL
+                </div>
               </div>
             </div>
           </div>
-        </v-container>
+        </VContainer>
       </section>
 
       <!-- 4. FEATURES ========================================== -->
-      <section id="features" class="features-section">
-        <v-container style="max-width:1280px;">
+      <section
+        id="features"
+        class="features-section"
+      >
+        <VContainer style="max-width:1280px;">
           <div class="section-head">
             <span class="section-chip">لماذا Mulhim IQ</span>
-            <h2 class="section-title">كل ما يحتاجه المعلم لإدارة عمل متكامل</h2>
+            <h2 class="section-title">
+              كل ما يحتاجه المعلم لإدارة عمل متكامل
+            </h2>
             <p class="section-sub">
               أدوات مصمّمة لتعمل معاً — لا حاجة لربط 5 برامج. كل وحدة تتكامل مع الأخرى وتشاركها البيانات اللحظية.
             </p>
           </div>
 
-          <v-row class="g-3">
-            <v-col v-for="feature in features" :key="feature.id" cols="12" sm="6" lg="4">
-              <v-hover v-slot="{ isHovering, props }">
-                <v-card
+          <VRow class="g-3">
+            <VCol
+              v-for="feature in features"
+              :key="feature.id"
+              cols="12"
+              sm="6"
+              lg="4"
+            >
+              <VHover v-slot="{ isHovering, props }">
+                <VCard
                   v-bind="props"
                   :elevation="isHovering ? 8 : 0"
                   class="feature-card-v2 h-100"
                   :class="{ 'is-hovered': isHovering }"
                 >
-                  <div class="feature-glow" :style="{ '--feature-color': feature.colorHex }" />
-                  <div class="feature-icon-v2" :style="{ '--feature-color': feature.colorHex }">
-                    <v-icon size="28" :color="feature.color">{{ feature.icon }}</v-icon>
+                  <div
+                    class="feature-glow"
+                    :style="{ '--feature-color': feature.colorHex }"
+                  />
+                  <div
+                    class="feature-icon-v2"
+                    :style="{ '--feature-color': feature.colorHex }"
+                  >
+                    <VIcon
+size="28"
+                           :color="feature.color"
+>
+                      {{ feature.icon }}
+                    </VIcon>
                   </div>
-                  <h3 class="feature-title">{{ feature.title }}</h3>
-                  <p class="feature-desc">{{ feature.description }}</p>
+                  <h3 class="feature-title">
+                    {{ feature.title }}
+                  </h3>
+                  <p class="feature-desc">
+                    {{ feature.description }}
+                  </p>
                   <div class="feature-tags">
-                    <span v-for="tag in feature.tags" :key="tag" class="feature-tag">{{ tag }}</span>
+                    <span
+                      v-for="tag in feature.tags"
+                      :key="tag"
+                      class="feature-tag"
+                    >{{ tag }}</span>
                   </div>
-                </v-card>
-              </v-hover>
-            </v-col>
-          </v-row>
-        </v-container>
+                </VCard>
+              </VHover>
+            </VCol>
+          </VRow>
+        </VContainer>
       </section>
 
       <!-- 5. SMART DASHBOARD PREVIEW =========================== -->
-      <section id="preview" class="preview-section">
-        <v-container style="max-width:1280px;">
+      <section
+        id="preview"
+        class="preview-section"
+      >
+        <VContainer style="max-width:1280px;">
           <div class="section-head">
             <span class="section-chip section-chip-accent">معاينة النظام</span>
-            <h2 class="section-title text-white">لوحة تحكم ذكية ومرتّبة</h2>
-            <p class="section-sub text-white" style="opacity:.85;">
+            <h2 class="section-title text-white">
+              لوحة تحكم ذكية ومرتّبة
+            </h2>
+            <p
+              class="section-sub text-white"
+              style="opacity:.85;"
+            >
               كل ما يهمّ المعلم في صفحة واحدة — إحصائيات لحظية، تنبيهات تلقائية، وإجراءات سريعة.
               نموذج توضيحي مبني على البيانات الفعلية لمنصتك.
             </p>
@@ -369,7 +711,9 @@
                 <span class="dot dot-amber" />
                 <span class="dot dot-green" />
               </div>
-              <div class="chrome-address">app.mulhimiq.com / dashboard</div>
+              <div class="chrome-address">
+                app.mulhimiq.com / dashboard
+              </div>
               <div class="chrome-spacer" />
             </div>
 
@@ -378,7 +722,11 @@
               <!-- Sidebar -->
               <aside class="preview-sidebar d-none d-md-flex">
                 <div class="d-flex align-center gap-2 mb-6">
-                  <v-img :src="logo" width="32" height="32" />
+                  <VImg
+                    :src="logo"
+                    width="32"
+                    height="32"
+                  />
                   <span class="font-weight-bold text-white">Mulhim<span class="text-accent">IQ</span></span>
                 </div>
                 <div
@@ -387,7 +735,12 @@
                   class="preview-nav-item"
                   :class="{ active: idx === 0 }"
                 >
-                  <v-icon size="18" class="me-2">{{ item.icon }}</v-icon>
+                  <VIcon
+                    size="18"
+                    class="me-2"
+                  >
+                    {{ item.icon }}
+                  </VIcon>
                   {{ item.title }}
                 </div>
               </aside>
@@ -397,31 +750,60 @@
                 <!-- Top bar -->
                 <div class="preview-topbar">
                   <div class="topbar-search">
-                    <v-icon size="18" class="me-2">mdi-magnify</v-icon>
+                    <VIcon
+                      size="18"
+                      class="me-2"
+                    >
+                      mdi-magnify
+                    </VIcon>
                     ابحث عن طالب، كورس، أو فاتورة…
                   </div>
                   <div class="d-flex align-center gap-3">
                     <div class="topbar-pill">
-                      <v-icon size="16" color="success">mdi-circle-medium</v-icon>
+                      <VIcon
+                        size="16"
+                        color="success"
+                      >
+                        mdi-circle-medium
+                      </VIcon>
                       كل الأنظمة تعمل
                     </div>
-                    <v-avatar size="32" color="primary">
+                    <VAvatar
+                      size="32"
+                      color="primary"
+                    >
                       <span class="text-white font-weight-bold">M</span>
-                    </v-avatar>
+                    </VAvatar>
                   </div>
                 </div>
 
                 <!-- Stat row -->
                 <div class="preview-stats">
-                  <div v-for="s in previewStats" :key="s.label" class="preview-stat">
+                  <div
+                    v-for="s in previewStats"
+                    :key="s.label"
+                    class="preview-stat"
+                  >
                     <div class="stat-top">
                       <span class="stat-label">{{ s.label }}</span>
-                      <v-chip size="x-small" :color="s.trendUp ? 'success' : 'error'" variant="tonal" class="px-2">
-                        <v-icon size="12" start>{{ s.trendUp ? 'mdi-trending-up' : 'mdi-trending-down' }}</v-icon>
+                      <VChip
+                        size="x-small"
+                        :color="s.trendUp ? 'success' : 'error'"
+                        variant="tonal"
+                        class="px-2"
+                      >
+                        <VIcon
+                          size="12"
+                          start
+                        >
+                          {{ s.trendUp ? 'mdi-trending-up' : 'mdi-trending-down' }}
+                        </VIcon>
                         {{ s.trend }}
-                      </v-chip>
+                      </VChip>
                     </div>
-                    <div class="stat-num">{{ s.value }}</div>
+                    <div class="stat-num">
+                      {{ s.value }}
+                    </div>
                     <div class="stat-spark">
                       <div
                         v-for="(h, i) in s.spark"
@@ -438,35 +820,83 @@
                   <div class="preview-panel">
                     <div class="panel-head">
                       <div class="d-flex align-center gap-2">
-                        <v-icon color="primary" size="18">mdi-pulse</v-icon>
+                        <VIcon
+                          color="primary"
+                          size="18"
+                        >
+                          mdi-pulse
+                        </VIcon>
                         <span class="font-weight-bold">النشاط الأخير</span>
                       </div>
                       <span class="text-caption text-medium-emphasis">آخر 5 أحداث</span>
                     </div>
-                    <div v-for="a in previewActivity" :key="a.id" class="activity-row">
-                      <v-avatar size="32" :color="a.color" class="me-3">
-                        <v-icon size="16" color="white">{{ a.icon }}</v-icon>
-                      </v-avatar>
+                    <div
+                      v-for="a in previewActivity"
+                      :key="a.id"
+                      class="activity-row"
+                    >
+                      <VAvatar
+                        size="32"
+                        :color="a.color"
+                        class="me-3"
+                      >
+                        <VIcon
+                          size="16"
+                          color="white"
+                        >
+                          {{ a.icon }}
+                        </VIcon>
+                      </VAvatar>
                       <div class="flex-grow-1">
-                        <div class="activity-title">{{ a.title }}</div>
-                        <div class="activity-time">{{ a.time }}</div>
+                        <div class="activity-title">
+                          {{ a.title }}
+                        </div>
+                        <div class="activity-time">
+                          {{ a.time }}
+                        </div>
                       </div>
-                      <v-chip size="x-small" variant="tonal" :color="a.color">{{ a.tag }}</v-chip>
+                      <VChip
+                        size="x-small"
+                        variant="tonal"
+                        :color="a.color"
+                      >
+                        {{ a.tag }}
+                      </VChip>
                     </div>
                   </div>
 
                   <div class="preview-panel">
                     <div class="panel-head">
                       <div class="d-flex align-center gap-2">
-                        <v-icon color="warning" size="18">mdi-lightbulb-on-outline</v-icon>
+                        <VIcon
+                          color="warning"
+                          size="18"
+                        >
+                          mdi-lightbulb-on-outline
+                        </VIcon>
                         <span class="font-weight-bold">إحصائيات ذكية</span>
                       </div>
                     </div>
-                    <div v-for="i in previewInsights" :key="i.id" class="insight-row" :class="`insight-${i.tone}`">
-                      <v-icon :color="i.tone" size="22" class="me-3">{{ i.icon }}</v-icon>
+                    <div
+                      v-for="i in previewInsights"
+                      :key="i.id"
+                      class="insight-row"
+                      :class="`insight-${i.tone}`"
+                    >
+                      <VIcon
+                        :color="i.tone"
+                        size="22"
+                        class="me-3"
+                      >
+                        {{ i.icon }}
+                      </VIcon>
                       <div>
-                        <div class="insight-title">{{ i.title }}</div>
-                        <div class="insight-sub">{{ i.sub }}</div>
+                        <div class="insight-title">
+                          {{ i.title }}
+                        </div>
+                        <div class="insight-sub">
+                          {{ i.sub }}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -474,145 +904,278 @@
               </div>
             </div>
           </div>
-        </v-container>
+        </VContainer>
       </section>
 
       <!-- 6. HOW IT WORKS ====================================== -->
-      <section id="how-it-works" class="how-section">
-        <v-container style="max-width:1280px;">
+      <section
+        id="how-it-works"
+        class="how-section"
+      >
+        <VContainer style="max-width:1280px;">
           <div class="section-head">
             <span class="section-chip">خطوات البداية</span>
-            <h2 class="section-title">من التسجيل إلى أول كورس في أقل من 5 دقائق</h2>
-            <p class="section-sub">عملية بسيطة ومباشرة، بدون تعقيدات تقنية أو معدّات إضافية.</p>
+            <h2 class="section-title">
+              من التسجيل إلى أول كورس في أقل من 5 دقائق
+            </h2>
+            <p class="section-sub">
+              عملية بسيطة ومباشرة، بدون تعقيدات تقنية أو معدّات إضافية.
+            </p>
           </div>
 
           <div class="steps-rail">
-            <div v-for="(step, idx) in steps" :key="step.id" class="step-card">
-              <div class="step-num">{{ idx + 1 }}</div>
-              <div class="step-icon" :style="{ background: step.bg }">
-                <v-icon :color="step.color" size="28">{{ step.icon }}</v-icon>
+            <div
+              v-for="(step, idx) in steps"
+              :key="step.id"
+              class="step-card"
+            >
+              <div class="step-num">
+                {{ idx + 1 }}
               </div>
-              <h3 class="step-title">{{ step.title }}</h3>
-              <p class="step-desc">{{ step.description }}</p>
+              <div
+                class="step-icon"
+                :style="{ background: step.bg }"
+              >
+                <VIcon
+                  :color="step.color"
+                  size="28"
+                >
+                  {{ step.icon }}
+                </VIcon>
+              </div>
+              <h3 class="step-title">
+                {{ step.title }}
+              </h3>
+              <p class="step-desc">
+                {{ step.description }}
+              </p>
             </div>
           </div>
-        </v-container>
+        </VContainer>
       </section>
 
 
       <!-- 8. CTA =============================================== -->
       <section class="cta-section">
         <div class="cta-glow" />
-        <v-container style="max-width:1280px;">
+        <VContainer style="max-width:1280px;">
           <div class="cta-inner">
             <div class="cta-text">
               <h2>جاهز لتجربة نظام تعليمي يعمل لصالحك؟</h2>
               <p>سجّل مجاناً اليوم وابدأ بإدارة كورساتك وطلابك في أقل من خمس دقائق.</p>
             </div>
             <div class="cta-actions">
-              <v-btn size="x-large" color="white" rounded="lg" elevation="6" to="/login" class="cta-primary-light">
-                <v-icon start>mdi-rocket-launch-outline</v-icon>
+              <VBtn
+                size="x-large"
+                color="white"
+                rounded="lg"
+                elevation="6"
+                to="/login"
+                class="cta-primary-light"
+              >
+                <VIcon start>
+                  mdi-rocket-launch-outline
+                </VIcon>
                 أنشئ حسابك مجاناً
-              </v-btn>
-              <v-btn size="x-large" variant="text" color="white" rounded="lg" @click="scrollToSection('contact')">
+              </VBtn>
+              <VBtn
+                size="x-large"
+                variant="text"
+                color="white"
+                rounded="lg"
+                @click="scrollToSection('contact')"
+              >
                 تحدّث مع فريقنا
-              </v-btn>
+              </VBtn>
             </div>
           </div>
-        </v-container>
+        </VContainer>
       </section>
 
       <!-- 9. CONTACT =========================================== -->
-      <section id="contact" class="contact-section">
-        <v-container style="max-width:1280px;">
-          <v-row align="center">
-            <v-col cols="12" md="5" class="mb-6 mb-md-0">
+      <section
+        id="contact"
+        class="contact-section"
+      >
+        <VContainer style="max-width:1280px;">
+          <VRow align="center">
+            <VCol
+              cols="12"
+              md="5"
+              class="mb-6 mb-md-0"
+            >
               <span class="section-chip">تواصل معنا</span>
-              <h2 class="contact-title">نسعد بسماع رأيك أو الرد على استفسارك</h2>
-              <p class="contact-sub">فريقنا متاح خلال ساعات العمل الرسمية للرد على رسائلك ومساعدتك في البدء.</p>
+              <h2 class="contact-title">
+                نسعد بسماع رأيك أو الرد على استفسارك
+              </h2>
+              <p class="contact-sub">
+                فريقنا متاح خلال ساعات العمل الرسمية للرد على رسائلك ومساعدتك في البدء.
+              </p>
 
               <div class="contact-card">
-                <v-avatar color="primary-lighten-5" size="48" class="me-3">
-                  <v-icon color="primary">mdi-email-outline</v-icon>
-                </v-avatar>
+                <VAvatar
+                  color="primary-lighten-5"
+                  size="48"
+                  class="me-3"
+                >
+                  <VIcon color="primary">
+                    mdi-email-outline
+                  </VIcon>
+                </VAvatar>
                 <div>
-                  <div class="contact-label">البريد الإلكتروني</div>
-                  <a href="mailto:support@mulhimiq.com" class="contact-value">support@mulhimiq.com</a>
+                  <div class="contact-label">
+                    البريد الإلكتروني
+                  </div>
+                  <a
+                    href="mailto:support@mulhimiq.com"
+                    class="contact-value"
+                  >support@mulhimiq.com</a>
                 </div>
               </div>
               <div class="contact-card">
-                <v-avatar color="primary-lighten-5" size="48" class="me-3">
-                  <v-icon color="primary">mdi-phone-outline</v-icon>
-                </v-avatar>
+                <VAvatar
+                  color="primary-lighten-5"
+                  size="48"
+                  class="me-3"
+                >
+                  <VIcon color="primary">
+                    mdi-phone-outline
+                  </VIcon>
+                </VAvatar>
                 <div>
-                  <div class="contact-label">الهاتف</div>
-                  <div class="contact-value">+964 770 000 0000</div>
+                  <div class="contact-label">
+                    الهاتف
+                  </div>
+                  <div class="contact-value">
+                    +964 770 000 0000
+                  </div>
                 </div>
               </div>
               <div class="contact-card">
-                <v-avatar color="primary-lighten-5" size="48" class="me-3">
-                  <v-icon color="primary">mdi-map-marker-outline</v-icon>
-                </v-avatar>
+                <VAvatar
+                  color="primary-lighten-5"
+                  size="48"
+                  class="me-3"
+                >
+                  <VIcon color="primary">
+                    mdi-map-marker-outline
+                  </VIcon>
+                </VAvatar>
                 <div>
-                  <div class="contact-label">العنوان</div>
-                  <div class="contact-value">بغداد، العراق</div>
+                  <div class="contact-label">
+                    العنوان
+                  </div>
+                  <div class="contact-value">
+                    بغداد، العراق
+                  </div>
                 </div>
               </div>
-            </v-col>
+            </VCol>
 
-            <v-col cols="12" md="6" offset-md="1">
-              <v-card class="contact-form-card pa-7" elevation="0">
-                <h3 class="text-h6 font-weight-bold mb-4">أرسل لنا رسالة</h3>
-                <v-alert v-if="contactError" type="error" variant="tonal" class="mb-4" closable @click:close="contactError = ''">
+            <VCol
+              cols="12"
+              md="6"
+              offset-md="1"
+            >
+              <VCard
+                class="contact-form-card pa-7"
+                elevation="0"
+              >
+                <h3 class="text-h6 font-weight-bold mb-4">
+                  أرسل لنا رسالة
+                </h3>
+                <VAlert
+                  v-if="contactError"
+                  type="error"
+                  variant="tonal"
+class="mb-4" closable @click:close="contactError = ''"
+                >
                   {{ contactError }}
-                </v-alert>
-                <v-alert v-if="contactSuccess" type="success" variant="tonal" class="mb-4" closable @click:close="contactSuccess = ''">
+                </VAlert>
+                <VAlert
+                  v-if="contactSuccess"
+                  type="success"
+                  variant="tonal"
+class="mb-4" closable @click:close="contactSuccess = ''"
+                >
                   {{ contactSuccess }}
-                </v-alert>
-                <v-form @submit.prevent="submitContact">
-                  <v-row dense>
-                    <v-col cols="12" md="6">
-                      <v-text-field v-model="contactForm.name" label="الاسم الكامل" variant="outlined" density="comfortable" color="primary" />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field v-model="contactForm.email" type="email" label="البريد الإلكتروني" variant="outlined" density="comfortable" color="primary" />
-                    </v-col>
-                    <v-col cols="12">
-                      <v-text-field v-model="contactForm.subject" label="الموضوع" variant="outlined" density="comfortable" color="primary" />
-                    </v-col>
-                    <v-col cols="12">
-                      <v-textarea v-model="contactForm.message" label="نص الرسالة" rows="4" auto-grow variant="outlined" density="comfortable" color="primary" />
-                    </v-col>
-                    <v-col cols="12">
-                      <v-btn type="submit" color="primary" size="large" block height="48" :loading="contactLoading" rounded="lg" class="font-weight-bold">
+                </VAlert>
+                <VForm @submit.prevent="submitContact">
+                  <VRow dense>
+                    <VCol cols="12"
+md="6">
+                      <VTextField v-model="contactForm.name"
+label="الاسم الكامل" variant="outlined" density="comfortable" color="primary" />
+                    </VCol>
+                    <VCol cols="12"
+md="6">
+                      <VTextField v-model="contactForm.email"
+type="email" label="البريد الإلكتروني" variant="outlined" density="comfortable" color="primary" />
+                    </VCol>
+                    <VCol cols="12">
+                      <VTextField v-model="contactForm.subject"
+label="الموضوع" variant="outlined" density="comfortable" color="primary" />
+                    </VCol>
+                    <VCol cols="12">
+                      <VTextarea v-model="contactForm.message"
+label="نص الرسالة" rows="4" auto-grow variant="outlined" density="comfortable" color="primary" />
+                    </VCol>
+                    <VCol cols="12">
+                      <VBtn type="submit" color="primary" size="large" block height="48" :loading="contactLoading" rounded="lg" class="font-weight-bold">
                         إرسال الرسالة
-                      </v-btn>
-                    </v-col>
-                  </v-row>
-                </v-form>
-              </v-card>
-            </v-col>
-          </v-row>
-        </v-container>
+                      </VBtn>
+                    </VCol>
+                  </VRow>
+                </VForm>
+              </VCard>
+            </VCol>
+          </VRow>
+        </VContainer>
       </section>
 
       <!-- 10. FOOTER =========================================== -->
-      <v-footer class="footer-v2" elevation="0">
-        <v-container style="max-width:1280px;">
+      <VFooter
+        class="footer-v2"
+        elevation="0"
+      >
+        <VContainer style="max-width:1280px;">
           <div class="footer-grid">
             <div class="footer-brand">
               <div class="d-flex align-center mb-3">
-                <v-img :src="logo" width="44" height="44" class="me-3" />
+                <VImg
+                  :src="logo"
+                  width="44"
+                  height="44"
+                  class="me-3"
+                />
                 <span class="brand-text">
                   <span class="text-white">Mulhim</span><span class="text-accent">IQ</span>
                 </span>
               </div>
-              <p class="footer-tagline">منصة التعليم الذكي الأولى في العراق — تجربة عربية أصيلة بمعايير عالمية.</p>
+              <p class="footer-tagline">
+                منصة التعليم الذكي الأولى في العراق — تجربة عربية أصيلة بمعايير عالمية.
+              </p>
               <div class="footer-socials">
-                <a href="#" class="social-pill" aria-label="Facebook"><v-icon size="18">mdi-facebook</v-icon></a>
-                <a href="#" class="social-pill" aria-label="Instagram"><v-icon size="18">mdi-instagram</v-icon></a>
-                <a href="#" class="social-pill" aria-label="WhatsApp"><v-icon size="18">mdi-whatsapp</v-icon></a>
-                <a href="#" class="social-pill" aria-label="YouTube"><v-icon size="18">mdi-youtube</v-icon></a>
+                <a
+                  href="#"
+                  class="social-pill"
+                  aria-label="Facebook"
+                ><VIcon size="18">mdi-facebook</VIcon></a>
+                <a
+                  href="#"
+                  class="social-pill"
+                  aria-label="Instagram"
+                ><VIcon size="18">mdi-instagram</VIcon></a>
+                <a
+                  href="#"
+                  class="social-pill"
+                  aria-label="WhatsApp"
+                ><VIcon size="18">mdi-whatsapp</VIcon></a>
+                <a
+                  href="#"
+                  class="social-pill"
+                  aria-label="YouTube"
+                ><VIcon size="18">mdi-youtube</VIcon></a>
               </div>
             </div>
             <div class="footer-col">
@@ -623,103 +1186,225 @@
             </div>
             <div class="footer-col">
               <h4>روابط</h4>
-              <router-link to="/login">تسجيل الدخول</router-link>
-              <router-link to="/contact">تواصل معنا</router-link>
-              <router-link to="/privacy-policy">سياسة الخصوصية</router-link>
-              <router-link to="/terms-and-conditions">شروط الاستخدام</router-link>
+              <RouterLink to="/login">
+                تسجيل الدخول
+              </RouterLink>
+              <RouterLink to="/contact">
+                تواصل معنا
+              </RouterLink>
+              <RouterLink to="/privacy-policy">
+                سياسة الخصوصية
+              </RouterLink>
+              <RouterLink to="/terms-and-conditions">
+                شروط الاستخدام
+              </RouterLink>
             </div>
             <div class="footer-col">
               <h4>تطبيق الطلاب</h4>
-              <a href="https://apps.apple.com/us/app/mulhimiq/id6754453929" target="_blank" rel="noopener" class="store-pill store-pill-dark">
-                <v-icon size="20">mdi-apple</v-icon>
+              <a
+                href="https://apps.apple.com/us/app/mulhimiq/id6754453929"
+                target="_blank"
+                rel="noopener"
+                class="store-pill store-pill-dark"
+              >
+                <VIcon size="20">mdi-apple</VIcon>
                 App Store
               </a>
-              <a href="https://play.google.com/store/apps/details?id=com.mulhimiq.app" target="_blank" rel="noopener" class="store-pill store-pill-dark mt-2">
-                <v-icon size="20">mdi-google-play</v-icon>
+              <a
+                href="https://play.google.com/store/apps/details?id=com.mulhimiq.app"
+                target="_blank"
+                rel="noopener"
+                class="store-pill store-pill-dark mt-2"
+              >
+                <VIcon size="20">mdi-google-play</VIcon>
                 Google Play
               </a>
             </div>
           </div>
-          <v-divider class="my-6" color="white" opacity="0.15" />
+          <VDivider
+            class="my-6"
+            color="white"
+            opacity="0.15"
+          />
           <div class="footer-bottom">
             <span>© {{ new Date().getFullYear() }} Mulhim IQ — جميع الحقوق محفوظة.</span>
             <span class="footer-status">
-              <span class="live-dot" :class="{ ok: apiHealthy, down: apiHealthy === false }" />
+              <span
+                class="live-dot"
+                :class="{ ok: apiHealthy, down: apiHealthy === false }"
+              />
               {{ apiHealthy ? 'النظام يعمل' : (apiHealthy === false ? 'تحقق من الاتصال' : 'جارٍ الفحص') }}
             </span>
           </div>
-        </v-container>
-      </v-footer>
-    </v-main>
+        </VContainer>
+      </VFooter>
+    </VMain>
 
     <!-- Dialogs -->
-    <v-dialog v-model="newsDialog" max-width="900">
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          <v-icon start color="primary" class="me-2">mdi-newspaper</v-icon>
+    <VDialog
+      v-model="newsDialog"
+      max-width="900"
+    >
+      <VCard>
+        <VCardTitle class="d-flex align-center">
+          <VIcon
+            start
+            color="primary"
+            class="me-2"
+          >
+            mdi-newspaper
+          </VIcon>
           <span class="text-h6 font-weight-bold">{{ selectedNews?.title }}</span>
-          <v-spacer />
-          <v-btn icon variant="text" @click="newsDialog = false"><v-icon>mdi-close</v-icon></v-btn>
-        </v-card-title>
-        <v-divider />
-        <v-img v-if="selectedNews?.image" :src="selectedNews.image" :alt="selectedNews.title" height="320" cover />
-        <v-card-text>
-          <div v-if="selectedNews?.raw?.publishedAt" class="text-body-2 text-medium-emphasis mb-2">
-            <v-icon size="16" class="me-1">mdi-calendar</v-icon>
+          <VSpacer />
+          <VBtn
+            icon
+            variant="text"
+            @click="newsDialog = false"
+          >
+            <VIcon>mdi-close</VIcon>
+          </VBtn>
+        </VCardTitle>
+        <VDivider />
+        <VImg
+          v-if="selectedNews?.image"
+          :src="selectedNews.image"
+          :alt="selectedNews.title"
+          height="320"
+          cover
+        />
+        <VCardText>
+          <div
+            v-if="selectedNews?.raw?.publishedAt"
+            class="text-body-2 text-medium-emphasis mb-2"
+          >
+            <VIcon
+              size="16"
+              class="me-1"
+            >
+              mdi-calendar
+            </VIcon>
             {{ new Date(selectedNews.raw.publishedAt).toLocaleString('en-IQ') }}
           </div>
-          <div style="white-space:pre-line;">{{ selectedNews?.description }}</div>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn variant="text" @click="newsDialog = false">إغلاق</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+          <div style="white-space:pre-line;">
+            {{ selectedNews?.description }}
+          </div>
+        </VCardText>
+        <VCardActions class="justify-end">
+          <VBtn
+            variant="text"
+            @click="newsDialog = false"
+          >
+            إغلاق
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
 
-    <v-dialog v-model="notificationDialog" max-width="700">
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          <v-icon start color="primary" class="me-2">mdi-bell</v-icon>
+    <VDialog
+      v-model="notificationDialog"
+      max-width="700"
+    >
+      <VCard>
+        <VCardTitle class="d-flex align-center">
+          <VIcon
+            start
+            color="primary"
+            class="me-2"
+          >
+            mdi-bell
+          </VIcon>
           <span class="text-h6 font-weight-bold">{{ selectedNotification?.title }}</span>
-          <v-spacer />
-          <v-btn icon variant="text" @click="notificationDialog = false"><v-icon>mdi-close</v-icon></v-btn>
-        </v-card-title>
-        <v-divider />
-        <v-img v-if="selectedNotification?.image" :src="selectedNotification.image" height="260" cover />
-        <v-card-text>
-          <div v-if="selectedNotification?.sentAt" class="text-body-2 text-medium-emphasis mb-2">
-            <v-icon size="16" class="me-1">mdi-calendar</v-icon>
+          <VSpacer />
+          <VBtn
+            icon
+            variant="text"
+            @click="notificationDialog = false"
+          >
+            <VIcon>mdi-close</VIcon>
+          </VBtn>
+        </VCardTitle>
+        <VDivider />
+        <VImg
+          v-if="selectedNotification?.image"
+          :src="selectedNotification.image"
+          height="260"
+          cover
+        />
+        <VCardText>
+          <div
+            v-if="selectedNotification?.sentAt"
+            class="text-body-2 text-medium-emphasis mb-2"
+          >
+            <VIcon
+              size="16"
+              class="me-1"
+            >
+              mdi-calendar
+            </VIcon>
             {{ formatDate(selectedNotification.sentAt) }}
           </div>
-          <div class="mb-3" style="white-space:pre-line;">{{ selectedNotification?.message }}</div>
-          <div v-if="selectedNotification?.type" class="text-caption text-medium-emphasis">
-            <v-icon size="14" class="me-1">mdi-tag</v-icon>
+          <div
+            class="mb-3"
+            style="white-space:pre-line;"
+          >
+            {{ selectedNotification?.message }}
+          </div>
+          <div
+            v-if="selectedNotification?.type"
+            class="text-caption text-medium-emphasis"
+          >
+            <VIcon
+              size="14"
+              class="me-1"
+            >
+              mdi-tag
+            </VIcon>
             {{ selectedNotification.type }}
           </div>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn v-if="selectedNotification?.url" :href="selectedNotification.url" target="_blank" variant="tonal">
+        </VCardText>
+        <VCardActions class="justify-end">
+          <VBtn
+            v-if="selectedNotification?.url"
+            :href="selectedNotification.url"
+            target="_blank"
+            variant="tonal"
+          >
             فتح الرابط
-          </v-btn>
-          <v-btn variant="text" @click="notificationDialog = false">إغلاق</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+          </VBtn>
+          <VBtn
+            variant="text"
+            @click="notificationDialog = false"
+          >
+            إغلاق
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
 
-    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000" location="top">
+    <VSnackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="3000"
+      location="top"
+    >
       {{ snackbar.message }}
       <template #actions>
-        <v-btn icon @click="snackbar.show = false"><v-icon>mdi-close</v-icon></v-btn>
+        <VBtn
+          icon
+          @click="snackbar.show = false"
+        >
+          <VIcon>mdi-close</VIcon>
+        </VBtn>
       </template>
-    </v-snackbar>
-  </v-app>
+    </VSnackbar>
+  </VApp>
 </template>
 
 <script>
-import teacher_api from '@/api/teacher/teacher_api';
-import axiosInstance from '@/utils/axios';
-import logo from '@/assets/images/logo.png';
-import emailjs from 'emailjs-com';
+import teacher_api from '@/api/teacher/teacher_api'
+import axiosInstance from '@/utils/axios'
+import logo from '@images/logo.png'
+import emailjs from 'emailjs-com'
 
 export default {
   name: 'IndexPage',
@@ -860,82 +1545,91 @@ export default {
       // (Phase 7) pricing / subscription capacity state removed alongside
       // the old subscription model. Course catalog browsing arrives in a
       // later phase.
-    };
+    }
   },
 
   mounted() {
-    const token = localStorage.getItem('accessToken');
-    const user = localStorage.getItem('user');
-    this.isLoggedIn = !!(token && user);
+    const token = localStorage.getItem('accessToken')
+    const user = localStorage.getItem('user')
 
-    window.addEventListener('scroll', this.handleScroll, { passive: true });
+    this.isLoggedIn = !!(token && user)
 
-    this.fetchPlatformStats();
-    this.getPublicNews();
+    window.addEventListener('scroll', this.handleScroll, { passive: true })
+
+    this.fetchPlatformStats()
+    this.getPublicNews()
 
     if (this.isLoggedIn) {
-      this.refreshNotifications();
+      this.refreshNotifications()
     }
 
     try {
-      const params = new URLSearchParams(window.location.search);
-      const qid = params.get('notificationId');
-      if (qid) this.markNotificationAsRead(String(qid));
+      const params = new URLSearchParams(window.location.search)
+      const qid = params.get('notificationId')
+      if (qid) this.markNotificationAsRead(String(qid))
     } catch { /* ignore */ }
   },
 
   beforeUnmount() {
-    window.removeEventListener('scroll', this.handleScroll);
+    window.removeEventListener('scroll', this.handleScroll)
   },
 
   methods: {
     handleScroll() {
-      this.isScrolled = window.scrollY > 12;
+      this.isScrolled = window.scrollY > 12
     },
 
     scrollToSection(id) {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const el = document.getElementById(id)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     },
 
     // -------- Live platform stats (4 anonymous APIs) ----------
     async fetchPlatformStats() {
-      this.platformStatsLoading = true;
+      this.platformStatsLoading = true
+
+
       // /health is at the API ROOT (no /api prefix). Derive the origin from
       // the shared axios instance's baseURL so dev / staging / prod stay in
       // sync with the rest of the dashboard's HTTP layer.
-      const baseURL = axiosInstance?.defaults?.baseURL || import.meta.env.VITE_API_BASE_URL || '';
-      const apiOrigin = baseURL.replace(/\/api\/?$/, '');
+      const baseURL = axiosInstance?.defaults?.baseURL || import.meta.env.VITE_API_BASE_URL || ''
+      const apiOrigin = baseURL.replace(/\/api\/?$/, '')
 
       const tasks = [
         // Health (live dot)
         fetch(`${apiOrigin}/health`).then(r => r.json()).then(j => ({ healthy: !!j?.success })).catch(() => ({ healthy: false })),
+
         // Governorates count
-        teacher_api.getGovernorates().then((res) => {
-          const payload = res?.data?.data ? res.data : res;
-          const data = payload?.data || {};
-          return { gov: Number(data.count) || (Array.isArray(data.governorates) ? data.governorates.length : 0) };
+        teacher_api.getGovernorates().then(res => {
+          const payload = res?.data?.data ? res.data : res
+          const data = payload?.data || {}
+          
+          return { gov: Number(data.count) || (Array.isArray(data.governorates) ? data.governorates.length : 0) }
         }).catch(() => ({ gov: 0 })),
+
         // (Phase 7) "Active packages" stat removed alongside subscriptions.
         Promise.resolve({ pkg: 0 }),
+
         // Public news count
-        teacher_api.getPublicNews().then((res) => {
-          const payload = res?.data?.data ? res.data : res;
-          const items = Array.isArray(payload?.data) ? payload.data : [];
-          return { news: items.length };
+        teacher_api.getPublicNews().then(res => {
+          const payload = res?.data?.data ? res.data : res
+          const items = Array.isArray(payload?.data) ? payload.data : []
+          
+          return { news: items.length }
         }).catch(() => ({ news: 0 })),
-      ];
+      ]
 
       try {
-        const [h, g, p, n] = await Promise.all(tasks);
-        this.apiHealthy = h.healthy;
+        const [h, g, p, n] = await Promise.all(tasks)
+
+        this.apiHealthy = h.healthy
         this.platformStats = {
           governoratesCount: g.gov,
           packagesCount: p.pkg,
           newsCount: n.news,
-        };
+        }
       } finally {
-        this.platformStatsLoading = false;
+        this.platformStatsLoading = false
       }
     },
 
@@ -945,36 +1639,39 @@ export default {
     // -------- Public news (hero carousel) -------------------
     async getPublicNews() {
       try {
-        const res = await teacher_api.getPublicNews();
-        const payload = res?.data?.data ? res.data : res;
-        const items = Array.isArray(payload?.data) ? payload.data : [];
-        const baseUrl = payload?.content_url || '';
-        this.appScreenshots = items.map((n) => ({
+        const res = await teacher_api.getPublicNews()
+        const payload = res?.data?.data ? res.data : res
+        const items = Array.isArray(payload?.data) ? payload.data : []
+        const baseUrl = payload?.content_url || ''
+
+        this.appScreenshots = items.map(n => ({
           id: n.id,
           title: n.title,
           description: n.details,
           image: baseUrl && n.imageUrl ? `${baseUrl}${n.imageUrl}` : n.imageUrl,
           raw: n,
-        }));
+        }))
       } catch (err) {
-        console.warn('Failed to fetch public news:', err);
+        console.warn('Failed to fetch public news:', err)
       }
     },
 
     openNews(item) {
-      this.selectedNews = item;
-      this.newsDialog = true;
+      this.selectedNews = item
+      this.newsDialog = true
     },
 
     // -------- Notifications (logged-in only) ----------------
     async fetchNotifications(page = 1, append = false) {
       try {
-        this.notificationsLoading = true;
-        const res = await teacher_api.getNotifications({ page, limit: this.notificationsLimit });
-        const payload = res?.data?.data ? res.data : res;
-        const items = Array.isArray(payload?.data) ? payload.data : [];
-        const baseUrl = payload?.content_url || '';
-        const mapped = items.map((n) => ({
+        this.notificationsLoading = true
+
+        const res = await teacher_api.getNotifications({ page, limit: this.notificationsLimit })
+        const payload = res?.data?.data ? res.data : res
+        const items = Array.isArray(payload?.data) ? payload.data : []
+        const baseUrl = payload?.content_url || ''
+
+        const mapped = items.map(n => ({
           id: n.id,
           title: n.title,
           message: n.message,
@@ -984,95 +1681,104 @@ export default {
           image: n.data?.imageUrl ? (baseUrl ? `${baseUrl}${n.data.imageUrl}` : n.data.imageUrl) : null,
           url: n.data?.url || null,
           raw: n,
-        }));
-        this.notificationsList = append ? [...this.notificationsList, ...mapped] : mapped;
-        this.unreadCount = this.notificationsList.filter((n) => !n.is_read).length;
-        const pagination = payload?.pagination || {};
-        const totalPages = pagination.totalPages || (mapped.length < this.notificationsLimit ? page : page + 1);
-        this.notificationsHasMore = page < totalPages && mapped.length > 0;
-        this.notificationsPage = page;
+        }))
+
+        this.notificationsList = append ? [...this.notificationsList, ...mapped] : mapped
+        this.unreadCount = this.notificationsList.filter(n => !n.is_read).length
+
+        const pagination = payload?.pagination || {}
+        const totalPages = pagination.totalPages || (mapped.length < this.notificationsLimit ? page : page + 1)
+
+        this.notificationsHasMore = page < totalPages && mapped.length > 0
+        this.notificationsPage = page
       } catch (err) {
-        this.snackbar = { show: true, message: 'تعذر تحميل الإشعارات', color: 'error' };
-        console.warn('Failed to fetch notifications:', err);
+        this.snackbar = { show: true, message: 'تعذر تحميل الإشعارات', color: 'error' }
+        console.warn('Failed to fetch notifications:', err)
       } finally {
-        this.notificationsLoading = false;
+        this.notificationsLoading = false
       }
     },
     refreshNotifications() {
-      this.notificationsPage = 1;
-      this.fetchNotifications(1, false);
+      this.notificationsPage = 1
+      this.fetchNotifications(1, false)
     },
     loadMoreNotifications() {
-      this.fetchNotifications(this.notificationsPage + 1, true);
+      this.fetchNotifications(this.notificationsPage + 1, true)
     },
     async openNotification(n) {
-      this.selectedNotification = n;
-      this.notificationDialog = true;
-      this.notificationsMenu = false;
-      if (n && !n.is_read && n.id) await this.markNotificationAsRead(n.id);
+      this.selectedNotification = n
+      this.notificationDialog = true
+      this.notificationsMenu = false
+      if (n && !n.is_read && n.id) await this.markNotificationAsRead(n.id)
     },
     async markNotificationAsRead(id) {
       try {
-        if (!id) return;
-        await teacher_api.markNotificationRead(id);
-        const idx = this.notificationsList.findIndex((x) => x.id === id);
+        if (!id) return
+        await teacher_api.markNotificationRead(id)
+
+        const idx = this.notificationsList.findIndex(x => x.id === id)
         if (idx > -1 && !this.notificationsList[idx].is_read) {
-          this.notificationsList[idx].is_read = true;
-          this.unreadCount = Math.max(0, this.unreadCount - 1);
+          this.notificationsList[idx].is_read = true
+          this.unreadCount = Math.max(0, this.unreadCount - 1)
         }
       } catch (err) {
-        console.warn('Failed to mark notification as read:', err);
+        console.warn('Failed to mark notification as read:', err)
       }
     },
 
     formatDate(d) {
-      try { return new Date(d).toLocaleString('en-IQ'); } catch { return d; }
+      try { return new Date(d).toLocaleString('en-IQ') } catch { return d }
     },
 
     // -------- Contact form (EmailJS) ------------------------
     async submitContact() {
-      this.contactError = '';
-      this.contactSuccess = '';
-      const { name, email, message } = this.contactForm;
+      this.contactError = ''
+      this.contactSuccess = ''
+
+      const { name, email, message } = this.contactForm
       if (!name || !email || !message) {
-        this.contactError = 'يرجى تعبئة الاسم والبريد والرسالة';
-        return;
+        this.contactError = 'يرجى تعبئة الاسم والبريد والرسالة'
+        
+        return
       }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        this.contactError = 'يرجى إدخال بريد إلكتروني صالح';
-        return;
+      if (!/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(email)) {
+        this.contactError = 'يرجى إدخال بريد إلكتروني صالح'
+        
+        return
       }
-      this.contactLoading = true;
+      this.contactLoading = true
       try {
-        const SERVICE_ID = 'service_e6wa64v';
-        const TEMPLATE_ID = 'template_rn0tt0u';
-        const PUBLIC_KEY = 'km9zF8cdDOxdFruui';
+        const SERVICE_ID = 'service_e6wa64v'
+        const TEMPLATE_ID = 'template_rn0tt0u'
+        const PUBLIC_KEY = 'km9zF8cdDOxdFruui'
+
         const templateParams = {
           from_name: name,
           from_email: email,
           subject: this.contactForm.subject || 'رسالة من نموذج التواصل',
           message,
-        };
-        const response = await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY);
+        }
+
+        const response = await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
         if (response.status === 200) {
-          this.contactSuccess = '✅ تم إرسال رسالتك بنجاح وسنعاود التواصل قريباً';
-          this.contactForm = { name: '', email: '', subject: '', message: '' };
+          this.contactSuccess = '✅ تم إرسال رسالتك بنجاح وسنعاود التواصل قريباً'
+          this.contactForm = { name: '', email: '', subject: '', message: '' }
         } else {
-          this.contactError = 'حدث خطأ أثناء الإرسال، حاول لاحقاً';
+          this.contactError = 'حدث خطأ أثناء الإرسال، حاول لاحقاً'
         }
       } catch (err) {
-        console.warn('EmailJS Error:', err);
-        this.contactError = 'تعذر إرسال الرسالة، يرجى المحاولة لاحقاً';
+        console.warn('EmailJS Error:', err)
+        this.contactError = 'تعذر إرسال الرسالة، يرجى المحاولة لاحقاً'
       } finally {
-        this.contactLoading = false;
+        this.contactLoading = false
       }
     },
   },
-};
+}
 </script>
 
 <script setup>
-definePage({ meta: { layout: 'blank' } });
+definePage({ meta: { layout: 'blank' } })
 </script>
 
 <style scoped>

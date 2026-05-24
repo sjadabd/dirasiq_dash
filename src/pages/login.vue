@@ -21,15 +21,17 @@
 import { nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Auth from '@/api/auth/auth_api.js'
-import logo from '@/assets/images/logo.png'
+import logo from '@images/logo.png'
 import { useAuth } from '@/composables/useAuth.js'
 import axiosInstance from '@/utils/axios'
 
 // ---- OneSignal helper -----------------------------------------------------
 const getOneSignalPlayerId = async () => {
-  return new Promise(async (resolve) => {
+  return new Promise(async resolve => {
     try {
-      if (!window.OneSignal) { resolve(null); return }
+      if (!window.OneSignal) { resolve(null) 
+
+        return }
       if (!window.OneSignalInitialized) {
         await window.OneSignal.init({
           appId: 'b136e33d-56f0-4fc4-ad08-8c8a534ca447',
@@ -39,8 +41,11 @@ const getOneSignalPlayerId = async () => {
         window.OneSignalInitialized = true
       }
       await window.OneSignal.Notifications.requestPermission()
+
       const subscription = await window.OneSignal.User.PushSubscription
-      if (!subscription) { resolve(null); return }
+      if (!subscription) { resolve(null) 
+
+        return }
       if (!subscription.id) await new Promise(r => setTimeout(r, 1500))
       resolve(subscription.id || (await window.OneSignal.getUserId()) || null)
     } catch (err) {
@@ -87,18 +92,18 @@ const HERO_BULLETS = [
 const redirectBasedOnUserType = (userData, requiresProfileCompletion) => {
   const userType = userData.userType
   switch (userType) {
-    case 'teacher':
-      router.push(requiresProfileCompletion ? '/teacher/profile-setup' : '/teacher/dashboard')
-      break
-    case 'student':
-      router.push(requiresProfileCompletion ? '/student/profile-setup' : '/student/dashboard')
-      break
-    case 'admin':
-    case 'super_admin':
-      router.push('/admin/dashboard')
-      break
-    default:
-      router.push('/')
+  case 'teacher':
+    router.push(requiresProfileCompletion ? '/teacher/profile-setup' : '/teacher/dashboard')
+    break
+  case 'student':
+    router.push(requiresProfileCompletion ? '/student/profile-setup' : '/student/dashboard')
+    break
+  case 'admin':
+  case 'super_admin':
+    router.push('/admin/dashboard')
+    break
+  default:
+    router.push('/')
   }
 }
 
@@ -107,32 +112,40 @@ const checkUserAuth = () => {
   const token = localStorage.getItem('accessToken')
   if (userData && token) {
     isUserAuthenticated.value = true
+
     const user = JSON.parse(userData)
+
     redirectBasedOnUserType(user, false)
+    
     return true
   }
   isUserAuthenticated.value = false
+  
   return false
 }
 
 const handleEmailLogin = async () => {
   if (!form.value.email || !form.value.password) {
     error.value = 'يرجى ملء جميع الحقول المطلوبة'
+    
     return
   }
   isLoading.value = true
   error.value = ''
   try {
     const playerId = await getOneSignalPlayerId()
+
     const response = await Auth.login({
       email: form.value.email,
       password: form.value.password,
       oneSignalPlayerId: playerId,
     })
+
     if (response.data.success) {
       const { user: userData, token: accessToken, requiresProfileCompletion, isProfileComplete } = response.data.data
       if (userData?.userType === 'student') {
         showStudentAppDialog.value = true
+        
         return
       }
       localStorage.setItem('isProfileComplete', isProfileComplete)
@@ -151,6 +164,7 @@ const handleEmailLogin = async () => {
     const msg = err?.response?.data?.message || err?.response?.data?.errors?.[0]?.message || err?.response?.data?.errors?.[0] || err?.message
     if (typeof msg === 'string' && msg.includes('غير مفعل')) {
       await router.push({ path: '/verify-email', query: { email: form.value.email } })
+      
       return
     }
     error.value = msg || 'خطأ في تسجيل الدخول. يرجى المحاولة مرة أخرى.'
@@ -159,19 +173,23 @@ const handleEmailLogin = async () => {
   }
 }
 
-const handleGoogleLogin = async (response) => {
+const handleGoogleLogin = async response => {
   try {
     const token = response.credential
     if (!token) return
     const playerId = await getOneSignalPlayerId()
+
     const res = await Auth.loginInGoogele({
       idToken: token,
       oneSignalPlayerId: playerId,
       referralCode: referralCode.value || undefined,
     })
+
     if (res.data.success) {
       const { user: userData, token: accessToken, requiresProfileCompletion, isProfileComplete } = res.data.data
-      if (userData?.userType === 'student') { showStudentAppDialog.value = true; return }
+      if (userData?.userType === 'student') { showStudentAppDialog.value = true 
+
+        return }
       localStorage.setItem('isProfileComplete', isProfileComplete)
       localStorage.setItem('content_url', res.data.content_url)
       login(userData, accessToken)
@@ -190,8 +208,11 @@ const handleGoogleLogin = async (response) => {
 const handleRequestPasswordReset = async () => {
   try {
     error.value = ''
-    if (!forgotEmail.value) { error.value = 'يرجى إدخال البريد الإلكتروني'; return }
+    if (!forgotEmail.value) { error.value = 'يرجى إدخال البريد الإلكتروني' 
+
+      return }
     isLoading.value = true
+
     const res = await Auth.requestPasswordReset({ email: forgotEmail.value })
     const ok = res?.data?.success || res?.success
     if (ok) {
@@ -209,17 +230,25 @@ const handleRequestPasswordReset = async () => {
 const handleResetPassword = async () => {
   try {
     error.value = ''
+
     const f = resetForm.value
     if (!f.email || !f.newPassword || !f.confirmPassword || (!f.code && !f.resetToken)) {
-      error.value = 'يرجى تعبئة جميع الحقول المطلوبة'; return
+      error.value = 'يرجى تعبئة جميع الحقول المطلوبة' 
+
+      return
     }
-    if (!/^[A-Za-z0-9]{6,}$/.test(f.newPassword)) {
-      error.value = 'كلمة المرور يجب أن تكون 6 رموز على الأقل'; return
+    if (!/^[A-Z0-9]{6,}$/i.test(f.newPassword)) {
+      error.value = 'كلمة المرور يجب أن تكون 6 رموز على الأقل' 
+
+      return
     }
     if (f.newPassword !== f.confirmPassword) {
-      error.value = 'تأكيد كلمة المرور غير مطابق'; return
+      error.value = 'تأكيد كلمة المرور غير مطابق' 
+
+      return
     }
     isLoading.value = true
+
     const payload = { email: f.email, newPassword: f.newPassword }
     if (f.code) payload.code = String(f.code)
     if (f.resetToken) payload.resetToken = String(f.resetToken)
@@ -242,17 +271,21 @@ const fetchVisualStats = async () => {
   const apiOrigin = baseURL.replace(/\/api\/?$/, '')
   try {
     const teacherApi = (await import('@/api/teacher/teacher_api')).default
+
     const [h, g, p] = await Promise.all([
       fetch(`${apiOrigin}/health`).then(r => r.json()).then(j => ({ healthy: !!j?.success })).catch(() => ({ healthy: false })),
       teacherApi.getGovernorates().then(res => {
         const data = (res?.data?.data || res?.data || {})
+        
         return { gov: Number(data.count) || (Array.isArray(data.governorates) ? data.governorates.length : 0) }
       }).catch(() => ({ gov: 0 })),
       teacherApi.getActivePackages().then(res => {
         const items = Array.isArray(res?.data?.data) ? res.data.data : []
+        
         return { pkg: items.length }
       }).catch(() => ({ pkg: 0 })),
     ])
+
     apiHealthy.value = h.healthy
     liveStats.value = { governoratesCount: g.gov, packagesCount: p.pkg }
   } catch (e) { console.warn('Failed to load visual stats:', e) }
@@ -277,6 +310,7 @@ onMounted(async () => {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
   if (!google?.accounts?.id || !clientId) {
     console.warn('Google Sign-In not initialized: SDK or VITE_GOOGLE_CLIENT_ID missing.')
+    
     return
   }
   google.accounts.id.initialize({
@@ -286,6 +320,7 @@ onMounted(async () => {
     auto_select: false,
     use_fedcm_for_prompt: false,
   })
+
   const el = document.getElementById('google-signin-button')
   if (el) {
     google.accounts.id.renderButton(el, {
@@ -298,28 +333,59 @@ onMounted(async () => {
 
 <template>
   <!-- Already-authenticated splash -->
-  <div v-if="isUserAuthenticated" class="auth-splash">
+  <div
+    v-if="isUserAuthenticated"
+    class="auth-splash"
+  >
     <div class="splash-card">
-      <VAvatar size="80" color="primary" class="mb-3">
-        <img :src="logo" alt="Mulhim IQ" style="width: 56px;">
+      <VAvatar
+        size="80"
+        color="primary"
+        class="mb-3"
+      >
+        <img
+          :src="logo"
+          alt="Mulhim IQ"
+          style="width: 56px;"
+        >
       </VAvatar>
       <h2>جاري تحويلك إلى لوحة التحكم...</h2>
-      <VProgressCircular indeterminate color="primary" class="mt-3" />
+      <VProgressCircular
+        indeterminate
+        color="primary"
+        class="mt-3"
+      />
     </div>
   </div>
 
   <!-- Main split-screen layout -->
-  <div v-else class="login-shell">
-    <router-link to="/" class="back-home" aria-label="العودة للصفحة الرئيسية">
-      <VIcon icon="ri-arrow-right-line" size="20" />
-    </router-link>
+  <div
+    v-else
+    class="login-shell"
+  >
+    <RouterLink
+      to="/"
+      class="back-home"
+      aria-label="العودة للصفحة الرئيسية"
+    >
+      <VIcon
+        icon="ri-arrow-right-line"
+        size="20"
+      />
+    </RouterLink>
 
     <!-- ============ Marketing panel (visual right in RTL) ============ -->
     <aside class="marketing-panel">
       <div class="marketing-inner">
         <div class="marketing-brand">
-          <img :src="logo" alt="Mulhim IQ" class="brand-logo">
-          <div class="brand-name">مُلهِم IQ</div>
+          <img
+            :src="logo"
+            alt="Mulhim IQ"
+            class="brand-logo"
+          >
+          <div class="brand-name">
+            مُلهِم IQ
+          </div>
         </div>
         <h1 class="marketing-hero">
           منصة تعليم العراق<br>
@@ -330,23 +396,47 @@ onMounted(async () => {
         </p>
 
         <ul class="hero-bullets">
-          <li v-for="b in HERO_BULLETS" :key="b.text">
-            <span class="bullet-icon"><VIcon :icon="b.icon" size="18" /></span>
+          <li
+            v-for="b in HERO_BULLETS"
+            :key="b.text"
+          >
+            <span class="bullet-icon"><VIcon
+              :icon="b.icon"
+              size="18"
+            /></span>
             <span>{{ b.text }}</span>
           </li>
         </ul>
 
-        <div v-if="apiHealthy !== null" class="trust-row">
+        <div
+          v-if="apiHealthy !== null"
+          class="trust-row"
+        >
           <div class="trust-pill">
-            <span class="dot" :class="{ ok: apiHealthy }" />
+            <span
+              class="dot"
+              :class="{ ok: apiHealthy }"
+            />
             {{ apiHealthy ? 'الخوادم تعمل' : 'تحقّق من الاتصال' }}
           </div>
-          <div v-if="liveStats.governoratesCount > 0" class="trust-pill">
-            <VIcon icon="ri-map-pin-line" size="14" />
+          <div
+            v-if="liveStats.governoratesCount > 0"
+            class="trust-pill"
+          >
+            <VIcon
+              icon="ri-map-pin-line"
+              size="14"
+            />
             {{ liveStats.governoratesCount }} محافظة
           </div>
-          <div v-if="liveStats.packagesCount > 0" class="trust-pill">
-            <VIcon icon="ri-stack-line" size="14" />
+          <div
+            v-if="liveStats.packagesCount > 0"
+            class="trust-pill"
+          >
+            <VIcon
+              icon="ri-stack-line"
+              size="14"
+            />
             {{ liveStats.packagesCount }} باقة
           </div>
         </div>
@@ -362,11 +452,19 @@ onMounted(async () => {
       <div class="login-card">
         <header class="login-header">
           <div class="mini-brand">
-            <img :src="logo" alt="Mulhim IQ" class="mini-logo">
+            <img
+              :src="logo"
+              alt="Mulhim IQ"
+              class="mini-logo"
+            >
             <span>مُلهِم IQ</span>
           </div>
-          <h1 class="login-heading">👋🏻 مرحباً بعودتك</h1>
-          <p class="login-sub">سجّل دخولك للمتابعة إلى لوحة التحكم.</p>
+          <h1 class="login-heading">
+            👋🏻 مرحباً بعودتك
+          </h1>
+          <p class="login-sub">
+            سجّل دخولك للمتابعة إلى لوحة التحكم.
+          </p>
         </header>
 
         <VAlert
@@ -381,7 +479,10 @@ onMounted(async () => {
           {{ error }}
         </VAlert>
 
-        <VForm class="login-form" @submit.prevent="handleEmailLogin">
+        <VForm
+          class="login-form"
+          @submit.prevent="handleEmailLogin"
+        >
           <VTextField
             v-model="form.email"
             autofocus
@@ -409,12 +510,19 @@ onMounted(async () => {
           />
 
           <div class="d-flex justify-space-between align-center mb-4 small-links">
-            <button type="button" class="auth-link" @click="forgotDialog = true">
+            <button
+              type="button"
+              class="auth-link"
+              @click="forgotDialog = true"
+            >
               نسيت كلمة المرور؟
             </button>
-            <router-link :to="{ path: '/verify-email', query: { email: form.email } }" class="auth-link">
+            <RouterLink
+              :to="{ path: '/verify-email', query: { email: form.email } }"
+              class="auth-link"
+            >
               تفعيل الحساب
-            </router-link>
+            </RouterLink>
           </div>
 
           <VBtn
@@ -426,20 +534,31 @@ onMounted(async () => {
             :loading="isLoading"
             class="auth-primary-cta"
           >
-            <VIcon start size="20" icon="ri-login-box-line" />
+            <VIcon
+              start
+              size="20"
+              icon="ri-login-box-line"
+            />
             تسجيل الدخول
           </VBtn>
 
-          <div class="auth-divider"><span>أو</span></div>
+          <div class="auth-divider">
+            <span>أو</span>
+          </div>
 
           <div class="google-btn-wrap">
-            <div id="google-signin-button" class="google-signin-wrapper" />
+            <div
+              id="google-signin-button"
+              class="google-signin-wrapper"
+            />
           </div>
         </VForm>
 
         <!-- New CTAs: apply + status check -->
         <div class="apply-block">
-          <div class="apply-title">هل أنت أستاذ جديد؟</div>
+          <div class="apply-title">
+            هل أنت أستاذ جديد؟
+          </div>
           <VBtn
             block
             variant="outlined"
@@ -448,7 +567,10 @@ onMounted(async () => {
             class="mb-2"
             @click="router.push('/apply-as-teacher')"
           >
-            <VIcon start icon="ri-edit-line" />
+            <VIcon
+              start
+              icon="ri-edit-line"
+            />
             تقديم طلب الانضمام كأستاذ
           </VBtn>
           <button
@@ -456,7 +578,10 @@ onMounted(async () => {
             class="text-link-row"
             @click="router.push('/check-application-status')"
           >
-            <VIcon icon="ri-search-line" size="16" />
+            <VIcon
+              icon="ri-search-line"
+              size="16"
+            />
             سبق وقدّمت — تحقّق من حالة طلبي
           </button>
         </div>
@@ -468,11 +593,17 @@ onMounted(async () => {
     </main>
 
     <!-- ============ Forgot password dialog ============ -->
-    <VDialog v-model="forgotDialog" max-width="520">
+    <VDialog
+      v-model="forgotDialog"
+      max-width="520"
+    >
       <VCard>
         <VCardTitle>استعادة كلمة المرور</VCardTitle>
         <VCardText>
-          <p class="text-medium-emphasis mb-3" style="font-size: 14px">
+          <p
+            class="text-medium-emphasis mb-3"
+            style="font-size: 14px"
+          >
             أدخل بريدك المسجّل وسنرسل إليك رمز إعادة التعيين.
           </p>
           <VTextField
@@ -488,8 +619,17 @@ onMounted(async () => {
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn variant="text" @click="forgotDialog = false">إلغاء</VBtn>
-          <VBtn color="primary" :loading="isLoading" @click="handleRequestPasswordReset">
+          <VBtn
+            variant="text"
+            @click="forgotDialog = false"
+          >
+            إلغاء
+          </VBtn>
+          <VBtn
+            color="primary"
+            :loading="isLoading"
+            @click="handleRequestPasswordReset"
+          >
             إرسال
           </VBtn>
         </VCardActions>
@@ -497,7 +637,10 @@ onMounted(async () => {
     </VDialog>
 
     <!-- ============ Reset password dialog ============ -->
-    <VDialog v-model="resetDialog" max-width="560">
+    <VDialog
+      v-model="resetDialog"
+      max-width="560"
+    >
       <VCard>
         <VCardTitle>إعادة تعيين كلمة المرور</VCardTitle>
         <VCardText>
@@ -542,8 +685,17 @@ onMounted(async () => {
         </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn variant="text" @click="resetDialog = false">إلغاء</VBtn>
-          <VBtn color="primary" :loading="isLoading" @click="handleResetPassword">
+          <VBtn
+            variant="text"
+            @click="resetDialog = false"
+          >
+            إلغاء
+          </VBtn>
+          <VBtn
+            color="primary"
+            :loading="isLoading"
+            @click="handleResetPassword"
+          >
             حفظ
           </VBtn>
         </VCardActions>
@@ -551,20 +703,40 @@ onMounted(async () => {
     </VDialog>
 
     <!-- ============ Student-app suggestion dialog ============ -->
-    <VDialog v-model="showStudentAppDialog" max-width="460" persistent>
+    <VDialog
+      v-model="showStudentAppDialog"
+      max-width="460"
+      persistent
+    >
       <VCard>
         <VCardText class="text-center py-8">
-          <VAvatar size="80" color="info" class="mb-4">
-            <VIcon icon="ri-smartphone-line" size="48" color="white" />
+          <VAvatar
+            size="80"
+            color="info"
+            class="mb-4"
+          >
+            <VIcon
+              icon="ri-smartphone-line"
+              size="48"
+              color="white"
+            />
           </VAvatar>
-          <h2 class="text-h5 mb-3">استخدم تطبيق الطالب</h2>
+          <h2 class="text-h5 mb-3">
+            استخدم تطبيق الطالب
+          </h2>
           <p class="text-medium-emphasis">
             حساب الطلاب مخصّص للتطبيق الجوّال. يرجى تحميله من المتجر للاستفادة من
             جميع المزايا (مسح QR للحضور، الواجبات، الفواتير...).
           </p>
         </VCardText>
         <VCardActions class="px-4 pb-4">
-          <VBtn block variant="tonal" @click="showStudentAppDialog = false">حسناً</VBtn>
+          <VBtn
+            block
+            variant="tonal"
+            @click="showStudentAppDialog = false"
+          >
+            حسناً
+          </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>

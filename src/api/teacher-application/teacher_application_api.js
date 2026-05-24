@@ -105,17 +105,20 @@ class TeacherApplicationApi {
     onProgress,
   }) {
     const fd = new FormData()
+
     fd.append('kind', kind)
     fd.append('file', file)
+    
     return axiosInstance.post(
       `/teacher-applications/${applicationId}/files`,
       fd,
       {
         headers: {
           'X-Upload-Token': uploadToken,
+
           // Content-Type is set automatically by axios for multipart.
         },
-        onUploadProgress: (e) => {
+        onUploadProgress: e => {
           if (e.total && typeof onProgress === 'function') {
             onProgress(Math.round((e.loaded * 100) / e.total))
           }

@@ -1,22 +1,27 @@
 <script setup>
-import navItems from "@/navigation/horizontal";
-import { themeConfig } from "@themeConfig";
+import navItems from "@/navigation/horizontal"
+import { themeConfig } from "@themeConfig"
 
 // Components
-import logo from "@/assets/images/logo.png";
-import NavbarThemeSwitcher from "@/layouts/components/NavbarThemeSwitcher.vue";
-import UserProfile from "@/layouts/components/UserProfile.vue";
-import { HorizontalNavLayout } from "@layouts";
-
+import logo from "@images/logo.png"
+import NavbarThemeSwitcher from "@/layouts/components/NavbarThemeSwitcher.vue"
+import UserProfile from "@/layouts/components/UserProfile.vue"
+import { HorizontalNavLayout } from "@layouts"
 </script>
 
 <template>
   <HorizontalNavLayout :nav-items="navItems">
     <!-- 👉 navbar -->
     <template #navbar>
-      <RouterLink to="/" class="d-flex align-start gap-x-4">
-        <img style="
-    background-color: white;inline-size: 60px;" :src="logo" />
+      <RouterLink
+        to="/"
+        class="d-flex align-start gap-x-4"
+      >
+        <img
+          style="
+    background-color: white;inline-size: 60px;"
+          :src="logo"
+        >
 
         <h1 class="leading-normal text-xl text-uppercase">
           {{ themeConfig.app.title }}
@@ -32,9 +37,11 @@ import { HorizontalNavLayout } from "@layouts";
     <slot />
 
     <!-- 👉 Footer -->
-    <!-- <template #footer>
+    <!--
+      <template #footer>
       <Footer />
-    </template> -->
+      </template> 
+    -->
 
     <!-- 👉 Customizer -->
     <!-- <TheCustomizer /> -->

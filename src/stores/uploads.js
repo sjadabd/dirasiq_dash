@@ -35,12 +35,14 @@ import Teacher from '@/api/teacher/teacher_api.js'
 function randomId () {
   // crypto.randomUUID is reliable in modern browsers + Vite dev/prod.
   try { return globalThis.crypto.randomUUID() } catch { /* fallback */ }
+  
   return `u_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
 }
 
 export const useUploadsStore = defineStore('uploads', () => {
   /** @type {import('vue').Ref<Array<object>>} */
   const items = ref([])
+
   /** Widget visibility — collapses to a single chip when false. */
   const expanded = ref(true)
 
@@ -48,9 +50,11 @@ export const useUploadsStore = defineStore('uploads', () => {
   const inFlightCount = computed(
     () => items.value.filter(u => u.status === 'uploading' || u.status === 'syncing').length,
   )
+
   const failedCount = computed(
     () => items.value.filter(u => u.status === 'failed').length,
   )
+
   const isBusy = computed(() => inFlightCount.value > 0)
 
   /**
@@ -83,11 +87,12 @@ export const useUploadsStore = defineStore('uploads', () => {
 
     // Build the XHR ourselves so we can keep the handle for cancel().
     const xhr = new XMLHttpRequest()
+
     xhr.open(args.uploadContract.method || 'PUT', args.uploadContract.url, true)
     for (const [k, v] of Object.entries(args.uploadContract.headers || {})) {
       try { xhr.setRequestHeader(k, v) } catch (_) { /* some headers are forbidden — ignore */ }
     }
-    xhr.upload.onprogress = (e) => {
+    xhr.upload.onprogress = e => {
       if (!e.lengthComputable) return
       slot.progress = Math.min(99, Math.round((e.loaded / e.total) * 100))
     }
@@ -95,6 +100,7 @@ export const useUploadsStore = defineStore('uploads', () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         slot.progress = 100
         slot.status = 'syncing'
+
         // Tell the backend to reconcile the lesson with Bunny immediately so
         // the lesson card flips from 'uploaded' to 'processing'/'ready'
         // without waiting for the webhook latency.
@@ -103,6 +109,7 @@ export const useUploadsStore = defineStore('uploads', () => {
         } catch (_) { /* swallow; webhook will eventually update */ }
         slot.status = 'completed'
         slot.finishedAt = Date.now()
+
         // Auto-evict completed entries after 8s so the widget stays clean.
         setTimeout(() => evict(slot.id), 8_000)
       } else {
@@ -125,6 +132,7 @@ export const useUploadsStore = defineStore('uploads', () => {
     items.value.push(slot)
     xhr.send(args.file)
     expanded.value = true
+    
     return slot
   }
 

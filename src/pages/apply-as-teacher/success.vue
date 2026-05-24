@@ -15,28 +15,46 @@ const email = computed(() => String(route.query.email || ''))
   <div class="success-wrap">
     <div class="success-card">
       <div class="success-icon">
-        <VIcon icon="ri-checkbox-circle-line" size="60" color="success" />
+        <VIcon
+          icon="ri-checkbox-circle-line"
+          size="60"
+          color="success"
+        />
       </div>
-      <h1 class="success-heading">تم استلام طلبك بنجاح</h1>
+      <h1 class="success-heading">
+        تم استلام طلبك بنجاح
+      </h1>
       <p class="success-sub">
         شكراً لتقديمك طلب الانضمام إلى مُلهِم IQ. سيقوم فريق الإدارة بمراجعة
         طلبك خلال 24–72 ساعة عمل.
       </p>
-      <p v-if="email" class="success-email">
+      <p
+        v-if="email"
+        class="success-email"
+      >
         رمز إشعار النتيجة سيصلك على <strong>{{ email }}</strong>
       </p>
 
       <div class="next-steps">
         <div class="step">
-          <VIcon icon="ri-mail-line" color="primary" />
+          <VIcon
+            icon="ri-mail-line"
+            color="primary"
+          />
           <span>سيصلك بريد فور البتّ في طلبك</span>
         </div>
         <div class="step">
-          <VIcon icon="ri-search-line" color="primary" />
+          <VIcon
+            icon="ri-search-line"
+            color="primary"
+          />
           <span>تستطيع متابعة حالة طلبك في أي وقت</span>
         </div>
         <div class="step">
-          <VIcon icon="ri-lock-password-line" color="primary" />
+          <VIcon
+            icon="ri-lock-password-line"
+            color="primary"
+          />
           <span>بعد القبول ستستخدم بريدك للدخول إلى لوحة التحكم</span>
         </div>
       </div>
@@ -49,7 +67,10 @@ const email = computed(() => String(route.query.email || ''))
           rounded="lg"
           @click="router.push('/check-application-status')"
         >
-          <VIcon start icon="ri-search-line" />
+          <VIcon
+            start
+            icon="ri-search-line"
+          />
           تحقق من حالة طلبي
         </VBtn>
         <VBtn

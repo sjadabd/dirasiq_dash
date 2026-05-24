@@ -2,10 +2,25 @@
   <div class="smart-table-container">
     <!-- Search Bar -->
     <div class="search-container mb-4">
-      <VTextField v-model="localSearch" label="بحث" density="comfortable" variant="outlined" hide-details clearable
-        class="search-field" @click:clear="clearSearch" @keyup.enter="performSearch">
+      <VTextField
+        v-model="localSearch"
+        label="بحث"
+        density="comfortable"
+        variant="outlined"
+        hide-details
+        clearable
+        class="search-field"
+        @click:clear="clearSearch"
+        @keyup.enter="performSearch"
+      >
         <template #append-inner>
-          <VBtn icon size="small" variant="text" @click="performSearch" :disabled="localSearch === currentSearch">
+          <VBtn
+            icon
+            size="small"
+            variant="text"
+            :disabled="localSearch === currentSearch"
+            @click="performSearch"
+          >
             <VIcon>ri-search-line</VIcon>
           </VBtn>
         </template>
@@ -13,33 +28,65 @@
     </div>
 
     <!-- Data Table -->
-    <VCard class="table-card" elevation="3" rounded="lg">
-      <VDataTableServer :loading-text="'جاري التحميل...'" :headers="headers" :items="items" :loading="loading"
-        v-model:page="tableOptions.page" v-model:items-per-page="tableOptions.limit" :items-length="totalItems"
-        @update:options="updateTableOptions" show-current-page :no-data-text="'لا توجد بيانات'"
-        :items-per-page-text="'عدد العناصر في الصفحة'" :mobile="isMobile" class="elevation-0">
+    <VCard
+      class="table-card"
+      elevation="3"
+      rounded="lg"
+    >
+      <VDataTableServer
+        v-model:page="tableOptions.page"
+        v-model:items-per-page="tableOptions.limit"
+        loading-text="جاري التحميل..."
+        :headers="headers"
+        :items="items"
+        :loading="loading"
+        :items-length="totalItems"
+        show-current-page
+        no-data-text="لا توجد بيانات"
+        items-per-page-text="عدد العناصر في الصفحة"
+        :mobile="isMobile"
+        class="elevation-0"
+        @update:options="updateTableOptions"
+      >
         <!-- Custom Header Styling -->
-        <template v-slot:header="{ columns }">
+        <template #header="{ columns }">
           <tr>
-            <th v-for="column in columns" :key="column.key" class="text-primary font-weight-bold text-uppercase">
+            <th
+              v-for="column in columns"
+              :key="column.key"
+              class="text-primary font-weight-bold text-uppercase"
+            >
               {{ column.title }}
             </th>
           </tr>
         </template>
 
         <!-- Custom Row Styling -->
-        <template v-slot:item="{ item, index }">
+        <template #item="{ item, index }">
           <tr :class="getRowClass(item)">
-            <td v-for="header in headers" :key="header.key" class="text-center" :data-label="header.title">
+            <td
+              v-for="header in headers"
+              :key="header.key"
+              class="text-center"
+              :data-label="header.title"
+            >
               <template v-if="header.key === 'num'">
                 <div class="text-center">
-                  <VChip size="small" color="primary" variant="flat" class="font-weight-medium">
+                  <VChip
+                    size="small"
+                    color="primary"
+                    variant="flat"
+                    class="font-weight-medium"
+                  >
                     {{ getRowNumber(index) }}
                   </VChip>
                 </div>
               </template>
               <template v-else-if="header.type === 'link'">
-                <a @click="showItem(item)" style="cursor: pointer;">
+                <a
+                  style="cursor: pointer;"
+                  @click="showItem(item)"
+                >
                   {{ getNestedValue(item, header.key) }}
                 </a>
               </template>
@@ -49,28 +96,33 @@
                 </div>
               </template>
               <template v-else-if="header.type === 'status'">
-                <VChip class="font-weight-medium" size="small" :color="getNestedValue(item, header.key) === 'paid'
-                  ? 'success'
-                  : getNestedValue(item, header.key) === 'partial'
-                    ? 'warning'
-                    : getNestedValue(item, header.key) === 'unpaid'
-                      ? 'secondary'
-                      : getNestedValue(item, header.key) === 'overdue'
-                        ? 'error'
-                        : getNestedValue(item, header.key) === 'pending'
-                          ? 'warning'
-                          : getNestedValue(item, header.key) === 'pre_approved'
-                            ? 'info'
-                            : getNestedValue(item, header.key) === 'confirmed'
-                              ? 'primary'
-                              : getNestedValue(item, header.key) === 'approved'
-                                ? 'success'
-                                : getNestedValue(item, header.key) === 'rejected'
-                                  ? 'error'
-                                  : getNestedValue(item, header.key) === 'cancelled'
-                                    ? 'secondary'
-                                    : 'default'
-                  " variant="flat">
+                <VChip
+                  class="font-weight-medium"
+                  size="small"
+                  :color="getNestedValue(item, header.key) === 'paid'
+                    ? 'success'
+                    : getNestedValue(item, header.key) === 'partial'
+                      ? 'warning'
+                      : getNestedValue(item, header.key) === 'unpaid'
+                        ? 'secondary'
+                        : getNestedValue(item, header.key) === 'overdue'
+                          ? 'error'
+                          : getNestedValue(item, header.key) === 'pending'
+                            ? 'warning'
+                            : getNestedValue(item, header.key) === 'pre_approved'
+                              ? 'info'
+                              : getNestedValue(item, header.key) === 'confirmed'
+                                ? 'primary'
+                                : getNestedValue(item, header.key) === 'approved'
+                                  ? 'success'
+                                  : getNestedValue(item, header.key) === 'rejected'
+                                    ? 'error'
+                                    : getNestedValue(item, header.key) === 'cancelled'
+                                      ? 'secondary'
+                                      : 'default'
+                  "
+                  variant="flat"
+                >
                   {{
                     getNestedValue(item, header.key) === "paid"
                       ? "مدفوعة"
@@ -116,20 +168,30 @@
                   {{ item.has_reservation ? "نعم" : "لا" }}
                 </div>
               </template>
-              <template v-else-if="
-                header.key === 'is_active' || header.key === 'isActive'
-              ">
+              <template
+                v-else-if="
+                  header.key === 'is_active' || header.key === 'isActive'
+                "
+              >
                 <div class="font-weight-medium">
-                  <VChip :color="getNestedValue(item, header.key) ? 'success' : 'error'
-                    " size="small" variant="flat">
+                  <VChip
+                    :color="getNestedValue(item, header.key) ? 'success' : 'error'
+                    "
+                    size="small"
+                    variant="flat"
+                  >
                     {{ getNestedValue(item, header.key) ? "مفعل" : "معطل" }}
                   </VChip>
                 </div>
               </template>
               <template v-else-if="header.key === 'is_deleted'">
                 <div class="font-weight-medium">
-                  <VChip :color="getNestedValue(item, header.key) ? 'error' : 'success'
-                    " size="small" variant="flat">
+                  <VChip
+                    :color="getNestedValue(item, header.key) ? 'error' : 'success'
+                    "
+                    size="small"
+                    variant="flat"
+                  >
                     {{
                       getNestedValue(item, header.key)
                         ? "تم الحذف"
@@ -149,53 +211,91 @@
                   <span v-if="getNestedValue(item, header.key)">
                     {{ getNestedValue(item, header.key) }}
                   </span>
-                  <span v-else class="text-grey"> لا يوجد وصف </span>
+                  <span
+                    v-else
+                    class="text-grey"
+                  > لا يوجد وصف </span>
                 </div>
               </template>
               <!-- subjects -->
               <template v-else-if="header.key === 'subjects'">
                 <div class="d-flex flex-wrap gap-1">
-                  <VChip v-for="subject in getNestedValue(item, header.key)" :key="subject" size="small" color="primary"
-                    variant="outlined">
+                  <VChip
+                    v-for="subject in getNestedValue(item, header.key)"
+                    :key="subject"
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                  >
                     {{ subject }}
                   </VChip>
-                  <span v-if="!getNestedValue(item, header.key)?.length" class="text-grey">
+                  <span
+                    v-if="!getNestedValue(item, header.key)?.length"
+                    class="text-grey"
+                  >
                     لا توجد مواد
                   </span>
                 </div>
               </template>
               <!-- images -->
               <template v-else-if="header.type === 'images'">
-                <img v-if="Array.isArray(item[header.key]) && item[header.key][0]"
-                  :src="(results?.content_url || '') + item[header.key][0]" style="
+                <img
+                  v-if="Array.isArray(item[header.key]) && item[header.key][0]"
+                  :src="(results?.content_url || '') + item[header.key][0]"
+                  style="
                     border: solid 1px rebeccapurple;
                     cursor: pointer;
                     inline-size: 60px;
-" @click="emitShowImgs(item)" />
+"
+                  @click="emitShowImgs(item)"
+                >
               </template>
 
               <!-- image -->
               <template v-else-if="header.type === 'image'">
-                <img v-if="item[header.key]" :src="(results?.content_url || '') + item[header.key]" style="
+                <img
+                  v-if="item[header.key]"
+                  :src="(results?.content_url || '') + item[header.key]"
+                  style="
                     border: solid 1px rebeccapurple;
                     cursor: pointer;
                     inline-size: 60px;
-" @click="emitShowImgs(item)" />
-                <div v-else style="color: red;">❌ لا يوجد مسار صورة</div>
+"
+                  @click="emitShowImgs(item)"
+                >
+                <div
+                  v-else
+                  style="color: red;"
+                >
+                  ❌ لا يوجد مسار صورة
+                </div>
               </template>
 
               <template v-else-if="header.key === 'actions'">
-                <div class="d-flex flex-wrap justify-center ga-1"
-                  v-if="!('status' in item) || item.status !== 'confirmed'">
+                <div
+                  v-if="!('status' in item) || item.status !== 'confirmed'"
+                  class="d-flex flex-wrap justify-center ga-1"
+                >
                   <!-- عرض الحضور / عرض الطلاب -->
-                  <VTooltip v-if="
-                    actions.includes('عرض الحضور') ||
-                    actions.includes('عرض الطلاب')
-                  " location="top">
+                  <VTooltip
+                    v-if="
+                      actions.includes('عرض الحضور') ||
+                        actions.includes('عرض الطلاب')
+                    "
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon style="padding-inline: 0;" variant="plain" v-bind="props"
-                        @click="showAttendeesItem(item)" size="small">
-                        <VIcon size="18">ri-team-line</VIcon>
+                      <VBtn
+                        icon
+                        style="padding-inline: 0;"
+                        variant="plain"
+                        v-bind="props"
+                        size="small"
+                        @click="showAttendeesItem(item)"
+                      >
+                        <VIcon size="18">
+                          ri-team-line
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>{{
@@ -205,185 +305,349 @@
                     }}</span>
                   </VTooltip>
                   <!-- اضافة طلاب -->
-                  <VTooltip v-if="actions.includes('إضافة طلاب')" location="top">
+                  <VTooltip
+                    v-if="actions.includes('إضافة طلاب')"
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon style="padding-inline: 0;" variant="plain" v-bind="props"
-                        @click="addAttendeesItem(item)" size="small">
-                        <VIcon size="18">ri-user-add-line</VIcon>
+                      <VBtn
+                        icon
+                        style="padding-inline: 0;"
+                        variant="plain"
+                        v-bind="props"
+                        size="small"
+                        @click="addAttendeesItem(item)"
+                      >
+                        <VIcon size="18">
+                          ri-user-add-line
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>إضافة طلاب</span>
                   </VTooltip>
                   <!-- حذف طلاب -->
-                  <VTooltip v-if="actions.includes('حذف طلاب')" location="top">
+                  <VTooltip
+                    v-if="actions.includes('حذف طلاب')"
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon style="padding-inline: 0;" variant="plain" v-bind="props"
-                        @click="removeAttendeesItem(item)" color="error" size="small">
-                        <VIcon size="18">ri-user-unfollow-line</VIcon>
+                      <VBtn
+                        icon
+                        style="padding-inline: 0;"
+                        variant="plain"
+                        v-bind="props"
+                        color="error"
+                        size="small"
+                        @click="removeAttendeesItem(item)"
+                      >
+                        <VIcon size="18">
+                          ri-user-unfollow-line
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>حذف طلاب</span>
                   </VTooltip>
                   <!-- إنهاء الجلسة -->
-                  <VTooltip v-if="actions.includes('إنهاء الجلسة')" location="top">
+                  <VTooltip
+                    v-if="actions.includes('إنهاء الجلسة')"
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon v-bind="props" variant="plain" color="warning" size="small"
-                        @click="endSessionItem(item)">
-                        <VIcon size="18">ri-stop-circle-line</VIcon>
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        color="warning"
+                        size="small"
+                        @click="endSessionItem(item)"
+                      >
+                        <VIcon size="18">
+                          ri-stop-circle-line
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>إنهاء الجلسة</span>
                   </VTooltip>
                   <!-- تعديل -->
-                  <VTooltip v-if="
-                    actions.includes('تعديل') &&
-                    ((!('is_active' in item) && !('isActive' in item)) ||
-                      item.is_active ||
-                      item.isActive) &&
-                    (!('is_deleted' in item) || !item.is_deleted)
-                  " location="top">
+                  <VTooltip
+                    v-if="
+                      actions.includes('تعديل') &&
+                        ((!('is_active' in item) && !('isActive' in item)) ||
+                          item.is_active ||
+                          item.isActive) &&
+                        (!('is_deleted' in item) || !item.is_deleted)
+                    "
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon style="padding-inline: 0;" variant="plain" v-bind="props" @click="editItem(item)"
-                        size="small">
-                        <VIcon size="18">ri-pencil-line</VIcon>
+                      <VBtn
+                        icon
+                        style="padding-inline: 0;"
+                        variant="plain"
+                        v-bind="props"
+                        size="small"
+                        @click="editItem(item)"
+                      >
+                        <VIcon size="18">
+                          ri-pencil-line
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>تعديل</span>
                   </VTooltip>
                   <!-- ارسال اشعار -->
-                  <VTooltip v-if="
-                    actions.includes('ارسال اشعار') &&
-                    ((!('is_active' in item) && !('isActive' in item)) ||
-                      item.is_active ||
-                      item.isActive)
-                  " location="top">
+                  <VTooltip
+                    v-if="
+                      actions.includes('ارسال اشعار') &&
+                        ((!('is_active' in item) && !('isActive' in item)) ||
+                          item.is_active ||
+                          item.isActive)
+                    "
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon style="padding-inline: 0;" variant="plain" v-bind="props"
-                        @click="sendNotificationsItem(item)" size="small">
-                        <VIcon size="18">ri-notification-3-line</VIcon>
+                      <VBtn
+                        icon
+                        style="padding-inline: 0;"
+                        variant="plain"
+                        v-bind="props"
+                        size="small"
+                        @click="sendNotificationsItem(item)"
+                      >
+                        <VIcon size="18">
+                          ri-notification-3-line
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>ارسال اشعار</span>
                   </VTooltip>
                   <!-- ايقاف -->
-                  <VTooltip v-if="
-                    actions.includes('ايقاف') &&
-                    ((!('is_active' in item) && !('isActive' in item)) ||
-                      item.is_active ||
-                      item.isActive)
-                  " location="top">
+                  <VTooltip
+                    v-if="
+                      actions.includes('ايقاف') &&
+                        ((!('is_active' in item) && !('isActive' in item)) ||
+                          item.is_active ||
+                          item.isActive)
+                    "
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon v-bind="props" variant="plain" color="error" size="small"
-                        @click="deactivateItem(item)">
-                        <VIcon size="18">ri-user-forbid-line</VIcon>
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        color="error"
+                        size="small"
+                        @click="deactivateItem(item)"
+                      >
+                        <VIcon size="18">
+                          ri-user-forbid-line
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>ايقاف</span>
                   </VTooltip>
                   <!-- اعادة تفعيل عام (كيانات أخرى) -->
-                  <VTooltip v-if="
-                    actions.includes('اعادة تفعيل') &&
-                    !('status' in item) &&
-                    ((!('is_active' in item) && !('isActive' in item)) ||
-                      !item.is_active ||
-                      !item.isActive) &&
-                    (!('is_deleted' in item) || item.is_deleted)
-                  " location="top">
+                  <VTooltip
+                    v-if="
+                      actions.includes('اعادة تفعيل') &&
+                        !('status' in item) &&
+                        ((!('is_active' in item) && !('isActive' in item)) ||
+                          !item.is_active ||
+                          !item.isActive) &&
+                        (!('is_deleted' in item) || item.is_deleted)
+                    "
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon v-bind="props" variant="plain" color="success" size="small" @click="enableItem(item)">
-                        <VIcon size="18">ri-refresh-line</VIcon>
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        color="success"
+                        size="small"
+                        @click="enableItem(item)"
+                      >
+                        <VIcon size="18">
+                          ri-refresh-line
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>اعادة تفعيل</span>
                   </VTooltip>
                   <!-- اعادة تفعيل (حجوزات) -->
-                  <VTooltip v-if="
-                    actions.includes('اعادة تفعيل') &&
-                    item.status === 'rejected'
-                  " location="top">
+                  <VTooltip
+                    v-if="
+                      actions.includes('اعادة تفعيل') &&
+                        item.status === 'rejected'
+                    "
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon v-bind="props" variant="plain" color="success" size="small" @click="enableItem(item)">
-                        <VIcon size="18">ri-refresh-line</VIcon>
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        color="success"
+                        size="small"
+                        @click="enableItem(item)"
+                      >
+                        <VIcon size="18">
+                          ri-refresh-line
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>اعادة تفعيل</span>
                   </VTooltip>
                   <!-- حذف -->
-                  <VTooltip v-if="
-                    actions.includes('حذف') &&
-                    ('status' in item
-                      ? true
-                      : ((!('is_active' in item) && !('isActive' in item)) ||
-                        item.is_active ||
-                        item.isActive) &&
-                      (!('is_deleted' in item) || !item.is_deleted))
-                  " location="top">
+                  <VTooltip
+                    v-if="
+                      actions.includes('حذف') &&
+                        ('status' in item
+                          ? true
+                          : ((!('is_active' in item) && !('isActive' in item)) ||
+                            item.is_active ||
+                            item.isActive) &&
+                            (!('is_deleted' in item) || !item.is_deleted))
+                    "
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon v-bind="props" variant="plain" @click="deleteItem(item)" color="error" size="small">
-                        <VIcon size="18">ri-delete-bin-line</VIcon>
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        color="error"
+                        size="small"
+                        @click="deleteItem(item)"
+                      >
+                        <VIcon size="18">
+                          ri-delete-bin-line
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>حذف</span>
                   </VTooltip>
                   <!-- موافقة اولية -->
-                  <VTooltip v-if="
-                    actions.includes('موافقة اولية') &&
-                    item.status === 'pending'
-                  " location="top">
+                  <VTooltip
+                    v-if="
+                      actions.includes('موافقة اولية') &&
+                        item.status === 'pending'
+                    "
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon v-bind="props" variant="plain" @click="preApproveItem(item)" color="success"
-                        size="small">
-                        <VIcon size="18">mdi mdi-check-decagram</VIcon>
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        color="success"
+                        size="small"
+                        @click="preApproveItem(item)"
+                      >
+                        <VIcon size="18">
+                          mdi mdi-check-decagram
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>موافقة اولية</span>
                   </VTooltip>
                   <!-- تاكيد -->
-                  <VTooltip v-if="
-                    actions.includes('تاكيد') &&
-                    item.status === 'pre_approved'
-                  " location="top">
+                  <VTooltip
+                    v-if="
+                      actions.includes('تاكيد') &&
+                        item.status === 'pre_approved'
+                    "
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon v-bind="props" variant="plain" @click="consentItem(item)" color="success" size="small">
-                        <VIcon size="18">mdi mdi-check-decagram</VIcon>
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        color="success"
+                        size="small"
+                        @click="consentItem(item)"
+                      >
+                        <VIcon size="18">
+                          mdi mdi-check-decagram
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>تاكيد</span>
                   </VTooltip>
                   <!-- رفض -->
-                  <VTooltip v-if="
-                    actions.includes('رفض') &&
-                    (item.status === 'pending' ||
-                      item.status === 'pre_approved')
-                  " location="top">
+                  <VTooltip
+                    v-if="
+                      actions.includes('رفض') &&
+                        (item.status === 'pending' ||
+                          item.status === 'pre_approved')
+                    "
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon v-bind="props" variant="plain" @click="rejectItem(item)" color="error" size="small">
-                        <VIcon size="18">ri-close-circle-line</VIcon>
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        color="error"
+                        size="small"
+                        @click="rejectItem(item)"
+                      >
+                        <VIcon size="18">
+                          ri-close-circle-line
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>رفض</span>
                   </VTooltip>
                   <!-- تحديث رد -->
-                  <VTooltip v-if="actions.includes('تحديث رد')" location="top">
+                  <VTooltip
+                    v-if="actions.includes('تحديث رد')"
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon v-bind="props" variant="plain" @click="updateResponseItem(item)" color="primary"
-                        size="small">
-                        <VIcon size="18">ri-edit-2-line</VIcon>
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        color="primary"
+                        size="small"
+                        @click="updateResponseItem(item)"
+                      >
+                        <VIcon size="18">
+                          ri-edit-2-line
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>تحديث رد</span>
                   </VTooltip>
                   <!-- طباعة -->
-                  <VTooltip v-if="actions.includes('طباعة')" location="top">
+                  <VTooltip
+                    v-if="actions.includes('طباعة')"
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <VBtn icon v-bind="props" variant="plain" @click="printItem(item)" color="secondary" size="small">
-                        <VIcon size="18">ri-printer-line</VIcon>
+                      <VBtn
+                        icon
+                        v-bind="props"
+                        variant="plain"
+                        color="secondary"
+                        size="small"
+                        @click="printItem(item)"
+                      >
+                        <VIcon size="18">
+                          ri-printer-line
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>طباعة</span>
                   </VTooltip>
                   <!-- تسديد عربون -->
-                  <VTooltip v-if="actions.includes('تسديد عربون') && item.status === 'pending'" location="top">
+                  <VTooltip
+                    v-if="actions.includes('تسديد عربون') && item.status === 'pending'"
+                    location="top"
+                  >
                     <template #activator="{ props }">
                       <VBtn
                         icon
@@ -393,7 +657,9 @@
                         size="small"
                         @click="markReservationPaidItem(item)"
                       >
-                        <VIcon size="18">ri-money-dollar-circle-line</VIcon>
+                        <VIcon size="18">
+                          ri-money-dollar-circle-line
+                        </VIcon>
                       </VBtn>
                     </template>
                     <span>تسديد العربون</span>
@@ -415,8 +681,14 @@
           <div class="d-flex flex-wrap justify-space-between align-center pa-4 pagination-container">
             <div class="d-flex align-center">
               <span class="text-caption text-medium-emphasis me-2">عدد الصفوف في الصفحة:</span>
-              <VSelect v-model="tableOptions.limit" :items="[5, 10, 25, 50, totalItems]" variant="outlined"
-                density="compact" hide-details class="items-per-page-select"></VSelect>
+              <VSelect
+                v-model="tableOptions.limit"
+                :items="[5, 10, 25, 50, totalItems]"
+                variant="outlined"
+                density="compact"
+                hide-details
+                class="items-per-page-select"
+              />
               <div class="mx-4 text-caption text-medium-emphasis">
                 {{ (tableOptions.page - 1) * tableOptions.limit + 1 }} -
                 {{
@@ -425,8 +697,13 @@
                 من {{ totalItems }}
               </div>
             </div>
-            <VPagination v-model="tableOptions.page" :total-visible="$vuetify.display.smAndDown ? 3 : 7"
-              :length="Math.ceil(totalItems / tableOptions.limit)" rounded="circle" class="pagination-controls" />
+            <VPagination
+              v-model="tableOptions.page"
+              :total-visible="$vuetify.display.smAndDown ? 3 : 7"
+              :length="Math.ceil(totalItems / tableOptions.limit)"
+              rounded="circle"
+              class="pagination-controls"
+            />
           </div>
         </template>
       </VDataTableServer>
@@ -435,7 +712,7 @@
 </template>
 
 <script>
-import numberWithComma from "@/constant/number";
+import numberWithComma from "@/constant/number"
 
 export default {
   name: "SmartTable",
@@ -458,209 +735,214 @@ export default {
       currentSearch: "",
       searchTimeout: null,
       expandedRows: [],
-    };
+    }
   },
   watch: {
     "tableOptions.search": {
       handler(newVal) {
         if (newVal !== this.localSearch) {
-          this.localSearch = newVal || "";
-          this.currentSearch = newVal || "";
+          this.localSearch = newVal || ""
+          this.currentSearch = newVal || ""
         }
       },
       immediate: true,
     },
     localSearch(newVal) {
       if (this.searchTimeout) {
-        clearTimeout(this.searchTimeout);
+        clearTimeout(this.searchTimeout)
       }
       this.searchTimeout = setTimeout(() => {
         if (newVal !== this.currentSearch) {
-          this.performSearch();
+          this.performSearch()
         }
-      }, 800);
+      }, 800)
     },
   },
   mounted() {
-    window.addEventListener("resize", this.onResize);
-    this.onResize();
+    window.addEventListener("resize", this.onResize)
+    this.onResize()
   },
   beforeUnmount() {
-    window.removeEventListener("resize", this.onResize);
+    window.removeEventListener("resize", this.onResize)
     if (this.searchTimeout) {
-      clearTimeout(this.searchTimeout);
+      clearTimeout(this.searchTimeout)
     }
   },
   methods: {
     getNestedValue(obj, keyPath) {
       return keyPath.split(".").reduce((acc, key) => {
-        return acc && acc[key] !== undefined ? acc[key] : null;
-      }, obj);
+        return acc && acc[key] !== undefined ? acc[key] : null
+      }, obj)
     },
     getRowNumber(index) {
-      return (this.tableOptions.page - 1) * this.tableOptions.limit + index + 1;
+      return (this.tableOptions.page - 1) * this.tableOptions.limit + index + 1
     },
     numberWithComma,
     formatDate(timestamp) {
-      if (!timestamp) return "";
-      const date = new Date(timestamp);
-      const day = date.getDate().toString().padStart(2, "0");
-      const month = (date.getMonth() + 1).toString().padStart(2, "0");
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
+      if (!timestamp) return ""
+      const date = new Date(timestamp)
+      const day = date.getDate().toString().padStart(2, "0")
+      const month = (date.getMonth() + 1).toString().padStart(2, "0")
+      const year = date.getFullYear()
+      
+      return `${day}/${month}/${year}`
     },
     getRowClass(item) {
       const hasStatusProp =
-        "is_active" in item || "isActive" in item || "is_deleted" in item;
+        "is_active" in item || "isActive" in item || "is_deleted" in item
 
       if (!hasStatusProp) {
-        return {};
+        return {}
       }
 
-      const is_active = this.getNestedValue(item, "is_active");
-      const isActive = this.getNestedValue(item, "isActive");
-      const is_deleted = this.getNestedValue(item, "is_deleted");
+      const is_active = this.getNestedValue(item, "is_active")
+      const isActive = this.getNestedValue(item, "isActive")
+      const is_deleted = this.getNestedValue(item, "is_deleted")
 
       // حساب الحالة الفعلية للصف
-      let isItemActive = false;
+      let isItemActive = false
 
       if (typeof is_deleted !== "undefined") {
         // إذا تم الحذف، الصف غير نشط
-        isItemActive = !is_deleted;
+        isItemActive = !is_deleted
       } else {
         // إذا لم يتم الحذف، يعتمد على is_active أو isActive
-        isItemActive = is_active || isActive;
+        isItemActive = is_active || isActive
       }
 
       return {
         "active-row": isItemActive,
         "inactive-row": !isItemActive,
-      };
+      }
     },
     onResize() {
-      this.isMobile = window.innerWidth < 769;
+      this.isMobile = window.innerWidth < 769
     },
     updateTableOptions(newOptions) {
-      const { search, ...otherOptions } = newOptions;
+      const { search, ...otherOptions } = newOptions
 
       const options = {
         ...this.tableOptions,
         ...otherOptions,
-      };
-      this.$emit("updateTableOptions", options);
+      }
+
+      this.$emit("updateTableOptions", options)
     },
     performSearch() {
       if (this.searchTimeout) {
-        clearTimeout(this.searchTimeout);
+        clearTimeout(this.searchTimeout)
       }
-      this.currentSearch = this.localSearch;
+      this.currentSearch = this.localSearch
+
       const options = {
         ...this.tableOptions,
         search: this.localSearch || null,
         page: 1,
-      };
-      this.$emit("updateTableOptions", options);
+      }
+
+      this.$emit("updateTableOptions", options)
     },
     clearSearch() {
-      this.localSearch = "";
-      this.performSearch();
+      this.localSearch = ""
+      this.performSearch()
     },
+
     // باقي الوظائف
     preApproveItem(item) {
-      this.$emit("preApproveItem", item);
+      this.$emit("preApproveItem", item)
     },
     editItem(item) {
-      this.$emit("editItem", item);
+      this.$emit("editItem", item)
     },
     consentItem(item) {
-      this.$emit("consentItem", item);
+      this.$emit("consentItem", item)
     },
     rejectItem(item) {
-      this.$emit("rejectItem", item);
+      this.$emit("rejectItem", item)
     },
     updateResponseItem(item) {
-      this.$emit("updateResponseItem", item);
+      this.$emit("updateResponseItem", item)
     },
     showAttendeesItem(item) {
-      this.$emit("showAttendeesItem", item);
+      this.$emit("showAttendeesItem", item)
     },
     addAttendeesItem(item) {
-      this.$emit("addAttendeesItem", item);
+      this.$emit("addAttendeesItem", item)
     },
     removeAttendeesItem(item) {
-      this.$emit("removeAttendeesItem", item);
+      this.$emit("removeAttendeesItem", item)
     },
     endSessionItem(item) {
-      this.$emit("endSessionItem", item);
+      this.$emit("endSessionItem", item)
     },
     editPageItem(item) {
-      this.$emit("editPageItem", item);
+      this.$emit("editPageItem", item)
     },
     completeItem(item) {
-      this.$emit("completeItem", item);
+      this.$emit("completeItem", item)
     },
     deleteItem(item) {
-      this.$emit("deleteItem", item);
+      this.$emit("deleteItem", item)
     },
     showItem(item) {
-      this.$emit("showItem", item);
+      this.$emit("showItem", item)
     },
     openLinkItem(item) {
-      this.$emit("openLinkItem", item);
+      this.$emit("openLinkItem", item)
     },
     printItem(item) {
-      this.$emit("printItem", item);
+      this.$emit("printItem", item)
     },
     sendNotificationsItem(item) {
-      this.$emit("sendNotificationsItem", item);
+      this.$emit("sendNotificationsItem", item)
     },
     emitShowImgs(item) {
-      this.$emit("emitShowImgs", item);
+      this.$emit("emitShowImgs", item)
     },
     showItemFile(item) {
-      this.$emit("showItemFile", item);
+      this.$emit("showItemFile", item)
     },
     copyItem(item) {
-      this.$emit("copyItem", item);
+      this.$emit("copyItem", item)
     },
     emitCopyOnLinkItems(item) {
-      this.$emit("copyOnLinkItems", item);
+      this.$emit("copyOnLinkItems", item)
     },
     emitCopyLinkWebItems(item) {
-      this.$emit("copyLinkWebItems", item);
+      this.$emit("copyLinkWebItems", item)
     },
     empFinishIteme(item) {
-      this.$emit("empFinishIteme", item);
+      this.$emit("empFinishIteme", item)
     },
     deactivateItem(item) {
-      this.$emit("deactivateItem", item);
+      this.$emit("deactivateItem", item)
     },
     enableItem(item) {
-      this.$emit("enableItem", item);
+      this.$emit("enableItem", item)
     },
     emitConfirmReceivedHouse(item) {
-      this.$emit("emitConfirmReceivedHouse", item);
+      this.$emit("emitConfirmReceivedHouse", item)
     },
     addNoteItem(item) {
-      this.$emit("addNoteItem", item);
+      this.$emit("addNoteItem", item)
     },
     redirectItem(item) {
-      this.$emit("redirectItem", item);
+      this.$emit("redirectItem", item)
     },
     empConfirmIteme(item) {
-      this.$emit("empConfirmIteme", item);
+      this.$emit("empConfirmIteme", item)
     },
     empCancelIteme(item) {
-      this.$emit("empCancelIteme", item);
+      this.$emit("empCancelIteme", item)
     },
     recreateItem(item) {
-      this.$emit("recreateItem", item);
+      this.$emit("recreateItem", item)
     },
     markReservationPaidItem(item) {
-      this.$emit("markReservationPaidItem", item);
+      this.$emit("markReservationPaidItem", item)
     },
   },
-};
+}
 </script>
 
 <style>

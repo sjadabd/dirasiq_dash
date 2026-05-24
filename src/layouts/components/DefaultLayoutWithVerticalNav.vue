@@ -1,16 +1,17 @@
 <script setup>
-import teacher_api from "@/api/teacher/teacher_api";
-import navItems from "@/navigation/vertical";
-import { onMounted, ref } from "vue";
-import { useRoute, useRouter } from 'vue-router';
+import teacher_api from "@/api/teacher/teacher_api"
+import navItems from "@/navigation/vertical"
+import { onMounted, ref } from "vue"
+import { useRoute, useRouter } from 'vue-router'
+
 defineOptions({ inheritAttrs: false })
 
 // Components
-import NavbarThemeSwitcher from "@/layouts/components/NavbarThemeSwitcher.vue";
-import UserProfile from "@/layouts/components/UserProfile.vue";
+import NavbarThemeSwitcher from "@/layouts/components/NavbarThemeSwitcher.vue"
+import UserProfile from "@/layouts/components/UserProfile.vue"
 
 // @layouts plugin
-import { VerticalNavLayout } from "@layouts";
+import { VerticalNavLayout } from "@layouts"
 
 const isLoggedIn = ref(false)
 const notificationsMenu = ref(false)
@@ -29,23 +30,24 @@ const formatDate = d => {
   try { return new Date(d).toLocaleString('en-IQ') } catch { return d }
 }
 
-const buildInternalRoute = (raw) => {
+const buildInternalRoute = raw => {
   try {
     const t = raw?.type || raw?.data?.type
     const d = raw?.data || {}
     switch (t) {
-      case 'new_booking':
-      case 'booking_update': {
-        if (d.bookingId) return `/teacher/payments/reservations/${encodeURIComponent(d.bookingId)}`
-        return '/teacher/payments/reservations/show-reservation-payments'
-      }
-      case 'course_update':
-        return '/teacher/course/show-course'
-      case 'teacher_message':
-      case 'message':
-        return '/teacher/notifications/show-notifications'
-      default:
-        return null
+    case 'new_booking':
+    case 'booking_update': {
+      if (d.bookingId) return `/teacher/payments/reservations/${encodeURIComponent(d.bookingId)}`
+      
+      return '/teacher/payments/reservations/show-reservation-payments'
+    }
+    case 'course_update':
+      return '/teacher/course/show-course'
+    case 'teacher_message':
+    case 'message':
+      return '/teacher/notifications/show-notifications'
+    default:
+      return null
     }
   } catch { return null }
 }
@@ -61,14 +63,17 @@ const fetchNotifications = async (page = 1, append = false) => {
       notificationsList.value = []
       unreadCount.value = 0
       notificationsHasMore.value = false
+      
       return
     }
 
     notificationsLoading.value = true
+
     const res = await teacher_api.getNotifications({ page, limit: notificationsLimit.value })
     const payload = res?.data?.data ? res.data : res
     const items = Array.isArray(payload?.data) ? payload.data : []
     const baseUrl = payload?.content_url || ''
+
     const mapped = items.map(n => ({
       id: n.id,
       title: n.title,
@@ -80,10 +85,13 @@ const fetchNotifications = async (page = 1, append = false) => {
       url: n.data?.url || buildInternalRoute(n) || null,
       raw: n,
     }))
+
     notificationsList.value = append ? [...notificationsList.value, ...mapped] : mapped
     unreadCount.value = notificationsList.value.filter(n => !n.is_read).length
+
     const pagination = payload.pagination || {}
     const totalPages = pagination.totalPages || (mapped.length < notificationsLimit.value ? page : page + 1)
+
     notificationsHasMore.value = page < totalPages && mapped.length > 0
     notificationsPage.value = page
   } catch (err) {
@@ -100,10 +108,11 @@ const refreshNotifications = () => {
 
 const loadMoreNotifications = () => {
   const next = notificationsPage.value + 1
+
   fetchNotifications(next, true)
 }
 
-const openNotification = async (n) => {
+const openNotification = async n => {
   try {
     notificationsMenu.value = false
     console.debug('[Notifications] item clicked', n?.id)
@@ -115,11 +124,12 @@ const openNotification = async (n) => {
   }
 }
 
-const markNotificationAsRead = async (id) => {
+const markNotificationAsRead = async id => {
   try {
     if (!id) return
     console.debug('[Notifications] marking read ->', id)
     await teacher_api.markNotificationRead(String(id))
+
     const idx = notificationsList.value.findIndex(x => String(x.id) === String(id))
     if (idx > -1 && !notificationsList.value[idx].is_read) {
       notificationsList.value[idx].is_read = true
@@ -145,7 +155,7 @@ onMounted(() => {
   if (qid) markNotificationAsRead(String(qid)).then(() => { }).catch(() => { })
 })
 
-const openLink = async (n) => {
+const openLink = async n => {
   if (!n?.url) return
   try {
     if (n.url.startsWith('http://') || n.url.startsWith('https://')) {
@@ -159,11 +169,18 @@ const openLink = async (n) => {
 
 <template>
   <div>
-    <VerticalNavLayout v-bind="$attrs" :nav-items="navItems">
+    <VerticalNavLayout
+      v-bind="$attrs"
+      :nav-items="navItems"
+    >
       <!-- 👉 navbar -->
       <template #navbar="{ toggleVerticalOverlayNavActive }">
         <div class="d-flex h-100 align-center">
-          <IconBtn id="vertical-nav-toggle-btn" class="ms-n2 d-lg-none" @click="toggleVerticalOverlayNavActive(true)">
+          <IconBtn
+            id="vertical-nav-toggle-btn"
+            class="ms-n2 d-lg-none"
+            @click="toggleVerticalOverlayNavActive(true)"
+          >
             <VIcon icon="ri-menu-line" />
           </IconBtn>
 
@@ -171,10 +188,24 @@ const openLink = async (n) => {
 
           <VSpacer />
 
-          <VMenu v-if="isLoggedIn" v-model="notificationsMenu" location="bottom" :close-on-content-click="false">
+          <VMenu
+            v-if="isLoggedIn"
+            v-model="notificationsMenu"
+            location="bottom"
+            :close-on-content-click="false"
+          >
             <template #activator="{ props }">
-              <VBtn icon variant="text" v-bind="props">
-                <VBadge v-if="unreadCount" color="error" :content="unreadCount" overlap>
+              <VBtn
+                icon
+                variant="text"
+                v-bind="props"
+              >
+                <VBadge
+                  v-if="unreadCount"
+                  color="error"
+                  :content="unreadCount"
+                  overlap
+                >
                   <VIcon>mdi-bell</VIcon>
                 </VBadge>
                 <template v-else>
@@ -184,31 +215,84 @@ const openLink = async (n) => {
             </template>
             <VCard min-width="360">
               <VCardTitle class="d-flex align-center">
-                <VIcon start class="me-2">mdi-bell</VIcon>
+                <VIcon
+                  start
+                  class="me-2"
+                >
+                  mdi-bell
+                </VIcon>
                 <span class="text-subtitle-1">الإشعارات</span>
                 <VSpacer />
-                <VBtn size="small" variant="text" @click="refreshNotifications">تحديث</VBtn>
+                <VBtn
+                  size="small"
+                  variant="text"
+                  @click="refreshNotifications"
+                >
+                  تحديث
+                </VBtn>
               </VCardTitle>
               <VDivider />
-              <VList v-if="notificationsList.length" density="compact">
-                <VListItem v-for="n in notificationsList" :key="n.id" @click="openNotification(n)" :title="n.title"
-                  :subtitle="formatDate(n.sentAt)" class="notification-item">
+              <VList
+                v-if="notificationsList.length"
+                density="compact"
+              >
+                <VListItem
+                  v-for="n in notificationsList"
+                  :key="n.id"
+                  :title="n.title"
+                  :subtitle="formatDate(n.sentAt)"
+                  class="notification-item"
+                  @click="openNotification(n)"
+                >
                   <template #prepend>
-                    <VAvatar size="36" :color="n.is_read ? 'grey' : 'primary'">
-                      <VImg v-if="n.image" :src="n.image" cover />
-                      <VIcon v-else color="white" size="18">mdi-bell</VIcon>
+                    <VAvatar
+                      size="36"
+                      :color="n.is_read ? 'grey' : 'primary'"
+                    >
+                      <VImg
+                        v-if="n.image"
+                        :src="n.image"
+                        cover
+                      />
+                      <VIcon
+                        v-else
+                        color="white"
+                        size="18"
+                      >
+                        mdi-bell
+                      </VIcon>
                     </VAvatar>
                   </template>
                 </VListItem>
               </VList>
-              <div v-else class="text-center pa-6 text-medium-emphasis">لا توجد إشعارات</div>
+              <div
+                v-else
+                class="text-center pa-6 text-medium-emphasis"
+              >
+                لا توجد إشعارات
+              </div>
               <VDivider v-if="notificationsHasMore" />
-              <div v-if="notificationsHasMore" class="d-flex justify-center pa-2">
-                <VBtn size="small" :loading="notificationsLoading" variant="text" @click="loadMoreNotifications">عرض
-                  المزيد</VBtn>
+              <div
+                v-if="notificationsHasMore"
+                class="d-flex justify-center pa-2"
+              >
+                <VBtn
+                  size="small"
+                  :loading="notificationsLoading"
+                  variant="text"
+                  @click="loadMoreNotifications"
+                >
+                  عرض
+                  المزيد
+                </VBtn>
               </div>
               <VCardActions class="justify-end">
-                <VBtn variant="text" @click="notificationsMenu = false">إغلاق</VBtn>
+                <VBtn
+                  variant="text"
+                  @click="notificationsMenu = false"
+                >
+                  إغلاق
+                </VBtn>
               </VCardActions>
             </VCard>
           </VMenu>
@@ -221,42 +305,92 @@ const openLink = async (n) => {
       <slot />
 
       <!-- 👉 Footer -->
-      <!-- <template #footer>
-      <Footer />
-    </template> -->
+      <!--
+        <template #footer>
+        <Footer />
+        </template> 
+      -->
 
       <!-- 👉 Customizer -->
       <!-- <TheCustomizer /> -->
     </VerticalNavLayout>
 
-    <VDialog v-model="notificationDialog" max-width="700">
+    <VDialog
+      v-model="notificationDialog"
+      max-width="700"
+    >
       <VCard>
         <VCardTitle class="d-flex align-center">
-          <VIcon start color="primary" class="me-2">mdi-bell</VIcon>
+          <VIcon
+            start
+            color="primary"
+            class="me-2"
+          >
+            mdi-bell
+          </VIcon>
           <span class="text-h6 font-weight-bold">{{ selectedNotification?.title }}</span>
           <VSpacer />
-          <VBtn icon variant="text" @click="notificationDialog = false">
+          <VBtn
+            icon
+            variant="text"
+            @click="notificationDialog = false"
+          >
             <VIcon>mdi-close</VIcon>
           </VBtn>
         </VCardTitle>
         <VDivider />
-        <VImg v-if="selectedNotification?.image" :src="selectedNotification.image" height="260" cover />
+        <VImg
+          v-if="selectedNotification?.image"
+          :src="selectedNotification.image"
+          height="260"
+          cover
+        />
         <VCardText>
-          <div class="text-body-2 text-medium-emphasis mb-2" v-if="selectedNotification?.sentAt">
-            <VIcon size="16" class="me-1">mdi-calendar</VIcon>
+          <div
+            v-if="selectedNotification?.sentAt"
+            class="text-body-2 text-medium-emphasis mb-2"
+          >
+            <VIcon
+              size="16"
+              class="me-1"
+            >
+              mdi-calendar
+            </VIcon>
             {{ formatDate(selectedNotification.sentAt) }}
           </div>
-          <div style="white-space: pre-line;" class="mb-3">
+          <div
+            style="white-space: pre-line;"
+            class="mb-3"
+          >
             {{ selectedNotification?.message }}
           </div>
-          <div class="text-caption text-medium-emphasis" v-if="selectedNotification?.type">
-            <VIcon size="14" class="me-1">mdi-tag</VIcon>
+          <div
+            v-if="selectedNotification?.type"
+            class="text-caption text-medium-emphasis"
+          >
+            <VIcon
+              size="14"
+              class="me-1"
+            >
+              mdi-tag
+            </VIcon>
             {{ selectedNotification.type }}
           </div>
         </VCardText>
         <VCardActions class="justify-end">
-          <VBtn v-if="selectedNotification?.url" @click="openLink(selectedNotification)" variant="tonal">فتح</VBtn>
-          <VBtn variant="text" @click="notificationDialog = false">إغلاق</VBtn>
+          <VBtn
+            v-if="selectedNotification?.url"
+            variant="tonal"
+            @click="openLink(selectedNotification)"
+          >
+            فتح
+          </VBtn>
+          <VBtn
+            variant="text"
+            @click="notificationDialog = false"
+          >
+            إغلاق
+          </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>

@@ -11,8 +11,8 @@
 //   • Filters persisted as JSON, scroll restoration kept.
 // =====================================================
 
-import TeacherApi from "@/api/teacher/teacher_api";
-import ConfirmDangerDialog from "@/components/ConfirmDangerDialog.vue";
+import TeacherApi from "@/api/teacher/teacher_api"
+import ConfirmDangerDialog from "@/components/ConfirmDangerDialog.vue"
 
 export default {
   components: { ConfirmDangerDialog },
@@ -71,77 +71,80 @@ export default {
       alert: { open: false, message: null, type: "success" },
 
       tempScrollTop: 0,
-    };
+    }
   },
 
   created() {
-    const stored = JSON.parse(localStorage.getItem(this.keyName) || "null");
-    if (stored?.tableSettings) this.table.tableSettings = stored.tableSettings;
-    if (typeof stored?.searchTerm === "string") this.searchTerm = stored.searchTerm;
-    this.tempScrollTop = stored?.scrollTop || 0;
+    const stored = JSON.parse(localStorage.getItem(this.keyName) || "null")
+    if (stored?.tableSettings) this.table.tableSettings = stored.tableSettings
+    if (typeof stored?.searchTerm === "string") this.searchTerm = stored.searchTerm
+    this.tempScrollTop = stored?.scrollTop || 0
   },
 
   mounted() {
-    window.addEventListener("scroll", this.handleScroll);
-    this.getDataAxios();
+    window.addEventListener("scroll", this.handleScroll)
+    this.getDataAxios()
     this.unwatch = this.$watch(
       () => this.table.Data,
-      (val) => {
+      val => {
         if (val?.length > 0 && this.tempScrollTop) {
           setTimeout(() => {
-            window.scrollTo({ top: this.tempScrollTop, behavior: "smooth" });
-            this.tempScrollTop = 0;
-          }, 300);
+            window.scrollTo({ top: this.tempScrollTop, behavior: "smooth" })
+            this.tempScrollTop = 0
+          }, 300)
         }
       },
       { deep: true },
-    );
+    )
   },
 
   beforeUnmount() {
-    this.unwatch?.();
-    window.removeEventListener("scroll", this.handleScroll);
+    this.unwatch?.()
+    window.removeEventListener("scroll", this.handleScroll)
   },
 
   methods: {
     numberWithComma(v) {
-      if (v == null || v === "") return "0";
-      return Number(v).toLocaleString();
+      if (v == null || v === "") return "0"
+      
+      return Number(v).toLocaleString()
     },
     showAlert(type, message) {
-      Object.assign(this.alert, { type, message, open: true });
+      Object.assign(this.alert, { type, message, open: true })
     },
 
     persistState() {
-      const stored = JSON.parse(localStorage.getItem(this.keyName) || "{}");
+      const stored = JSON.parse(localStorage.getItem(this.keyName) || "{}")
+
       localStorage.setItem(this.keyName, JSON.stringify({
         ...stored,
         tableSettings: this.table.tableSettings,
         searchTerm: this.searchTerm,
-      }));
+      }))
     },
 
     handleScroll() {
-      const scrollTop = window.scrollY || window.pageYOffset;
-      const stored = JSON.parse(localStorage.getItem(this.keyName) || "{}");
-      stored.scrollTop = scrollTop;
-      localStorage.setItem(this.keyName, JSON.stringify(stored));
+      const scrollTop = window.scrollY || window.pageYOffset
+      const stored = JSON.parse(localStorage.getItem(this.keyName) || "{}")
+
+      stored.scrollTop = scrollTop
+      localStorage.setItem(this.keyName, JSON.stringify(stored))
     },
 
     handleDataAdded(message) {
-      this.getDataAxios();
-      this.showAlert("success", message);
+      this.getDataAxios()
+      this.showAlert("success", message)
     },
 
     reload() {
-      localStorage.removeItem(this.keyName);
+      localStorage.removeItem(this.keyName)
       this.table.tableSettings.options = {
         page: 1, limit: 10, scroll: 0, sortBy: "",
         search: null, is_deleted: null,
         sort: JSON.stringify({ key: "createdAt", order: "desc" }),
-      };
-      this.searchTerm = "";
-      this.getDataAxios();
+      }
+      this.searchTerm = ""
+      this.getDataAxios()
     },
 
     updateTableOptions(newOptions) {
@@ -149,114 +152,119 @@ export default {
         ...this.table.tableSettings.options,
         ...newOptions,
         search: !newOptions.search ? null : newOptions.search,
-      };
-      this.getDataAxios();
+      }
+      this.getDataAxios()
     },
 
     onFilterChange() {
-      this.table.tableSettings.options.page = 1;
-      this.getDataAxios();
+      this.table.tableSettings.options.page = 1
+      this.getDataAxios()
     },
 
     onSearch() {
-      this.table.tableSettings.options.page = 1;
-      this.table.tableSettings.options.search = this.searchTerm?.trim() || null;
-      this.getDataAxios();
+      this.table.tableSettings.options.page = 1
+      this.table.tableSettings.options.search = this.searchTerm?.trim() || null
+      this.getDataAxios()
     },
 
     async getDataAxios() {
-      this.table.loading = true;
+      this.table.loading = true
       try {
-        this.persistState();
-        const res = await TeacherApi.getSubjects(this.table.tableSettings);
-        const env = res?.data || {};
-        const list = Array.isArray(env.data) ? env.data : [];
-        const pagination = env.meta?.pagination || {};
+        this.persistState()
 
-        const opts = this.table.tableSettings.options;
+        const res = await TeacherApi.getSubjects(this.table.tableSettings)
+        const env = res?.data || {}
+        const list = Array.isArray(env.data) ? env.data : []
+        const pagination = env.meta?.pagination || {}
+
+        const opts = this.table.tableSettings.options
+
         this.table.Data = list.map((it, idx) => ({
           ...it,
           num: (opts.page - 1) * opts.limit + idx + 1,
           is_deleted: Boolean(it.deleted_at) || it.is_deleted === true,
           status_label: it.deleted_at || it.is_deleted ? "محذوفة" : "نشطة",
-        }));
-        this.table.totalItems = pagination.total ?? list.length;
+        }))
+        this.table.totalItems = pagination.total ?? list.length
 
         // KPIs derived from the current filter — when looking at "all", we can't
         // know exact active/deleted counts without two roundtrips. Keep it honest:
         // show total for the current scope, and infer active/deleted from the visible scope.
-        const isDel = opts.is_deleted;
+        const isDel = opts.is_deleted
         if (isDel === true) {
-          this.kpis = { total: this.table.totalItems, active: 0, deleted: this.table.totalItems };
+          this.kpis = { total: this.table.totalItems, active: 0, deleted: this.table.totalItems }
         } else if (isDel === false) {
-          this.kpis = { total: this.table.totalItems, active: this.table.totalItems, deleted: 0 };
+          this.kpis = { total: this.table.totalItems, active: this.table.totalItems, deleted: 0 }
         } else {
           // All: count from current page only as a hint (full breakdown needs a separate query).
-          const activeOnPage = this.table.Data.filter(r => !r.is_deleted).length;
-          const deletedOnPage = this.table.Data.length - activeOnPage;
-          this.kpis = { total: this.table.totalItems, active: activeOnPage, deleted: deletedOnPage };
+          const activeOnPage = this.table.Data.filter(r => !r.is_deleted).length
+          const deletedOnPage = this.table.Data.length - activeOnPage
+
+          this.kpis = { total: this.table.totalItems, active: activeOnPage, deleted: deletedOnPage }
         }
       } catch (error) {
-        this.showAlert("error", error?.response?.data?.message || error?.response?.data?.errors?.[0]?.message || "تعذّر جلب المواد");
+        this.showAlert("error", error?.response?.data?.message || error?.response?.data?.errors?.[0]?.message || "تعذّر جلب المواد")
       } finally {
-        this.table.loading = false;
+        this.table.loading = false
       }
     },
 
     // ----- CRUD -----
-    openAdd() { this.Actions.open = true; },
+    openAdd() { this.Actions.open = true },
 
     editItem(item) {
-      this.editGrades.data = item;
-      this.editGrades.open = true;
+      this.editGrades.data = item
+      this.editGrades.open = true
     },
 
     deleteItem(item) {
-      this.deleteDialog.data = item;
+      this.deleteDialog.data = item
       this.deleteDialog.messages = [
         "سيتم حذف المادة الدراسية حذفاً منطقياً.",
         "يمكن استرجاعها لاحقاً من خلال فلتر «المحذوفة».",
-      ];
-      this.deleteDialog.title = "تأكيد الحذف";
-      this.deleteDialog.confirmButtonText = "حذف المادة";
-      this.deleteDialog.open = true;
+      ]
+      this.deleteDialog.title = "تأكيد الحذف"
+      this.deleteDialog.confirmButtonText = "حذف المادة"
+      this.deleteDialog.open = true
     },
     async handleDelete() {
       try {
-        const res = await TeacherApi.deleteSubjects(this.deleteDialog.data.id);
-        this.showAlert("success", res?.data?.message || "تم الحذف بنجاح");
-        await this.getDataAxios();
+        const res = await TeacherApi.deleteSubjects(this.deleteDialog.data.id)
+
+        this.showAlert("success", res?.data?.message || "تم الحذف بنجاح")
+        await this.getDataAxios()
       } catch (error) {
-        this.showAlert("error", error?.response?.data?.message || "تعذّر الحذف");
+        this.showAlert("error", error?.response?.data?.message || "تعذّر الحذف")
       } finally {
-        this.deleteDialog.open = false;
+        this.deleteDialog.open = false
       }
     },
 
     enableItem(item) {
-      this.enableDialog.data = item;
+      this.enableDialog.data = item
       this.enableDialog.messages = [
         "سيتم استرجاع المادة المحذوفة وإعادة تفعيلها.",
         "ستتمكن من تعديلها واستخدامها كالمعتاد.",
-      ];
-      this.enableDialog.title = "تأكيد الاسترجاع";
-      this.enableDialog.confirmButtonText = "استرجاع المادة";
-      this.enableDialog.checkboxLabel = "أفهم وأؤكد الاسترجاع";
-      this.enableDialog.open = true;
+      ]
+      this.enableDialog.title = "تأكيد الاسترجاع"
+      this.enableDialog.confirmButtonText = "استرجاع المادة"
+      this.enableDialog.checkboxLabel = "أفهم وأؤكد الاسترجاع"
+      this.enableDialog.open = true
     },
     async handleRestore() {
       try {
-        const res = await TeacherApi.restoreSubjects(this.enableDialog.data.id);
-        this.showAlert("success", res?.data?.message || "تم الاسترجاع بنجاح");
-        await this.getDataAxios();
+        const res = await TeacherApi.restoreSubjects(this.enableDialog.data.id)
+
+        this.showAlert("success", res?.data?.message || "تم الاسترجاع بنجاح")
+        await this.getDataAxios()
       } catch (error) {
-        this.showAlert("error", error?.response?.data?.message || "تعذّر الاسترجاع");
+        this.showAlert("error", error?.response?.data?.message || "تعذّر الاسترجاع")
       } finally {
-        this.enableDialog.open = false;
+        this.enableDialog.open = false
       }
     },
   },
-};
+}
 </script>
 
 <template>
@@ -266,55 +274,126 @@ export default {
     <!-- Hero -->
     <div class="subjects-hero rounded-xl pa-5 pa-md-6 mb-6 d-flex flex-wrap align-center ga-3">
       <div class="hero-icon-wrap rounded-circle d-flex align-center justify-center">
-        <VIcon icon="ri-book-open-line" size="28" color="white" />
+        <VIcon
+          icon="ri-book-open-line"
+          size="28"
+          color="white"
+        />
       </div>
       <div class="flex-grow-1">
-        <div class="text-h6 text-md-h5 font-weight-bold text-white">المواد الدراسية</div>
+        <div class="text-h6 text-md-h5 font-weight-bold text-white">
+          المواد الدراسية
+        </div>
         <div class="text-caption text-md-body-2 text-white opacity-90">
           المواد التي تدرّسها — أضف موادك ثم اربطها بكورساتك من صفحة الكورسات.
         </div>
       </div>
-      <VBtn color="warning" prepend-icon="ri-add-line" size="large" rounded="pill" @click="openAdd">
+      <VBtn
+        color="warning"
+        prepend-icon="ri-add-line"
+        size="large"
+        rounded="pill"
+        @click="openAdd"
+      >
         إضافة مادة
       </VBtn>
     </div>
 
     <!-- KPIs -->
     <VRow class="mb-4">
-      <VCol cols="12" md="4">
-        <VCard rounded="lg" elevation="0" class="kpi-card">
+      <VCol
+        cols="12"
+        md="4"
+      >
+        <VCard
+          rounded="lg"
+          elevation="0"
+          class="kpi-card"
+        >
           <VCardText>
             <div class="d-flex align-center justify-space-between mb-2">
-              <VIcon icon="ri-stack-line" color="primary" size="24" />
-              <VChip size="small" color="primary" variant="flat">إجمالي</VChip>
+              <VIcon
+                icon="ri-stack-line"
+                color="primary"
+                size="24"
+              />
+              <VChip
+                size="small"
+                color="primary"
+                variant="flat"
+              >
+                إجمالي
+              </VChip>
             </div>
-            <div class="text-h5 font-weight-bold">{{ numberWithComma(kpis.total) }}</div>
-            <div class="text-caption text-medium-emphasis">عدد المواد</div>
+            <div class="text-h5 font-weight-bold">
+              {{ numberWithComma(kpis.total) }}
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              عدد المواد
+            </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="6" md="4">
-        <VCard rounded="lg" elevation="0" class="kpi-card">
+      <VCol
+        cols="6"
+        md="4"
+      >
+        <VCard
+          rounded="lg"
+          elevation="0"
+          class="kpi-card"
+        >
           <VCardText>
             <div class="d-flex align-center justify-space-between mb-2">
-              <VIcon icon="ri-check-double-line" color="success" size="24" />
-              <VChip size="small" color="success" variant="flat">نشطة</VChip>
+              <VIcon
+                icon="ri-check-double-line"
+                color="success"
+                size="24"
+              />
+              <VChip
+                size="small"
+                color="success"
+                variant="flat"
+              >
+                نشطة
+              </VChip>
             </div>
-            <div class="text-h5 font-weight-bold text-success">{{ numberWithComma(kpis.active) }}</div>
+            <div class="text-h5 font-weight-bold text-success">
+              {{ numberWithComma(kpis.active) }}
+            </div>
             <div class="text-caption text-medium-emphasis">
               {{ table.tableSettings.options.is_deleted == null ? "في الصفحة الحالية" : "إجمالي" }}
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="6" md="4">
-        <VCard rounded="lg" elevation="0" class="kpi-card">
+      <VCol
+        cols="6"
+        md="4"
+      >
+        <VCard
+          rounded="lg"
+          elevation="0"
+          class="kpi-card"
+        >
           <VCardText>
             <div class="d-flex align-center justify-space-between mb-2">
-              <VIcon icon="ri-delete-bin-line" color="error" size="24" />
-              <VChip size="small" color="error" variant="flat">محذوفة</VChip>
+              <VIcon
+                icon="ri-delete-bin-line"
+                color="error"
+                size="24"
+              />
+              <VChip
+                size="small"
+                color="error"
+                variant="flat"
+              >
+                محذوفة
+              </VChip>
             </div>
-            <div class="text-h5 font-weight-bold text-error">{{ numberWithComma(kpis.deleted) }}</div>
+            <div class="text-h5 font-weight-bold text-error">
+              {{ numberWithComma(kpis.deleted) }}
+            </div>
             <div class="text-caption text-medium-emphasis">
               {{ table.tableSettings.options.is_deleted == null ? "في الصفحة الحالية" : "إجمالي" }}
             </div>
@@ -324,84 +403,160 @@ export default {
     </VRow>
 
     <!-- Filters -->
-    <VCard rounded="lg" elevation="0" class="mb-4 border">
+    <VCard
+      rounded="lg"
+      elevation="0"
+      class="mb-4 border"
+    >
       <VCardText>
         <div class="d-flex align-center mb-3 ga-2">
-          <VIcon icon="ri-filter-3-line" color="primary" />
+          <VIcon
+            icon="ri-filter-3-line"
+            color="primary"
+          />
           <span class="text-subtitle-1 font-weight-bold">التصفية والبحث</span>
           <VSpacer />
-          <VBtn variant="text" size="small" prepend-icon="ri-refresh-line" @click="reload">إعادة تعيين</VBtn>
+          <VBtn
+            variant="text"
+            size="small"
+            prepend-icon="ri-refresh-line"
+            @click="reload"
+          >
+            إعادة تعيين
+          </VBtn>
         </div>
         <VRow dense>
-          <VCol cols="12" md="6">
+          <VCol
+            cols="12"
+            md="6"
+          >
             <VTextField
-              v-model="searchTerm" prepend-inner-icon="ri-search-line"
+              v-model="searchTerm"
+              prepend-inner-icon="ri-search-line"
               label="بحث في اسم المادة أو الوصف"
-              density="comfortable" variant="outlined" clearable
-              @keyup.enter="onSearch" @click:clear="onSearch"
+              density="comfortable"
+              variant="outlined"
+              clearable
+              @keyup.enter="onSearch"
+              @click:clear="onSearch"
             />
           </VCol>
-          <VCol cols="12" md="4">
+          <VCol
+            cols="12"
+            md="4"
+          >
             <VSelect
               v-model="table.tableSettings.options.is_deleted"
-              :items="statusOptions" item-title="title" item-value="value"
-              label="حالة المادة" variant="outlined" density="comfortable"
+              :items="statusOptions"
+              item-title="title"
+              item-value="value"
+              label="حالة المادة"
+              variant="outlined"
+              density="comfortable"
               prepend-inner-icon="ri-toggle-line"
               @update:model-value="onFilterChange"
             />
           </VCol>
-          <VCol cols="12" md="2" class="d-flex align-center">
-            <VBtn color="primary" variant="tonal" block prepend-icon="ri-search-2-line" @click="onSearch">بحث</VBtn>
+          <VCol
+            cols="12"
+            md="2"
+            class="d-flex align-center"
+          >
+            <VBtn
+              color="primary"
+              variant="tonal"
+              block
+              prepend-icon="ri-search-2-line"
+              @click="onSearch"
+            >
+              بحث
+            </VBtn>
           </VCol>
         </VRow>
       </VCardText>
     </VCard>
 
     <!-- Table -->
-    <VCard rounded="lg" elevation="0" class="border">
+    <VCard
+      rounded="lg"
+      elevation="0"
+      class="border"
+    >
       <VCardText>
         <div class="d-flex align-center mb-3">
-          <VIcon icon="ri-table-line" color="primary" class="me-2" />
+          <VIcon
+            icon="ri-table-line"
+            color="primary"
+            class="me-2"
+          />
           <span class="text-subtitle-1 font-weight-bold">قائمة المواد</span>
           <VSpacer />
-          <VChip color="primary" variant="flat" size="small">{{ numberWithComma(table.totalItems) }} سجل</VChip>
+          <VChip
+            color="primary"
+            variant="flat"
+            size="small"
+          >
+            {{ numberWithComma(table.totalItems) }} سجل
+          </VChip>
         </div>
         <SmartTable
-          :headers="table.headers" :items="table.Data"
-          :actions="table.actions" :loading="table.loading"
-          :totalItems="table.totalItems" :tableOptions="table.tableSettings.options"
-          @updateTableOptions="updateTableOptions"
-          @deleteItem="deleteItem" @editItem="editItem" @enableItem="enableItem"
+          :headers="table.headers"
+          :items="table.Data"
+          :actions="table.actions"
+          :loading="table.loading"
+          :total-items="table.totalItems"
+          :table-options="table.tableSettings.options"
+          @update-table-options="updateTableOptions"
+          @delete-item="deleteItem"
+          @edit-item="editItem"
+          @enable-item="enableItem"
         />
       </VCardText>
     </VCard>
 
     <!-- Dialogs -->
     <AddSubjects
-      v-if="Actions.open" v-model="Actions.open"
-      @close="Actions.open = false" @dataAdded="handleDataAdded" @showAlert="showAlert"
+      v-if="Actions.open"
+      v-model="Actions.open"
+      @close="Actions.open = false"
+      @data-added="handleDataAdded"
+      @show-alert="showAlert"
     />
     <EditSubjects
-      v-if="editGrades.open" v-model="editGrades.open" :data="editGrades.data"
-      @close="editGrades.open = false" @dataAdded="handleDataAdded" @showAlert="showAlert"
+      v-if="editGrades.open"
+      v-model="editGrades.open"
+      :data="editGrades.data"
+      @close="editGrades.open = false"
+      @data-added="handleDataAdded"
+      @show-alert="showAlert"
     />
 
     <ConfirmDangerDialog
-      v-if="deleteDialog.open" v-model="deleteDialog.open"
-      :messages="deleteDialog.messages" :title="deleteDialog.title"
-      :confirmButtonText="deleteDialog.confirmButtonText" @confirm="handleDelete"
+      v-if="deleteDialog.open"
+      v-model="deleteDialog.open"
+      :messages="deleteDialog.messages"
+      :title="deleteDialog.title"
+      :confirm-button-text="deleteDialog.confirmButtonText"
+      @confirm="handleDelete"
     />
     <ConfirmDangerDialog
-      v-if="enableDialog.open" v-model="enableDialog.open"
-      :messages="enableDialog.messages" :title="enableDialog.title"
-      :confirmButtonText="enableDialog.confirmButtonText"
-      :checkboxLabel="enableDialog.checkboxLabel" @confirm="handleRestore"
+      v-if="enableDialog.open"
+      v-model="enableDialog.open"
+      :messages="enableDialog.messages"
+      :title="enableDialog.title"
+      :confirm-button-text="enableDialog.confirmButtonText"
+      :checkbox-label="enableDialog.checkboxLabel"
+      @confirm="handleRestore"
     />
 
     <BaseAlert
-      v-if="alert.open" v-model="alert.open"
-      :type="alert.type" :message="alert.message" :closable="true"
-      close-text="موافق" @close="alert.open = false"
+      v-if="alert.open"
+      v-model="alert.open"
+      :type="alert.type"
+      :message="alert.message"
+      :closable="true"
+      close-text="موافق"
+      @close="alert.open = false"
     />
   </div>
 </template>

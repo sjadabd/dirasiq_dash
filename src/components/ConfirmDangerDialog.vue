@@ -1,43 +1,99 @@
 <template>
-  <VDialog v-model="visible" max-width="600px" persistent>
-    <VCard rounded="lg" elevation="10">
+  <VDialog
+    v-model="visible"
+    max-width="600px"
+    persistent
+  >
+    <VCard
+      rounded="lg"
+      elevation="10"
+    >
       <!-- Dialog Header -->
       <VCardTitle class="d-flex align-center pa-4 bg-error-lighten-5">
-        <VIcon color="error" size="36" class="mr-3" v-if="!hideIcon">mdi-alert-octagon</VIcon>
+        <VIcon
+          v-if="!hideIcon"
+          color="error"
+          size="36"
+          class="mr-3"
+        >
+          mdi-alert-octagon
+        </VIcon>
         <span class="text-h6 font-weight-bold text-error">{{ title }}</span>
       </VCardTitle>
 
       <!-- Dialog Content -->
       <VCardText class="pa-6">
-        <v-card class="pa-4 text-center" style="
+        <VCard
+          class="pa-4 text-center"
+          style="
             background-color: #f5a0111f;
             border-inline-start: 4px solid rgb(var(--v-theme-warning));
-" elevation="2" rounded="lg">
-          <div style="
+"
+          elevation="2"
+          rounded="lg"
+        >
+          <div
+            style="
               display: flex;
               flex-direction: column;
               align-items: flex-start;
-">
-            <v-icon size="48" color="warning" class="mb-2">mdi-alert</v-icon>
-            <ul class="pl-4" style="list-style-type: disclosure-closed; margin-inline: 15px;">
-              <li v-for="(msg, index) in messages" :key="index" class="text-body-3 mb-1">
+"
+          >
+            <VIcon
+              size="48"
+              color="warning"
+              class="mb-2"
+            >
+              mdi-alert
+            </VIcon>
+            <ul
+              class="pl-4"
+              style="list-style-type: disclosure-closed; margin-inline: 15px;"
+            >
+              <li
+                v-for="(msg, index) in messages"
+                :key="index"
+                class="text-body-3 mb-1"
+              >
                 {{ msg }}
               </li>
             </ul>
           </div>
-        </v-card>
+        </VCard>
 
         <!-- Confirm Checkbox (اختياري) -->
-        <VCheckbox v-if="showCheckbox" v-model="confirmChecked" :label="checkboxLabel" :color="checkboxColor"
-          density="compact" hide-details class="mt-4" />
+        <VCheckbox
+          v-if="showCheckbox"
+          v-model="confirmChecked"
+          :label="checkboxLabel"
+          :color="checkboxColor"
+          density="compact"
+          hide-details
+          class="mt-4"
+        />
       </VCardText>
 
       <!-- Dialog Actions -->
       <VCardActions class="pa-4 border-t d-flex justify-end">
-        <VBtn variant="text" @click="closeDialog">اغلاق</VBtn>
-        <VBtn color="error" :disabled="(showCheckbox && !confirmChecked) || isDeleting" @click="confirmDelete">
-          <Transition name="delete-icon-transition" mode="out-in">
-            <VIcon :key="isDeleting ? 'empty' : 'full'" class="mr-2 delete-icon-animated">
+        <VBtn
+          variant="text"
+          @click="closeDialog"
+        >
+          اغلاق
+        </VBtn>
+        <VBtn
+          color="error"
+          :disabled="(showCheckbox && !confirmChecked) || isDeleting"
+          @click="confirmDelete"
+        >
+          <Transition
+            name="delete-icon-transition"
+            mode="out-in"
+          >
+            <VIcon
+              :key="isDeleting ? 'empty' : 'full'"
+              class="mr-2 delete-icon-animated"
+            >
               {{
                 isDeleting
                   ? confirmIconActive || "mdi-delete-empty"
@@ -53,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch } from "vue"
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -69,41 +125,43 @@ const props = defineProps({
   },
   confirmIcon: { type: String, default: "" },
   confirmIconActive: { type: String, default: "" },
-});
-const emit = defineEmits(["update:modelValue", "confirm"]);
+})
 
-const visible = ref(props.modelValue);
-const confirmChecked = ref(false);
-const isDeleting = ref(false); // حالة جديدة للتحكم في حركة الأيقونة
+const emit = defineEmits(["update:modelValue", "confirm"])
+
+const visible = ref(props.modelValue)
+const confirmChecked = ref(false)
+const isDeleting = ref(false) // حالة جديدة للتحكم في حركة الأيقونة
 
 watch(
   () => props.modelValue,
-  (val) => {
-    visible.value = val;
+  val => {
+    visible.value = val
     if (!val) {
-      confirmChecked.value = false; // إعادة تعيين عند إغلاق الحوار
-      isDeleting.value = false; // إعادة تعيين حالة الحركة
+      confirmChecked.value = false // إعادة تعيين عند إغلاق الحوار
+      isDeleting.value = false // إعادة تعيين حالة الحركة
     }
-  }
-);
+  },
+)
 
-watch(visible, (val) => {
-  emit("update:modelValue", val);
-});
+watch(visible, val => {
+  emit("update:modelValue", val)
+})
 
 function closeDialog() {
-  visible.value = false;
+  visible.value = false
 }
 
 async function confirmDelete() {
-  if (!confirmChecked.value || isDeleting.value) return;
+  if (!confirmChecked.value || isDeleting.value) return
 
-  isDeleting.value = true;
+  isDeleting.value = true
+
   // تأخير بسيط للسماح لحركة الأيقونة بالظهور قبل إغلاق الحوار
-  await new Promise((resolve) => setTimeout(resolve, 400)); // يمكن تعديل المدة حسب الحاجة
+  await new Promise(resolve => setTimeout(resolve, 400)) // يمكن تعديل المدة حسب الحاجة
 
-  emit("confirm");
-  closeDialog(); // سيؤدي هذا إلى إعادة تعيين isDeleting عبر الـ watch على modelValue
+  emit("confirm")
+  closeDialog() // سيؤدي هذا إلى إعادة تعيين isDeleting عبر الـ watch على modelValue
 }
 </script>
 

@@ -1,33 +1,42 @@
 <template>
-  <v-card class="mx-auto pa-4" elevation="2" rounded="lg" color="surface">
-    <v-breadcrumbs :items="items" class="pa-0">
-      <template v-slot:divider>
-        <v-icon :icon="dividerIcon"></v-icon>
+  <VCard
+    class="mx-auto pa-4"
+    elevation="2"
+    rounded="lg"
+    color="surface"
+  >
+    <VBreadcrumbs
+      :items="items"
+      class="pa-0"
+    >
+      <template #divider>
+        <VIcon :icon="dividerIcon" />
       </template>
 
-      <template v-slot:title="{ item }">
-        <router-link
+      <template #title="{ item }">
+        <RouterLink
           v-if="!item.disabled && item.to"
           :to="item.to"
           class="text-info font-weight-medium"
         >
           {{ item.title }}
-        </router-link>
+        </RouterLink>
 
-        <span v-else class="text-primary font-weight-medium">
+        <span
+          v-else
+          class="text-primary font-weight-medium"
+        >
           {{ item.title }}
         </span>
       </template>
-    </v-breadcrumbs>
-  </v-card>
+    </VBreadcrumbs>
+  </VCard>
 </template>
 
 
 <script setup>
-import { computed, defineProps } from "vue";
-import { useLocale } from "vuetify";
-
-const { isRtl } = useLocale();
+import { computed, defineProps } from "vue"
+import { useLocale } from "vuetify"
 
 const props = defineProps({
   items: {
@@ -35,11 +44,13 @@ const props = defineProps({
     required: true,
     default: () => [],
   },
-});
+})
+
+const { isRtl } = useLocale()
 
 const dividerIcon = computed(() =>
-  isRtl.value ? "mdi-chevron-left" : "mdi-chevron-right"
-);
+  isRtl.value ? "mdi-chevron-left" : "mdi-chevron-right",
+)
 
 // breadcrumbItems: [
 //   {

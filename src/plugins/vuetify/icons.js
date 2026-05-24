@@ -1,13 +1,13 @@
 /* eslint-disable regex/invalid */
-import { h } from "vue";
+import { h } from "vue"
 
-import checkboxChecked from "@images/svg/checkbox-checked.svg";
-import checkboxIndeterminate from "@images/svg/checkbox-indeterminate.svg";
-import checkboxUnchecked from "@images/svg/checkbox-unchecked.svg";
-import radioChecked from "@images/svg/radio-checked.svg";
-import radioUnchecked from "@images/svg/radio-unchecked.svg";
+import checkboxChecked from "@images/svg/checkbox-checked.svg"
+import checkboxIndeterminate from "@images/svg/checkbox-indeterminate.svg"
+import checkboxUnchecked from "@images/svg/checkbox-unchecked.svg"
+import radioChecked from "@images/svg/radio-checked.svg"
+import radioUnchecked from "@images/svg/radio-unchecked.svg"
 
-import { mdi, aliases as mdiAliases } from "vuetify/iconsets/mdi";
+import { mdi, aliases as mdiAliases } from "vuetify/iconsets/mdi"
 
 // ==================== Custom Icons ====================
 const customIcons = {
@@ -16,7 +16,7 @@ const customIcons = {
   "mdi-minus-box": checkboxIndeterminate,
   "mdi-radiobox-marked": radioChecked,
   "mdi-radiobox-blank": radioUnchecked,
-};
+}
 
 // ==================== Remix Aliases ====================
 const remixAliases = {
@@ -52,31 +52,31 @@ const remixAliases = {
   minus: "ri-subtract-line",
   sortAsc: "ri-arrow-up-line",
   sortDesc: "ri-arrow-down-line",
-};
+}
 
 // ==================== Iconify Custom Renderer ====================
 export const iconify = {
-  component: (props) => {
+  component: props => {
     if (typeof props.icon === "string") {
       // أيقونات مخصصة
-      const iconComponent = customIcons[props.icon];
-      if (iconComponent) return h(iconComponent);
+      const iconComponent = customIcons[props.icon]
+      if (iconComponent) return h(iconComponent)
 
       // Remix Icons
       if (props.icon.startsWith("ri-")) {
-        return h("i", { ...props, class: [props.icon], tag: undefined, icon: undefined });
+        return h("i", { ...props, class: [props.icon], tag: undefined, icon: undefined })
       }
 
       // السماح لجميع أيقونات mdi، بما فيها mdi-outline
       if (props.icon.startsWith("mdi-")) {
-        return h("i", { ...props, class: ["mdi", props.icon], tag: undefined, icon: undefined });
+        return h("i", { ...props, class: ["mdi", props.icon], tag: undefined, icon: undefined })
       }
     }
 
     // أيقونات عامة
-    return h("i", { ...props, class: [props.icon], tag: undefined, icon: undefined });
+    return h("i", { ...props, class: [props.icon], tag: undefined, icon: undefined })
   },
-};
+}
 
 // ==================== Export Final Icons ====================
 export const icons = {
@@ -89,4 +89,4 @@ export const icons = {
     mdi,      // MDI standard
     iconify,  // Remix Icons & custom
   },
-};
+}

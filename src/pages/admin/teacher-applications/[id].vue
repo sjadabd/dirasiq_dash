@@ -32,18 +32,18 @@ const breadcrumbItems = computed(() => [
 ])
 
 const STATUS_META = {
-  pending:         { label: 'بانتظار المراجعة', color: 'warning', icon: 'ri-time-line' },
+  pending: { label: 'بانتظار المراجعة', color: 'warning', icon: 'ri-time-line' },
   needs_more_info: { label: 'معلومات إضافية',   color: 'info',    icon: 'ri-question-line' },
-  approved:        { label: 'مقبولة',           color: 'success', icon: 'ri-check-double-line' },
-  rejected:        { label: 'مرفوضة',           color: 'error',   icon: 'ri-close-circle-line' },
+  approved: { label: 'مقبولة',           color: 'success', icon: 'ri-check-double-line' },
+  rejected: { label: 'مرفوضة',           color: 'error',   icon: 'ri-close-circle-line' },
 }
 
 const FILE_KIND_LABEL = {
-  profile_image:       'الصورة الشخصية',
-  certificate_image:   'شهادة التدريس',
-  national_id_image:   'الهوية الوطنية',
+  profile_image: 'الصورة الشخصية',
+  certificate_image: 'شهادة التدريس',
+  national_id_image: 'الهوية الوطنية',
   optional_attachment: 'مرفق إضافي',
-  intro_video:         'فيديو تعريفي',
+  intro_video: 'فيديو تعريفي',
 }
 
 async function loadAll () {
@@ -54,6 +54,7 @@ async function loadAll () {
       Admin.getTeacherApplication(id.value),
       Admin.listTeacherApplicationFiles(id.value),
     ])
+
     application.value = appRes?.data?.data || null
     files.value = filesRes?.data?.data || []
   } catch (err) {
@@ -73,6 +74,7 @@ function fmtSize (bytes) {
   if (!bytes) return '—'
   if (bytes < 1024) return `${bytes} ب`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} ك.ب`
+  
   return `${(bytes / (1024 * 1024)).toFixed(1)} م.ب`
 }
 
@@ -108,6 +110,7 @@ async function openPreview (file) {
   try {
     const url = Admin.teacherApplicationFileUrl(id.value, file.id)
     const res = await axiosInstance.get(url, { responseType: 'blob' })
+
     previewState.objectUrl = URL.createObjectURL(res.data)
   } catch (err) {
     previewState.errorMessage =
@@ -156,6 +159,7 @@ async function submitApprove () {
 async function submitReject () {
   if (!rejectModal.rejectionReason || rejectModal.rejectionReason.trim().length < 5) {
     rejectModal.error = 'سبب الرفض مطلوب (5 أحرف على الأقل)'
+    
     return
   }
   rejectModal.submitting = true; rejectModal.error = ''
@@ -179,6 +183,7 @@ async function submitReject () {
 async function submitMoreInfo () {
   if (!infoModal.adminNotes || infoModal.adminNotes.trim().length < 5) {
     infoModal.error = 'يرجى تحديد المعلومات المطلوبة (5 أحرف على الأقل)'
+    
     return
   }
   infoModal.submitting = true; infoModal.error = ''
@@ -203,9 +208,15 @@ onMounted(loadAll)
     <AppBreadcrumbs :items="breadcrumbItems" />
 
     <!-- Loading -->
-    <div v-if="loading && !application" class="my-4">
+    <div
+      v-if="loading && !application"
+      class="my-4"
+    >
       <VSkeletonLoader type="article" />
-      <VSkeletonLoader type="article" class="mt-4" />
+      <VSkeletonLoader
+        type="article"
+        class="mt-4"
+      />
     </div>
 
     <!-- Error -->
@@ -221,16 +232,32 @@ onMounted(loadAll)
     <!-- Detail -->
     <template v-else-if="application">
       <!-- Header card -->
-      <VCard class="my-4" elevation="3" rounded="lg">
+      <VCard
+        class="my-4"
+        elevation="3"
+        rounded="lg"
+      >
         <VCardItem>
           <VRow align="center">
-            <VCol cols="12" md="auto">
-              <VAvatar size="64" color="primary" variant="tonal">
-                <VIcon icon="ri-user-line" size="32" />
+            <VCol
+              cols="12"
+              md="auto"
+            >
+              <VAvatar
+                size="64"
+                color="primary"
+                variant="tonal"
+              >
+                <VIcon
+                  icon="ri-user-line"
+                  size="32"
+                />
               </VAvatar>
             </VCol>
             <VCol>
-              <div class="text-h5 font-weight-bold">{{ application.fullName }}</div>
+              <div class="text-h5 font-weight-bold">
+                {{ application.fullName }}
+              </div>
               <div class="text-body-2 text-medium-emphasis mt-1">
                 {{ application.subject }} — {{ application.teachingStage }}
               </div>
@@ -238,7 +265,10 @@ onMounted(loadAll)
                 تاريخ التقديم: {{ fmtDate(application.createdAt) }}
               </div>
             </VCol>
-            <VCol cols="12" md="auto">
+            <VCol
+              cols="12"
+              md="auto"
+            >
               <VChip
                 :color="statusMeta.color"
                 variant="elevated"
@@ -253,7 +283,10 @@ onMounted(loadAll)
 
         <VDivider v-if="isActionable" />
 
-        <VCardActions v-if="isActionable" class="px-4 py-3 d-flex flex-wrap ga-2">
+        <VCardActions
+          v-if="isActionable"
+          class="px-4 py-3 d-flex flex-wrap ga-2"
+        >
           <VBtn
             color="success"
             variant="flat"
@@ -282,20 +315,48 @@ onMounted(loadAll)
       </VCard>
 
       <!-- Decision history -->
-      <VCard v-if="application.approvedAt || application.rejectedAt || application.needsMoreInfoAt" class="mb-4" elevation="2" rounded="lg">
-        <VCardTitle class="text-subtitle-1">سجل القرارات</VCardTitle>
+      <VCard
+        v-if="application.approvedAt || application.rejectedAt || application.needsMoreInfoAt"
+        class="mb-4"
+        elevation="2"
+        rounded="lg"
+      >
+        <VCardTitle class="text-subtitle-1">
+          سجل القرارات
+        </VCardTitle>
         <VDivider />
         <VCardItem>
-          <div v-if="application.approvedAt" class="d-flex align-center mb-2">
-            <VIcon icon="ri-check-double-line" color="success" class="me-2" />
+          <div
+            v-if="application.approvedAt"
+            class="d-flex align-center mb-2"
+          >
+            <VIcon
+              icon="ri-check-double-line"
+              color="success"
+              class="me-2"
+            />
             <span>تمت الموافقة: {{ fmtDate(application.approvedAt) }}</span>
           </div>
-          <div v-if="application.rejectedAt" class="d-flex align-center mb-2">
-            <VIcon icon="ri-close-circle-line" color="error" class="me-2" />
+          <div
+            v-if="application.rejectedAt"
+            class="d-flex align-center mb-2"
+          >
+            <VIcon
+              icon="ri-close-circle-line"
+              color="error"
+              class="me-2"
+            />
             <span>تم الرفض: {{ fmtDate(application.rejectedAt) }}</span>
           </div>
-          <div v-if="application.needsMoreInfoAt" class="d-flex align-center mb-2">
-            <VIcon icon="ri-question-line" color="info" class="me-2" />
+          <div
+            v-if="application.needsMoreInfoAt"
+            class="d-flex align-center mb-2"
+          >
+            <VIcon
+              icon="ri-question-line"
+              color="info"
+              class="me-2"
+            />
             <span>طُلبت معلومات إضافية: {{ fmtDate(application.needsMoreInfoAt) }}</span>
           </div>
           <VAlert
@@ -305,8 +366,12 @@ onMounted(loadAll)
             class="mt-3"
             density="compact"
           >
-            <div class="font-weight-bold mb-1">سبب الرفض المُبلَّغ للمتقدّم:</div>
-            <div style="white-space: pre-wrap">{{ application.rejectionReason }}</div>
+            <div class="font-weight-bold mb-1">
+              سبب الرفض المُبلَّغ للمتقدّم:
+            </div>
+            <div style="white-space: pre-wrap">
+              {{ application.rejectionReason }}
+            </div>
           </VAlert>
           <VAlert
             v-if="application.adminNotes"
@@ -315,39 +380,159 @@ onMounted(loadAll)
             class="mt-3"
             density="compact"
           >
-            <div class="font-weight-bold mb-1">ملاحظات الإدارة:</div>
-            <div style="white-space: pre-wrap">{{ application.adminNotes }}</div>
+            <div class="font-weight-bold mb-1">
+              ملاحظات الإدارة:
+            </div>
+            <div style="white-space: pre-wrap">
+              {{ application.adminNotes }}
+            </div>
           </VAlert>
         </VCardItem>
       </VCard>
 
       <!-- Fields card -->
-      <VCard class="mb-4" elevation="2" rounded="lg">
-        <VCardTitle class="text-subtitle-1">المعلومات الكاملة</VCardTitle>
+      <VCard
+        class="mb-4"
+        elevation="2"
+        rounded="lg"
+      >
+        <VCardTitle class="text-subtitle-1">
+          المعلومات الكاملة
+        </VCardTitle>
         <VDivider />
         <VCardItem>
           <VRow>
-            <VCol cols="12" md="6"><b>البريد الإلكتروني:</b> <span dir="ltr">{{ application.email }}</span></VCol>
-            <VCol cols="12" md="6"><b>الهاتف:</b> <span dir="ltr">{{ application.phone }}</span></VCol>
-            <VCol cols="12" md="6"><b>الجنس:</b> {{ application.gender === 'male' ? 'ذكر' : 'أنثى' }}</VCol>
-            <VCol cols="12" md="6"><b>تاريخ الميلاد:</b> {{ fmtDate(application.birthDate) }}</VCol>
-            <VCol cols="12" md="6"><b>المدينة:</b> {{ application.city }}</VCol>
-            <VCol cols="12" md="6"><b>المنطقة:</b> {{ application.area }}</VCol>
-            <VCol cols="12" md="6"><b>المادة:</b> {{ application.subject }}</VCol>
-            <VCol cols="12" md="6"><b>المرحلة:</b> {{ application.teachingStage }}</VCol>
-            <VCol cols="12" md="6"><b>سنوات الخبرة:</b> {{ application.yearsOfExperience }}</VCol>
-            <VCol cols="12" md="6"><b>عدد الطلاب المتوقَّع:</b> {{ application.estimatedStudentCount }}</VCol>
-            <VCol cols="12" md="6"><b>مكان العمل الحالي:</b> {{ application.currentWorkplace || '—' }}</VCol>
-            <VCol cols="12" md="6"><b>كورسات حضورية:</b> {{ application.hasPhysicalCourses ? 'نعم' : 'لا' }}</VCol>
-            <VCol cols="12"><b>النبذة:</b><div class="mt-1" style="white-space: pre-wrap">{{ application.bio || '—' }}</div></VCol>
-            <VCol v-if="application.facebookUrl  || application.instagramUrl || application.telegramUrl || application.tiktokUrl || application.youtubeUrl" cols="12">
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <b>البريد الإلكتروني:</b> <span dir="ltr">{{ application.email }}</span>
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <b>الهاتف:</b> <span dir="ltr">{{ application.phone }}</span>
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <b>الجنس:</b> {{ application.gender === 'male' ? 'ذكر' : 'أنثى' }}
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <b>تاريخ الميلاد:</b> {{ fmtDate(application.birthDate) }}
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <b>المدينة:</b> {{ application.city }}
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <b>المنطقة:</b> {{ application.area }}
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <b>المادة:</b> {{ application.subject }}
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <b>المرحلة:</b> {{ application.teachingStage }}
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <b>سنوات الخبرة:</b> {{ application.yearsOfExperience }}
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <b>عدد الطلاب المتوقَّع:</b> {{ application.estimatedStudentCount }}
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <b>مكان العمل الحالي:</b> {{ application.currentWorkplace || '—' }}
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <b>كورسات حضورية:</b> {{ application.hasPhysicalCourses ? 'نعم' : 'لا' }}
+            </VCol>
+            <VCol cols="12">
+              <b>النبذة:</b><div
+                class="mt-1"
+                style="white-space: pre-wrap"
+              >
+                {{ application.bio || '—' }}
+              </div>
+            </VCol>
+            <VCol
+              v-if="application.facebookUrl || application.instagramUrl || application.telegramUrl || application.tiktokUrl || application.youtubeUrl"
+              cols="12"
+            >
               <b>الروابط الاجتماعية:</b>
               <div class="d-flex flex-wrap ga-2 mt-2">
-                <VChip v-if="application.facebookUrl" prepend-icon="ri-facebook-circle-line" :href="application.facebookUrl" target="_blank" variant="outlined">Facebook</VChip>
-                <VChip v-if="application.instagramUrl" prepend-icon="ri-instagram-line" :href="application.instagramUrl" target="_blank" variant="outlined">Instagram</VChip>
-                <VChip v-if="application.telegramUrl" prepend-icon="ri-telegram-line" :href="application.telegramUrl" target="_blank" variant="outlined">Telegram</VChip>
-                <VChip v-if="application.tiktokUrl" prepend-icon="ri-tiktok-line" :href="application.tiktokUrl" target="_blank" variant="outlined">TikTok</VChip>
-                <VChip v-if="application.youtubeUrl" prepend-icon="ri-youtube-line" :href="application.youtubeUrl" target="_blank" variant="outlined">YouTube</VChip>
+                <VChip
+                  v-if="application.facebookUrl"
+                  prepend-icon="ri-facebook-circle-line"
+                  :href="application.facebookUrl"
+                  target="_blank"
+                  variant="outlined"
+                >
+                  Facebook
+                </VChip>
+                <VChip
+                  v-if="application.instagramUrl"
+                  prepend-icon="ri-instagram-line"
+                  :href="application.instagramUrl"
+                  target="_blank"
+                  variant="outlined"
+                >
+                  Instagram
+                </VChip>
+                <VChip
+                  v-if="application.telegramUrl"
+                  prepend-icon="ri-telegram-line"
+                  :href="application.telegramUrl"
+                  target="_blank"
+                  variant="outlined"
+                >
+                  Telegram
+                </VChip>
+                <VChip
+                  v-if="application.tiktokUrl"
+                  prepend-icon="ri-tiktok-line"
+                  :href="application.tiktokUrl"
+                  target="_blank"
+                  variant="outlined"
+                >
+                  TikTok
+                </VChip>
+                <VChip
+                  v-if="application.youtubeUrl"
+                  prepend-icon="ri-youtube-line"
+                  :href="application.youtubeUrl"
+                  target="_blank"
+                  variant="outlined"
+                >
+                  YouTube
+                </VChip>
               </div>
             </VCol>
           </VRow>
@@ -355,14 +540,27 @@ onMounted(loadAll)
       </VCard>
 
       <!-- Files card -->
-      <VCard class="mb-4" elevation="2" rounded="lg">
+      <VCard
+        class="mb-4"
+        elevation="2"
+        rounded="lg"
+      >
         <VCardTitle class="text-subtitle-1">
           المرفقات
-          <VChip class="ms-2" size="small" color="primary">{{ files.length }}</VChip>
+          <VChip
+            class="ms-2"
+            size="small"
+            color="primary"
+          >
+            {{ files.length }}
+          </VChip>
         </VCardTitle>
         <VDivider />
         <VCardItem>
-          <div v-if="!files.length" class="text-medium-emphasis text-center py-6">
+          <div
+            v-if="!files.length"
+            class="text-medium-emphasis text-center py-6"
+          >
             لم يرفق المتقدّم أيّ ملفات بعد.
           </div>
           <VRow v-else>
@@ -373,7 +571,10 @@ onMounted(loadAll)
               md="6"
               lg="4"
             >
-              <VCard variant="outlined" class="pa-3 h-100">
+              <VCard
+                variant="outlined"
+                class="pa-3 h-100"
+              >
                 <div class="d-flex align-center mb-2">
                   <VIcon
                     :icon="f.mimeType.startsWith('image/') ? 'ri-image-line' : f.mimeType === 'application/pdf' ? 'ri-file-pdf-line' : 'ri-video-line'"
@@ -384,7 +585,12 @@ onMounted(loadAll)
                     {{ FILE_KIND_LABEL[f.kind] || f.kind }}
                   </div>
                 </div>
-                <div class="text-caption text-medium-emphasis mb-1" dir="ltr">{{ f.originalFilename || '—' }}</div>
+                <div
+                  class="text-caption text-medium-emphasis mb-1"
+                  dir="ltr"
+                >
+                  {{ f.originalFilename || '—' }}
+                </div>
                 <div class="text-caption text-medium-emphasis mb-3">
                   {{ f.mimeType }} · {{ fmtSize(f.byteSize) }}
                 </div>
@@ -413,13 +619,23 @@ onMounted(loadAll)
     >
       <VCard rounded="lg">
         <VCardTitle class="d-flex align-center">
-          <VIcon icon="ri-file-line" class="me-2" />
+          <VIcon
+            icon="ri-file-line"
+            class="me-2"
+          />
           <span dir="ltr">{{ previewState.filename }}</span>
           <VSpacer />
-          <VBtn icon="ri-close-line" variant="text" @click="closePreview" />
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            @click="closePreview"
+          />
         </VCardTitle>
         <VDivider />
-        <VCardItem class="text-center" style="min-height: 320px">
+        <VCardItem
+          class="text-center"
+          style="min-height: 320px"
+        >
           <VProgressCircular
             v-if="previewState.loading"
             indeterminate
@@ -439,7 +655,7 @@ onMounted(loadAll)
               :src="previewState.objectUrl"
               alt="preview"
               style="max-width: 100%; max-height: 75vh; object-fit: contain"
-            />
+            >
             <iframe
               v-else-if="previewState.mimeType === 'application/pdf'"
               :src="previewState.objectUrl"
@@ -465,7 +681,10 @@ onMounted(loadAll)
     </VDialog>
 
     <!-- Approve modal -->
-    <VDialog v-model="approveModal.open" max-width="520">
+    <VDialog
+      v-model="approveModal.open"
+      max-width="520"
+    >
       <VCard rounded="lg">
         <VCardTitle>تأكيد الموافقة</VCardTitle>
         <VDivider />
@@ -480,13 +699,23 @@ onMounted(loadAll)
             rows="3"
             counter="2000"
           />
-          <VAlert v-if="approveModal.error" type="error" variant="tonal" class="mt-3">
+          <VAlert
+            v-if="approveModal.error"
+            type="error"
+            variant="tonal"
+            class="mt-3"
+          >
             {{ approveModal.error }}
           </VAlert>
         </VCardItem>
         <VDivider />
         <VCardActions class="justify-end">
-          <VBtn variant="text" @click="approveModal.open = false">إلغاء</VBtn>
+          <VBtn
+            variant="text"
+            @click="approveModal.open = false"
+          >
+            إلغاء
+          </VBtn>
           <VBtn
             color="success"
             variant="flat"
@@ -500,7 +729,10 @@ onMounted(loadAll)
     </VDialog>
 
     <!-- Reject modal -->
-    <VDialog v-model="rejectModal.open" max-width="520">
+    <VDialog
+      v-model="rejectModal.open"
+      max-width="520"
+    >
       <VCard rounded="lg">
         <VCardTitle>رفض الطلب</VCardTitle>
         <VDivider />
@@ -522,13 +754,23 @@ onMounted(loadAll)
             counter="2000"
             class="mt-2"
           />
-          <VAlert v-if="rejectModal.error" type="error" variant="tonal" class="mt-3">
+          <VAlert
+            v-if="rejectModal.error"
+            type="error"
+            variant="tonal"
+            class="mt-3"
+          >
             {{ rejectModal.error }}
           </VAlert>
         </VCardItem>
         <VDivider />
         <VCardActions class="justify-end">
-          <VBtn variant="text" @click="rejectModal.open = false">إلغاء</VBtn>
+          <VBtn
+            variant="text"
+            @click="rejectModal.open = false"
+          >
+            إلغاء
+          </VBtn>
           <VBtn
             color="error"
             variant="flat"
@@ -542,7 +784,10 @@ onMounted(loadAll)
     </VDialog>
 
     <!-- Request-more-info modal -->
-    <VDialog v-model="infoModal.open" max-width="520">
+    <VDialog
+      v-model="infoModal.open"
+      max-width="520"
+    >
       <VCard rounded="lg">
         <VCardTitle>طلب معلومات إضافية</VCardTitle>
         <VDivider />
@@ -555,13 +800,23 @@ onMounted(loadAll)
             counter="2000"
             required
           />
-          <VAlert v-if="infoModal.error" type="error" variant="tonal" class="mt-3">
+          <VAlert
+            v-if="infoModal.error"
+            type="error"
+            variant="tonal"
+            class="mt-3"
+          >
             {{ infoModal.error }}
           </VAlert>
         </VCardItem>
         <VDivider />
         <VCardActions class="justify-end">
-          <VBtn variant="text" @click="infoModal.open = false">إلغاء</VBtn>
+          <VBtn
+            variant="text"
+            @click="infoModal.open = false"
+          >
+            إلغاء
+          </VBtn>
           <VBtn
             color="info"
             variant="flat"

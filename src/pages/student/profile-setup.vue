@@ -1,8 +1,8 @@
 <script setup>
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { onMounted, ref } from "vue"
+import { useRouter } from "vue-router"
 
-const router = useRouter();
+const router = useRouter()
 
 // متغيرات النموذج
 const form = ref({
@@ -18,17 +18,17 @@ const form = ref({
   age: "",
   educationLevel: "",
   interests: [],
-});
+})
 
-const isLoading = ref(false);
-const error = ref("");
-const success = ref("");
+const isLoading = ref(false)
+const error = ref("")
+const success = ref("")
 
 // بيانات المستخدم من localStorage
-const user = ref(null);
+const user = ref(null)
 
 // خيارات مستوى التعليم
-const educationLevels = ["ابتدائي", "متوسط", "ثانوي", "جامعي", "دراسات عليا"];
+const educationLevels = ["ابتدائي", "متوسط", "ثانوي", "جامعي", "دراسات عليا"]
 
 // خيارات الاهتمامات
 const interestOptions = [
@@ -42,83 +42,97 @@ const interestOptions = [
   "الفنون",
   "الموسيقى",
   "الرياضة",
-];
+]
 
 onMounted(() => {
   // جلب بيانات المستخدم من localStorage
-  const userData = localStorage.getItem("user");
+  const userData = localStorage.getItem("user")
   if (userData) {
-    user.value = JSON.parse(userData);
+    user.value = JSON.parse(userData)
+
     // ملء البيانات الموجودة
     if (user.value) {
-      form.value.phone = user.value.phone || "";
-      form.value.address = user.value.address || "";
-      form.value.bio = user.value.bio || "";
-      form.value.country = user.value.country || "";
-      form.value.city = user.value.city || "";
-      form.value.state = user.value.state || "";
-      form.value.zipcode = user.value.zipcode || "";
-      form.value.streetName = user.value.streetName || "";
-      form.value.suburb = user.value.suburb || "";
+      form.value.phone = user.value.phone || ""
+      form.value.address = user.value.address || ""
+      form.value.bio = user.value.bio || ""
+      form.value.country = user.value.country || ""
+      form.value.city = user.value.city || ""
+      form.value.state = user.value.state || ""
+      form.value.zipcode = user.value.zipcode || ""
+      form.value.streetName = user.value.streetName || ""
+      form.value.suburb = user.value.suburb || ""
     }
   } else {
     // إذا لم توجد بيانات المستخدم، توجيه للصفحة الرئيسية
-    router.push("/login");
+    router.push("/login")
   }
-});
+})
 
 // دالة حفظ البيانات
 const saveProfile = async () => {
   if (!form.value.phone || !form.value.address || !form.value.age) {
-    error.value = "يرجى ملء جميع الحقول المطلوبة";
-    return;
+    error.value = "يرجى ملء جميع الحقول المطلوبة"
+    
+    return
   }
 
-  isLoading.value = true;
-  error.value = "";
-  success.value = "";
+  isLoading.value = true
+  error.value = ""
+  success.value = ""
 
   try {
     // محاكاة طلب للسيرفر
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
-    success.value = "تم حفظ البيانات بنجاح";
+    success.value = "تم حفظ البيانات بنجاح"
 
     // تحديث بيانات المستخدم في localStorage
     if (user.value) {
-      user.value = { ...user.value, ...form.value };
-      localStorage.setItem("user", JSON.stringify(user.value));
+      user.value = { ...user.value, ...form.value }
+      localStorage.setItem("user", JSON.stringify(user.value))
     }
 
     // توجيه للصفحة الرئيسية بعد 2 ثانية
     setTimeout(() => {
-      router.push("/student/dashboard");
-    }, 2000);
+      router.push("/student/dashboard")
+    }, 2000)
   } catch (err) {
-    console.error("Error saving profile:", err);
-    error.value = "خطأ في حفظ البيانات. يرجى المحاولة مرة أخرى.";
+    console.error("Error saving profile:", err)
+    error.value = "خطأ في حفظ البيانات. يرجى المحاولة مرة أخرى."
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
+}
 
 // دالة تخطي (للمستخدمين الذين يريدون إكمال البيانات لاحقاً)
 const skipSetup = () => {
-  router.push("/student/dashboard");
-};
+  router.push("/student/dashboard")
+}
 </script>
 
 <template>
   <div class="profile-setup-container">
     <VContainer max-width="800">
       <VRow justify="center">
-        <VCol cols="12" md="8">
-          <VCard elevation="2" class="pa-6">
+        <VCol
+          cols="12"
+          md="8"
+        >
+          <VCard
+            elevation="2"
+            class="pa-6"
+          >
             <VCardTitle class="text-center mb-6">
-              <VIcon size="48" color="primary" class="mb-4"
-                >mdi-account-edit</VIcon
+              <VIcon
+                size="48"
+                color="primary"
+                class="mb-4"
               >
-              <h2 class="text-h4">إكمال الملف الشخصي</h2>
+                mdi-account-edit
+              </VIcon>
+              <h2 class="text-h4">
+                إكمال الملف الشخصي
+              </h2>
               <p class="text-body-1 text-medium-emphasis mt-2">
                 مرحباً {{ user?.name }}! يرجى إكمال بياناتك الشخصية للاستفادة من
                 جميع الميزات
@@ -145,7 +159,9 @@ const skipSetup = () => {
                 variant="tonal"
                 class="mb-4"
               >
-                <VIcon start>mdi-check-circle</VIcon>
+                <VIcon start>
+                  mdi-check-circle
+                </VIcon>
                 {{ success }}
               </VAlert>
 
@@ -153,11 +169,16 @@ const skipSetup = () => {
                 <VRow>
                   <!-- معلومات أساسية -->
                   <VCol cols="12">
-                    <h3 class="text-h6 mb-4">المعلومات الأساسية</h3>
+                    <h3 class="text-h6 mb-4">
+                      المعلومات الأساسية
+                    </h3>
                   </VCol>
 
                   <!-- رقم الهاتف -->
-                  <VCol cols="12" md="6">
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
                     <VTextField
                       v-model="form.phone"
                       label="رقم الهاتف"
@@ -168,7 +189,10 @@ const skipSetup = () => {
                   </VCol>
 
                   <!-- العمر -->
-                  <VCol cols="12" md="6">
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
                     <VTextField
                       v-model="form.age"
                       label="العمر"
@@ -203,7 +227,10 @@ const skipSetup = () => {
                   </VCol>
 
                   <!-- مستوى التعليم -->
-                  <VCol cols="12" md="6">
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
                     <VSelect
                       v-model="form.educationLevel"
                       label="مستوى التعليم"
@@ -213,7 +240,10 @@ const skipSetup = () => {
                   </VCol>
 
                   <!-- الاهتمامات -->
-                  <VCol cols="12" md="6">
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
                     <VSelect
                       v-model="form.interests"
                       label="الاهتمامات"
@@ -226,10 +256,15 @@ const skipSetup = () => {
 
                   <!-- معلومات الموقع -->
                   <VCol cols="12">
-                    <h3 class="text-h6 mb-4">معلومات الموقع (اختيارية)</h3>
+                    <h3 class="text-h6 mb-4">
+                      معلومات الموقع (اختيارية)
+                    </h3>
                   </VCol>
 
-                  <VCol cols="12" md="6">
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
                     <VTextField
                       v-model="form.country"
                       label="البلد"
@@ -237,7 +272,10 @@ const skipSetup = () => {
                     />
                   </VCol>
 
-                  <VCol cols="12" md="6">
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
                     <VTextField
                       v-model="form.city"
                       label="المدينة"
@@ -245,7 +283,10 @@ const skipSetup = () => {
                     />
                   </VCol>
 
-                  <VCol cols="12" md="6">
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
                     <VTextField
                       v-model="form.state"
                       label="المنطقة"
@@ -253,7 +294,10 @@ const skipSetup = () => {
                     />
                   </VCol>
 
-                  <VCol cols="12" md="6">
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
                     <VTextField
                       v-model="form.zipcode"
                       label="الرمز البريدي"
@@ -261,7 +305,10 @@ const skipSetup = () => {
                     />
                   </VCol>
 
-                  <VCol cols="12" md="6">
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
                     <VTextField
                       v-model="form.streetName"
                       label="اسم الشارع"
@@ -269,7 +316,10 @@ const skipSetup = () => {
                     />
                   </VCol>
 
-                  <VCol cols="12" md="6">
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
                     <VTextField
                       v-model="form.suburb"
                       label="الحي"
@@ -278,7 +328,10 @@ const skipSetup = () => {
                   </VCol>
 
                   <!-- أزرار العمل -->
-                  <VCol cols="12" class="text-center mt-6">
+                  <VCol
+                    cols="12"
+                    class="text-center mt-6"
+                  >
                     <VBtn
                       type="submit"
                       color="primary"
@@ -287,17 +340,21 @@ const skipSetup = () => {
                       :disabled="isLoading"
                       class="me-4"
                     >
-                      <VIcon start>mdi-content-save</VIcon>
+                      <VIcon start>
+                        mdi-content-save
+                      </VIcon>
                       حفظ البيانات
                     </VBtn>
 
                     <VBtn
                       variant="outlined"
                       size="large"
-                      @click="skipSetup"
                       :disabled="isLoading"
+                      @click="skipSetup"
                     >
-                      <VIcon start>mdi-skip-next</VIcon>
+                      <VIcon start>
+                        mdi-skip-next
+                      </VIcon>
                       تخطي الآن
                     </VBtn>
                   </VCol>

@@ -2,41 +2,97 @@
   <div>
     <AppBreadcrumbs :items="breadcrumbItems" />
 
-    <VCard class="my-4" elevation="3" rounded="lg">
+    <VCard
+      class="my-4"
+      elevation="3"
+      rounded="lg"
+    >
       <VCardTitle class="py-4 px-6 d-flex align-center justify-space-between">
-        <div class="text-h6">تفاصيل فاتورة العربون</div>
+        <div class="text-h6">
+          تفاصيل فاتورة العربون
+        </div>
         <RouterLink :to="{ name: 'teacher-payments-reservations-show-reservation-payments' }">
-          <VBtn color="primary" prepend-icon="ri-arrow-right-line" variant="tonal">رجوع</VBtn>
+          <VBtn
+            color="primary"
+            prepend-icon="ri-arrow-right-line"
+            variant="tonal"
+          >
+            رجوع
+          </VBtn>
         </RouterLink>
       </VCardTitle>
       <VDivider />
       <VCardText>
         <VRow>
-          <VCol cols="12" md="6">
-            <div class="text-subtitle-2 text-medium-emphasis">اسم الطالب</div>
-            <div class="text-h6">{{ payment.studentName || '-' }}</div>
+          <VCol
+            cols="12"
+            md="6"
+          >
+            <div class="text-subtitle-2 text-medium-emphasis">
+              اسم الطالب
+            </div>
+            <div class="text-h6">
+              {{ payment.studentName || '-' }}
+            </div>
           </VCol>
-          <VCol cols="12" md="6">
-            <div class="text-subtitle-2 text-medium-emphasis">اسم الكورس</div>
-            <div class="text-h6">{{ payment.courseName || '-' }}</div>
+          <VCol
+            cols="12"
+            md="6"
+          >
+            <div class="text-subtitle-2 text-medium-emphasis">
+              اسم الكورس
+            </div>
+            <div class="text-h6">
+              {{ payment.courseName || '-' }}
+            </div>
           </VCol>
-          <VCol cols="12" md="3">
-            <div class="text-subtitle-2 text-medium-emphasis">المبلغ</div>
-            <div class="text-h6">{{ numberWithComma(payment.amount) }} د.ع</div>
+          <VCol
+            cols="12"
+            md="3"
+          >
+            <div class="text-subtitle-2 text-medium-emphasis">
+              المبلغ
+            </div>
+            <div class="text-h6">
+              {{ numberWithComma(payment.amount) }} د.ع
+            </div>
           </VCol>
-          <VCol cols="12" md="3">
-            <div class="text-subtitle-2 text-medium-emphasis">الحالة</div>
-            <VChip :color="payment.status === 'paid' ? 'success' : 'warning'" class="mt-1" size="small">
+          <VCol
+            cols="12"
+            md="3"
+          >
+            <div class="text-subtitle-2 text-medium-emphasis">
+              الحالة
+            </div>
+            <VChip
+              :color="payment.status === 'paid' ? 'success' : 'warning'"
+              class="mt-1"
+              size="small"
+            >
               {{ payment.status === 'paid' ? 'مدفوع' : 'قيد الانتظار' }}
             </VChip>
           </VCol>
-          <VCol cols="12" md="3">
-            <div class="text-subtitle-2 text-medium-emphasis">تاريخ الدفع</div>
-            <div class="text-h6">{{ formatDate(payment.paidAt) }}</div>
+          <VCol
+            cols="12"
+            md="3"
+          >
+            <div class="text-subtitle-2 text-medium-emphasis">
+              تاريخ الدفع
+            </div>
+            <div class="text-h6">
+              {{ formatDate(payment.paidAt) }}
+            </div>
           </VCol>
-          <VCol cols="12" md="3">
-            <div class="text-subtitle-2 text-medium-emphasis">السنة الدراسية</div>
-            <div class="text-h6">{{ payment.studyYear }}</div>
+          <VCol
+            cols="12"
+            md="3"
+          >
+            <div class="text-subtitle-2 text-medium-emphasis">
+              السنة الدراسية
+            </div>
+            <div class="text-h6">
+              {{ payment.studyYear }}
+            </div>
           </VCol>
         </VRow>
       </VCardText>
@@ -45,8 +101,8 @@
 </template>
 
 <script>
-import TeacherApi from '@/api/teacher/teacher_api';
-import numberWithComma from '@/constant/number';
+import TeacherApi from '@/api/teacher/teacher_api'
+import numberWithComma from '@/constant/number'
 
 export default {
   data() {
@@ -84,10 +140,12 @@ export default {
       if (!bookingId) return
       this.progress = 0
       this.loading = true
+
       const fakeProgress = setInterval(() => { if (this.progress < 90) this.progress += 10 }, 100)
       try {
         const { data } = await TeacherApi.getReservationPaymentByBooking(bookingId)
         const payload = data?.data || {}
+
         this.payment = payload
       } catch (error) {
         console.error(error)

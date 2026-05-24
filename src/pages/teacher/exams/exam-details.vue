@@ -2,31 +2,62 @@
   <div>
     <AppBreadcrumbs :items="breadcrumbs" />
 
-    <VCard class="my-4" elevation="2">
+    <VCard
+      class="my-4"
+      elevation="2"
+    >
       <VCardTitle class="d-flex align-center">
-        <VIcon class="me-2">ri-article-line</VIcon>
+        <VIcon class="me-2">
+          ri-article-line
+        </VIcon>
         <span class="text-h6">تفاصيل الامتحان</span>
         <VSpacer />
-        <VBtn variant="tonal" prepend-icon="ri-arrow-go-back-line" @click="$router.back()">رجوع</VBtn>
+        <VBtn
+          variant="tonal"
+          prepend-icon="ri-arrow-go-back-line"
+          @click="$router.back()"
+        >
+          رجوع
+        </VBtn>
       </VCardTitle>
       <VDivider />
       <VCardText>
         <VRow>
           <!-- Exam info -->
-          <VCol cols="12" md="6">
+          <VCol
+            cols="12"
+            md="6"
+          >
             <VCard variant="tonal">
               <VCardTitle class="d-flex align-center">
-                <VIcon class="me-2">ri-information-line</VIcon>
+                <VIcon class="me-2">
+                  ri-information-line
+                </VIcon>
                 <span class="text-h6">معلومات الامتحان</span>
               </VCardTitle>
               <VDivider />
               <VCardText>
-                <div class="text-body-2 mb-1"><strong>نوع الامتحان:</strong> {{ examTypeLabel(exam?.exam_type) }}</div>
-                <div class="text-body-2 mb-1"><strong>التاريخ:</strong> {{ formatDateTime(exam?.exam_date) }}</div>
-                <div class="text-body-2 mb-1"><strong>الدرجة القصوى:</strong> {{ exam?.max_score }}</div>
-                <div class="text-body-2 mb-1" v-if="exam?.description"><strong>الوصف:</strong> {{ exam.description }}
+                <div class="text-body-2 mb-1">
+                  <strong>نوع الامتحان:</strong> {{ examTypeLabel(exam?.exam_type) }}
                 </div>
-                <div class="text-body-2 mb-1" v-if="exam?.notes"><strong>ملاحظات:</strong> {{ exam.notes }}</div>
+                <div class="text-body-2 mb-1">
+                  <strong>التاريخ:</strong> {{ formatDateTime(exam?.exam_date) }}
+                </div>
+                <div class="text-body-2 mb-1">
+                  <strong>الدرجة القصوى:</strong> {{ exam?.max_score }}
+                </div>
+                <div
+                  v-if="exam?.description"
+                  class="text-body-2 mb-1"
+                >
+                  <strong>الوصف:</strong> {{ exam.description }}
+                </div>
+                <div
+                  v-if="exam?.notes"
+                  class="text-body-2 mb-1"
+                >
+                  <strong>ملاحظات:</strong> {{ exam.notes }}
+                </div>
               </VCardText>
             </VCard>
           </VCol>
@@ -35,18 +66,40 @@
     </VCard>
 
     <!-- Filter Card -->
-    <VCard class="my-4 filter-card" elevation="3" rounded="lg">
+    <VCard
+      class="my-4 filter-card"
+      elevation="3"
+      rounded="lg"
+    >
       <VCardTitle class="d-flex align-center py-4 px-6">
-        <VIcon icon="mdi mdi-filter-outline" color="primary" class="me-2" size="24" />
-        <h3 class="text-h5 font-weight-bold">تصفية</h3>
+        <VIcon
+          icon="mdi mdi-filter-outline"
+          color="primary"
+          class="me-2"
+          size="24"
+        />
+        <h3 class="text-h5 font-weight-bold">
+          تصفية
+        </h3>
       </VCardTitle>
       <VDivider />
       <VCardItem>
         <VRow style="padding-block: 10px;">
-          <VCol cols="12" md="3">
-            <VSelect v-model="selectedSessionId" :items="sessionItems" item-title="text" item-value="value"
-              label="اختر الجلسة" density="comfortable" hide-details style="max-inline-size: 260px;"
-              :loading="sessionsLoading" />
+          <VCol
+            cols="12"
+            md="3"
+          >
+            <VSelect
+              v-model="selectedSessionId"
+              :items="sessionItems"
+              item-title="text"
+              item-value="value"
+              label="اختر الجلسة"
+              density="comfortable"
+              hide-details
+              style="max-inline-size: 260px;"
+              :loading="sessionsLoading"
+            />
           </VCol>
         </VRow>
       </VCardItem>
@@ -55,10 +108,18 @@
     <!-- Students and grading -->
     <VCard>
       <VCardTitle class="d-flex align-center">
-        <VIcon class="me-2">ri-team-line</VIcon>
+        <VIcon class="me-2">
+          ri-team-line
+        </VIcon>
         <span class="text-h6">طلاب الامتحان وتسجيل الدرجات</span>
         <VSpacer />
-        <VChip size="small" variant="flat" style="color: white;">{{ students.length }} طالب</VChip>
+        <VChip
+          size="small"
+          variant="flat"
+          style="color: white;"
+        >
+          {{ students.length }} طالب
+        </VChip>
       </VCardTitle>
       <VDivider />
       <VCardText>
@@ -67,33 +128,56 @@
             <tr>
               <th>#</th>
               <th>الطالب</th>
-              <th style="inline-size: 180px;">الدرجة</th>
-              <th style="inline-size: 160px;">إجراء</th>
+              <th style="inline-size: 180px;">
+                الدرجة
+              </th>
+              <th style="inline-size: 160px;">
+                إجراء
+              </th>
             </tr>
           </thead>
 
           <tbody>
-            <tr v-for="(s, i) in students" :key="s.id">
-              <td :data-label="'#'">{{ i + 1 }}</td>
+            <tr
+              v-for="(s, i) in students"
+              :key="s.id"
+            >
+              <td data-label="#">
+                {{ i + 1 }}
+              </td>
 
-              <td :data-label="'الطالب'">
+              <td data-label="الطالب">
                 {{ s.name }}
               </td>
 
-              <td :data-label="'الدرجة'">
-                <VTextField v-model.number="s.score" type="number" :max="exam?.max_score || 100" :min="0"
-                  density="compact" hide-details />
+              <td data-label="الدرجة">
+                <VTextField
+                  v-model.number="s.score"
+                  type="number"
+                  :max="exam?.max_score || 100"
+                  :min="0"
+                  density="compact"
+                  hide-details
+                />
               </td>
 
-              <td :data-label="'إجراء'">
-                <VBtn color="primary" size="small" :loading="s.saving" @click="saveGrade(s)">
+              <td data-label="إجراء">
+                <VBtn
+                  color="primary"
+                  size="small"
+                  :loading="s.saving"
+                  @click="saveGrade(s)"
+                >
                   حفظ
                 </VBtn>
               </td>
             </tr>
 
             <tr v-if="!studentsLoading && !students.length">
-              <td colspan="4" class="text-center text-medium-emphasis">
+              <td
+                colspan="4"
+                class="text-center text-medium-emphasis"
+              >
                 لا يوجد طلاب
               </td>
             </tr>
@@ -102,16 +186,22 @@
       </VCardText>
     </VCard>
 
-    <BaseAlert v-if="alert.open" v-model="alert.open" :type="alert.type" :message="alert.message" :closable="true"
-      close-text="موافق" />
+    <BaseAlert
+      v-if="alert.open"
+      v-model="alert.open"
+      :type="alert.type"
+      :message="alert.message"
+      :closable="true"
+      close-text="موافق"
+    />
   </div>
 </template>
 
 <script>
-import TeacherApi from '@/api/teacher/teacher_api';
+import TeacherApi from '@/api/teacher/teacher_api'
 
 export default {
-  name: 'teacher-exams-details',
+  name: 'TeacherExamsDetails',
   data() {
     return {
       breadcrumbs: [
@@ -122,82 +212,96 @@ export default {
       exam: null,
       students: [],
       studentsLoading: false,
+
       // sessions select
       sessionItems: [],
       selectedSessionId: null,
       sessionsLoading: false,
       alert: { open: false, type: 'success', message: '' },
-    };
-  },
-  created() {
-    const id = this.$route.query.id;
-    if (id) {
-      this.fetchExam(id);
-      this.loadSessionsAndStudents(id);
     }
   },
   watch: {
     selectedSessionId: {
       handler(newVal) {
-        const id = this.$route.query.id;
-        if (id) this.fetchStudents(id, newVal);
+        const id = this.$route.query.id
+        if (id) this.fetchStudents(id, newVal)
       },
     },
   },
+  created() {
+    const id = this.$route.query.id
+    if (id) {
+      this.fetchExam(id)
+      this.loadSessionsAndStudents(id)
+    }
+  },
   methods: {
-    showAlert(type, message) { Object.assign(this.alert, { type, message, open: true }); },
-    formatDateTime(val) { if (!val) return ''; const d = new Date(val); return isNaN(d) ? '' : d.toLocaleString('ar-IQ'); },
-    examTypeLabel(v) { return v === 'monthly' ? 'شهري' : 'يومي'; },
+    showAlert(type, message) { Object.assign(this.alert, { type, message, open: true }) },
+    formatDateTime(val) { if (!val) return ''; const d = new Date(val) 
+
+      return isNaN(d) ? '' : d.toLocaleString('ar-IQ') },
+    examTypeLabel(v) { return v === 'monthly' ? 'شهري' : 'يومي' },
 
     async fetchExam(id) {
       try {
-        const res = await TeacherApi.getExamById(id);
-        this.exam = res?.data?.data || null;
+        const res = await TeacherApi.getExamById(id)
+
+        this.exam = res?.data?.data || null
+
         // Optionally load current grades if present in exam payload later
       } catch (e) {
-        this.showAlert('error', e?.response?.data?.message || 'فشل جلب تفاصيل الامتحان');
+        this.showAlert('error', e?.response?.data?.message || 'فشل جلب تفاصيل الامتحان')
       }
     },
     async fetchStudents(id, sessionId) {
       try {
-        this.studentsLoading = true;
-        const res = await TeacherApi.getExamStudents(id, sessionId);
-        const list = res?.data?.data || [];
+        this.studentsLoading = true
+
+        const res = await TeacherApi.getExamStudents(id, sessionId)
+        const list = res?.data?.data || []
+
+
         // Initialize score and saving flag; backend may separately expose grades
-        this.students = list.map(s => ({ id: s.id, name: s.name, score: s.score ?? null, saving: false }));
+        this.students = list.map(s => ({ id: s.id, name: s.name, score: s.score ?? null, saving: false }))
       } catch (e) {
-        this.showAlert('error', e?.response?.data?.message || 'فشل جلب الطلاب');
-      } finally { this.studentsLoading = false; }
+        this.showAlert('error', e?.response?.data?.message || 'فشل جلب الطلاب')
+      } finally { this.studentsLoading = false }
     },
     async loadSessionsAndStudents(examId) {
       try {
-        this.sessionsLoading = true;
-        const res = await TeacherApi.getSessionNames();
-        this.sessionItems = (res?.data?.data || []).map(ss => ({ text: ss.title || ss.name || ss.label, value: ss.id }));
+        this.sessionsLoading = true
+
+        const res = await TeacherApi.getSessionNames()
+
+        this.sessionItems = (res?.data?.data || []).map(ss => ({ text: ss.title || ss.name || ss.label, value: ss.id }))
+
         // default to first session if exists
-        this.selectedSessionId = this.sessionItems.length ? this.sessionItems[0].value : null;
+        this.selectedSessionId = this.sessionItems.length ? this.sessionItems[0].value : null
       } catch (e) {
-        this.sessionItems = [];
-        this.selectedSessionId = null;
+        this.sessionItems = []
+        this.selectedSessionId = null
       } finally {
-        this.sessionsLoading = false;
+        this.sessionsLoading = false
+
         // fetch students based on selected session (may be null)
-        this.fetchStudents(examId, this.selectedSessionId);
+        this.fetchStudents(examId, this.selectedSessionId)
       }
     },
     async saveGrade(s) {
       try {
-        if (!this.exam?.id || !s?.id) return;
-        s.saving = true;
-        const score = (s.score === null || s.score === undefined || s.score === '') ? null : Number(s.score);
-        await TeacherApi.gradeExam(this.exam.id, s.id, { score });
-        this.showAlert('success', `تم حفظ درجة ${s.name}`);
+        if (!this.exam?.id || !s?.id) return
+        s.saving = true
+
+        const score = (s.score === null || s.score === undefined || s.score === '') ? null : Number(s.score)
+
+        await TeacherApi.gradeExam(this.exam.id, s.id, { score })
+        this.showAlert('success', `تم حفظ درجة ${s.name}`)
       } catch (e) {
-        this.showAlert('error', e?.response?.data?.message || 'فشل حفظ الدرجة');
-      } finally { s.saving = false; }
+        this.showAlert('error', e?.response?.data?.message || 'فشل حفظ الدرجة')
+      } finally { s.saving = false }
     },
   },
-};
+}
 </script>
 
 

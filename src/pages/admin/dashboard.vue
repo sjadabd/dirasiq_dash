@@ -9,40 +9,41 @@
 //   • System health pill (from /health)
 // =====================================================
 
-import adminApi from "@/api/admin/admin_api";
-import { useAuth } from "@/composables/useAuth";
-import axiosInstance from "@/utils/axios.js";
-import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import adminApi from "@/api/admin/admin_api"
+import { useAuth } from "@/composables/useAuth"
+import axiosInstance from "@/utils/axios.js"
+import { computed, onMounted, ref } from "vue"
+import { useRouter } from "vue-router"
 
-const router = useRouter();
-const { user, logout, hasPermission } = useAuth();
+const router = useRouter()
+const { user, logout, hasPermission } = useAuth()
 
 // ---- Reactive state -------------------------------------------------------
-const isLoading = ref(true);
-const statsError = ref("");
+const isLoading = ref(true)
+const statsError = ref("")
 
 const stats = ref({
   totalUsers: 0,
   totalTeachers: 0,
   totalStudents: 0,
   activeCourses: 0,
-});
+})
 
-const activeYear = ref(null);
-const notifStats = ref({ total: 0, sent: 0, pending: 0, failed: 0 });
-const apiHealthy = ref(null);
-const apiEnv = ref("");
+const activeYear = ref(null)
+const notifStats = ref({ total: 0, sent: 0, pending: 0, failed: 0 })
+const apiHealthy = ref(null)
+const apiEnv = ref("")
 
 // ---- Derived --------------------------------------------------------------
 const greeting = computed(() => {
-  const h = new Date().getHours();
-  if (h < 5) return "ليلة سعيدة";
-  if (h < 12) return "صباح الخير";
-  if (h < 17) return "مساء النور";
-  if (h < 21) return "مساء الخير";
-  return "ليلة هادئة";
-});
+  const h = new Date().getHours()
+  if (h < 5) return "ليلة سعيدة"
+  if (h < 12) return "صباح الخير"
+  if (h < 17) return "مساء النور"
+  if (h < 21) return "مساء الخير"
+  
+  return "ليلة هادئة"
+})
 
 const heroStatCards = computed(() => [
   {
@@ -81,7 +82,7 @@ const heroStatCards = computed(() => [
     to: null,
     hint: "كورسات لم تنتهِ بعد",
   },
-]);
+])
 
 const quickActions = [
   {
@@ -126,110 +127,154 @@ const quickActions = [
     color: "primary",
     to: "/admin/settings",
   },
-];
+]
 
 // ---- Lifecycle ------------------------------------------------------------
 const fetchAll = async () => {
-  isLoading.value = true;
-  statsError.value = "";
-  await Promise.all([loadStats(), loadActiveYear(), loadNotifStats(), loadHealth()]);
-  isLoading.value = false;
-};
+  isLoading.value = true
+  statsError.value = ""
+  await Promise.all([loadStats(), loadActiveYear(), loadNotifStats(), loadHealth()])
+  isLoading.value = false
+}
 
 const loadStats = async () => {
   try {
-    const res = await adminApi.getDashboardStats();
-    const data = res?.data?.data || {};
+    const res = await adminApi.getDashboardStats()
+    const data = res?.data?.data || {}
+
     stats.value = {
       totalUsers: Number(data.totalUsers) || 0,
       totalTeachers: Number(data.totalTeachers) || 0,
       totalStudents: Number(data.totalStudents) || 0,
       activeCourses: Number(data.activeCourses) || 0,
-    };
+    }
   } catch (e) {
-    statsError.value = e?.response?.data?.message || "تعذّر تحميل إحصائيات النظام";
+    statsError.value = e?.response?.data?.message || "تعذّر تحميل إحصائيات النظام"
   }
-};
+}
 
 const loadActiveYear = async () => {
   try {
-    const res = await adminApi.getActiveAcademicYear();
-    activeYear.value = res?.data?.data?.academicYear ?? res?.data?.data ?? null;
+    const res = await adminApi.getActiveAcademicYear()
+
+    activeYear.value = res?.data?.data?.academicYear ?? res?.data?.data ?? null
   } catch {
-    activeYear.value = null;
+    activeYear.value = null
   }
-};
+}
 
 const loadNotifStats = async () => {
   try {
-    const res = await adminApi.getNotificationStatistics();
-    const d = res?.data?.data || {};
+    const res = await adminApi.getNotificationStatistics()
+    const d = res?.data?.data || {}
+
     notifStats.value = {
       total: Number(d.total) || 0,
       sent: Number(d.sent) || 0,
       pending: Number(d.pending) || 0,
       failed: Number(d.failed) || 0,
-    };
+    }
   } catch {
     /* silent — notifications stats are nice-to-have */
   }
-};
+}
 
 const loadHealth = async () => {
   try {
-    const baseURL = axiosInstance?.defaults?.baseURL || import.meta.env.VITE_API_BASE_URL || "";
-    const origin = baseURL.replace(/\/api\/?$/, "");
-    const res = await fetch(`${origin}/health`).then((r) => r.json());
-    apiHealthy.value = !!res?.success;
-    apiEnv.value = res?.data?.environment || "";
+    const baseURL = axiosInstance?.defaults?.baseURL || import.meta.env.VITE_API_BASE_URL || ""
+    const origin = baseURL.replace(/\/api\/?$/, "")
+    const res = await fetch(`${origin}/health`).then(r => r.json())
+
+    apiHealthy.value = !!res?.success
+    apiEnv.value = res?.data?.environment || ""
   } catch {
-    apiHealthy.value = false;
+    apiHealthy.value = false
   }
-};
+}
 
 const handleLogout = async () => {
-  try { await logout?.(); } catch { /* ignore */ }
-  router.push("/login");
-};
+  try { await logout?.() } catch { /* ignore */ }
+  router.push("/login")
+}
 
 onMounted(() => {
   if (!hasPermission || !hasPermission("super_admin")) {
-    router.push("/login");
-    return;
+    router.push("/login")
+    
+    return
   }
-  fetchAll();
-});
+  fetchAll()
+})
 </script>
 
 <template>
   <div class="admin-dashboard">
     <!-- Hero header -->
-    <VCard class="dash-hero mb-4" elevation="0" rounded="lg">
+    <VCard
+      class="dash-hero mb-4"
+      elevation="0"
+      rounded="lg"
+    >
       <div class="dash-hero-bg" />
       <VCardItem class="position-relative">
         <div class="d-flex align-center flex-wrap gap-3">
-          <VAvatar size="56" color="warning" class="hero-avatar">
-            <VIcon size="28" color="white">ri-shield-user-line</VIcon>
+          <VAvatar
+            size="56"
+            color="warning"
+            class="hero-avatar"
+          >
+            <VIcon
+              size="28"
+              color="white"
+            >
+              ri-shield-user-line
+            </VIcon>
           </VAvatar>
           <div class="flex-grow-1">
-            <div class="hero-greeting">{{ greeting }}،</div>
-            <h1 class="hero-name">{{ user?.name || "أيها السوبر أدمن" }}</h1>
+            <div class="hero-greeting">
+              {{ greeting }}،
+            </div>
+            <h1 class="hero-name">
+              {{ user?.name || "أيها السوبر أدمن" }}
+            </h1>
             <div class="hero-sub">
               مرحباً بك في لوحة التحكم — كل خيوط المنصة بين يديك.
             </div>
           </div>
           <div class="d-flex flex-column align-end gap-2">
-            <VChip :color="apiHealthy === true ? 'success' : apiHealthy === false ? 'error' : 'grey'"
-              variant="flat" size="small" class="font-weight-bold">
-              <span class="live-dot me-2" :class="{ ok: apiHealthy === true, down: apiHealthy === false }" />
+            <VChip
+              :color="apiHealthy === true ? 'success' : apiHealthy === false ? 'error' : 'grey'"
+              variant="flat"
+              size="small"
+              class="font-weight-bold"
+            >
+              <span
+                class="live-dot me-2"
+                :class="{ ok: apiHealthy === true, down: apiHealthy === false }"
+              />
               {{ apiHealthy === true ? 'النظام نشط' : apiHealthy === false ? 'تحقق من الاتصال' : 'فحص…' }}
-              <span v-if="apiEnv" class="ms-1 text-uppercase opacity-80">· {{ apiEnv }}</span>
+              <span
+                v-if="apiEnv"
+                class="ms-1 text-uppercase opacity-80"
+              >· {{ apiEnv }}</span>
             </VChip>
-            <VChip v-if="activeYear" color="primary" variant="tonal" size="small" prepend-icon="ri-calendar-check-line">
+            <VChip
+              v-if="activeYear"
+              color="primary"
+              variant="tonal"
+              size="small"
+              prepend-icon="ri-calendar-check-line"
+            >
               السنة النشطة: {{ activeYear.year || activeYear.name || activeYear.id }}
             </VChip>
-            <VChip v-else color="warning" variant="tonal" size="small" prepend-icon="ri-error-warning-line"
-              to="/admin/study-years/show-study-years">
+            <VChip
+              v-else
+              color="warning"
+              variant="tonal"
+              size="small"
+              prepend-icon="ri-error-warning-line"
+              to="/admin/study-years/show-study-years"
+            >
               لا توجد سنة دراسية فعّالة
             </VChip>
           </div>
@@ -238,79 +283,188 @@ onMounted(() => {
     </VCard>
 
     <!-- Error banner -->
-    <VAlert v-if="statsError" type="error" variant="tonal" closable class="mb-4" @click:close="statsError = ''">
+    <VAlert
+      v-if="statsError"
+      type="error"
+      variant="tonal"
+      closable
+      class="mb-4"
+      @click:close="statsError = ''"
+    >
       {{ statsError }}
     </VAlert>
 
     <!-- Hero stats -->
-    <VRow class="mb-2" dense>
-      <VCol v-for="card in heroStatCards" :key="card.key" cols="12" sm="6" lg="3">
-        <VCard class="stat-card h-100" elevation="0" rounded="lg" border :to="card.to || undefined"
-          :class="{ 'is-clickable': !!card.to }">
+    <VRow
+      class="mb-2"
+      dense
+    >
+      <VCol
+        v-for="card in heroStatCards"
+        :key="card.key"
+        cols="12"
+        sm="6"
+        lg="3"
+      >
+        <VCard
+          class="stat-card h-100"
+          elevation="0"
+          rounded="lg"
+          border
+          :to="card.to || undefined"
+          :class="{ 'is-clickable': !!card.to }"
+        >
           <VCardItem>
             <div class="d-flex align-center justify-space-between mb-2">
-              <VAvatar :color="card.color" size="44" rounded="lg">
-                <VIcon color="white" size="22">{{ card.icon }}</VIcon>
+              <VAvatar
+                :color="card.color"
+                size="44"
+                rounded="lg"
+              >
+                <VIcon
+                  color="white"
+                  size="22"
+                >
+                  {{ card.icon }}
+                </VIcon>
               </VAvatar>
-              <VIcon v-if="card.to" size="16" color="grey-darken-1">ri-arrow-left-s-line</VIcon>
+              <VIcon
+                v-if="card.to"
+                size="16"
+                color="grey-darken-1"
+              >
+                ri-arrow-left-s-line
+              </VIcon>
             </div>
-            <VSkeletonLoader v-if="isLoading" type="text" />
+            <VSkeletonLoader
+              v-if="isLoading"
+              type="text"
+            />
             <template v-else>
-              <div class="stat-value">{{ Number(card.value || 0).toLocaleString("en-IQ") }}</div>
+              <div class="stat-value">
+                {{ Number(card.value || 0).toLocaleString("en-IQ") }}
+              </div>
             </template>
-            <div class="stat-label">{{ card.label }}</div>
-            <div class="stat-hint">{{ card.hint }}</div>
+            <div class="stat-label">
+              {{ card.label }}
+            </div>
+            <div class="stat-hint">
+              {{ card.hint }}
+            </div>
           </VCardItem>
         </VCard>
       </VCol>
     </VRow>
 
     <!-- Notifications mini-snapshot -->
-    <VRow class="mb-2" dense>
-      <VCol cols="12" md="8">
-        <VCard elevation="0" rounded="lg" border class="notif-snapshot h-100">
+    <VRow
+      class="mb-2"
+      dense
+    >
+      <VCol
+        cols="12"
+        md="8"
+      >
+        <VCard
+          elevation="0"
+          rounded="lg"
+          border
+          class="notif-snapshot h-100"
+        >
           <VCardTitle class="d-flex align-center py-3 px-4">
-            <VIcon color="primary" class="me-2">ri-notification-3-line</VIcon>
+            <VIcon
+              color="primary"
+              class="me-2"
+            >
+              ri-notification-3-line
+            </VIcon>
             <span class="text-subtitle-1 font-weight-bold">حالة الإشعارات</span>
             <VSpacer />
-            <VBtn variant="text" size="small" prepend-icon="ri-arrow-left-line"
-              to="/admin/notifications/show-notifications">إدارة الإشعارات</VBtn>
+            <VBtn
+              variant="text"
+              size="small"
+              prepend-icon="ri-arrow-left-line"
+              to="/admin/notifications/show-notifications"
+            >
+              إدارة الإشعارات
+            </VBtn>
           </VCardTitle>
           <VDivider />
           <VCardItem>
             <VRow dense>
-              <VCol cols="6" md="3">
+              <VCol
+                cols="6"
+                md="3"
+              >
                 <div class="notif-pill notif-pill-primary">
-                  <div class="notif-pill-value">{{ notifStats.total }}</div>
-                  <div class="notif-pill-label">الإجمالي</div>
+                  <div class="notif-pill-value">
+                    {{ notifStats.total }}
+                  </div>
+                  <div class="notif-pill-label">
+                    الإجمالي
+                  </div>
                 </div>
               </VCol>
-              <VCol cols="6" md="3">
+              <VCol
+                cols="6"
+                md="3"
+              >
                 <div class="notif-pill notif-pill-success">
-                  <div class="notif-pill-value">{{ notifStats.sent }}</div>
-                  <div class="notif-pill-label">مرسلة</div>
+                  <div class="notif-pill-value">
+                    {{ notifStats.sent }}
+                  </div>
+                  <div class="notif-pill-label">
+                    مرسلة
+                  </div>
                 </div>
               </VCol>
-              <VCol cols="6" md="3">
+              <VCol
+                cols="6"
+                md="3"
+              >
                 <div class="notif-pill notif-pill-warning">
-                  <div class="notif-pill-value">{{ notifStats.pending }}</div>
-                  <div class="notif-pill-label">معلّقة</div>
+                  <div class="notif-pill-value">
+                    {{ notifStats.pending }}
+                  </div>
+                  <div class="notif-pill-label">
+                    معلّقة
+                  </div>
                 </div>
               </VCol>
-              <VCol cols="6" md="3">
+              <VCol
+                cols="6"
+                md="3"
+              >
                 <div class="notif-pill notif-pill-error">
-                  <div class="notif-pill-value">{{ notifStats.failed }}</div>
-                  <div class="notif-pill-label">فشلت</div>
+                  <div class="notif-pill-value">
+                    {{ notifStats.failed }}
+                  </div>
+                  <div class="notif-pill-label">
+                    فشلت
+                  </div>
                 </div>
               </VCol>
             </VRow>
           </VCardItem>
         </VCard>
       </VCol>
-      <VCol cols="12" md="4">
-        <VCard elevation="0" rounded="lg" border class="control-card h-100">
+      <VCol
+        cols="12"
+        md="4"
+      >
+        <VCard
+          elevation="0"
+          rounded="lg"
+          border
+          class="control-card h-100"
+        >
           <VCardTitle class="d-flex align-center py-3 px-4">
-            <VIcon color="error" class="me-2">ri-logout-box-line</VIcon>
+            <VIcon
+              color="error"
+              class="me-2"
+            >
+              ri-logout-box-line
+            </VIcon>
             <span class="text-subtitle-1 font-weight-bold">جلسة الحساب</span>
           </VCardTitle>
           <VDivider />
@@ -318,8 +472,14 @@ onMounted(() => {
             <div class="text-body-2 text-medium-emphasis mb-3">
               للحفاظ على أمان حسابك، سجّل خروج بعد انتهاء العمل.
             </div>
-            <VBtn block color="error" variant="tonal" prepend-icon="ri-logout-box-line" rounded="lg"
-              @click="handleLogout">
+            <VBtn
+              block
+              color="error"
+              variant="tonal"
+              prepend-icon="ri-logout-box-line"
+              rounded="lg"
+              @click="handleLogout"
+            >
               تسجيل الخروج
             </VBtn>
           </VCardItem>
@@ -328,31 +488,79 @@ onMounted(() => {
     </VRow>
 
     <!-- Quick actions grid -->
-    <VCard class="my-2" elevation="0" rounded="lg" border>
+    <VCard
+      class="my-2"
+      elevation="0"
+      rounded="lg"
+      border
+    >
       <VCardTitle class="d-flex align-center py-3 px-4">
-        <VIcon color="primary" class="me-2">ri-dashboard-2-line</VIcon>
+        <VIcon
+          color="primary"
+          class="me-2"
+        >
+          ri-dashboard-2-line
+        </VIcon>
         <span class="text-subtitle-1 font-weight-bold">مركز التحكم</span>
         <VSpacer />
-        <VBtn variant="text" size="small" prepend-icon="ri-refresh-line" :loading="isLoading" @click="fetchAll">
+        <VBtn
+          variant="text"
+          size="small"
+          prepend-icon="ri-refresh-line"
+          :loading="isLoading"
+          @click="fetchAll"
+        >
           تحديث الكل
         </VBtn>
       </VCardTitle>
       <VDivider />
       <VCardItem>
         <VRow dense>
-          <VCol v-for="action in quickActions" :key="action.title" cols="12" sm="6" md="4" lg="3">
-            <RouterLink :to="action.to" class="quick-card-link">
-              <VCard class="quick-card h-100" elevation="0" rounded="lg" border>
+          <VCol
+            v-for="action in quickActions"
+            :key="action.title"
+            cols="12"
+            sm="6"
+            md="4"
+            lg="3"
+          >
+            <RouterLink
+              :to="action.to"
+              class="quick-card-link"
+            >
+              <VCard
+                class="quick-card h-100"
+                elevation="0"
+                rounded="lg"
+                border
+              >
                 <VCardItem>
-                  <div class="quick-icon" :class="`bg-${action.color}-tint`">
-                    <VIcon :color="action.color" size="26">{{ action.icon }}</VIcon>
+                  <div
+                    class="quick-icon"
+                    :class="`bg-${action.color}-tint`"
+                  >
+                    <VIcon
+                      :color="action.color"
+                      size="26"
+                    >
+                      {{ action.icon }}
+                    </VIcon>
                   </div>
-                  <div class="quick-title">{{ action.title }}</div>
-                  <div class="quick-sub">{{ action.sub }}</div>
+                  <div class="quick-title">
+                    {{ action.title }}
+                  </div>
+                  <div class="quick-sub">
+                    {{ action.sub }}
+                  </div>
                 </VCardItem>
                 <VCardActions class="px-4 pb-3">
                   <VSpacer />
-                  <VIcon size="18" color="primary">ri-arrow-left-line</VIcon>
+                  <VIcon
+                    size="18"
+                    color="primary"
+                  >
+                    ri-arrow-left-line
+                  </VIcon>
                 </VCardActions>
               </VCard>
             </RouterLink>

@@ -1,12 +1,12 @@
 <template>
   <!-- :model-value="loading" -->
-  <v-overlay
+  <VOverlay
     :model-value="loading"
     class="align-center justify-center"
     persistent
     contained
   >
-    <v-card
+    <VCard
       class="loading-card d-flex flex-column align-center justify-center pa-8"
       color="surface"
       rounded="xl"
@@ -20,8 +20,8 @@
       "
     >
       <div class="loading-wrapper mb-6">
-        <div class="pulse-ring"></div>
-        <v-img
+        <div class="pulse-ring" />
+        <VImg
           v-if="centerLogoUrl"
           :src="centerLogoUrl"
           alt="Center Logo"
@@ -29,14 +29,19 @@
           width="100px"
           height="100px"
           cover
-        ></v-img>
-        <v-icon v-else size="80" color="primary" class="loading-icon">
+        />
+        <VIcon
+          v-else
+          size="80"
+          color="primary"
+          class="loading-icon"
+        >
           mdi-loading
-        </v-icon>
+        </VIcon>
       </div>
 
       <div class="progress-container mb-4">
-        <v-progress-linear
+        <VProgressLinear
           :model-value="progress"
           color="primary"
           height="8"
@@ -48,18 +53,18 @@
           <template #default>
             <span class="progress-text">{{ progress }}%</span>
           </template>
-        </v-progress-linear>
+        </VProgressLinear>
       </div>
 
       <div class="loading-text">
         جاري تحميل البيانات...
       </div>
-    </v-card>
-  </v-overlay>
+    </VCard>
+  </VOverlay>
 </template>
 
 <script setup>
-import { computed, defineProps } from "vue";
+import { computed, defineProps } from "vue"
 
 const props = defineProps({
   loading: {
@@ -74,7 +79,7 @@ const props = defineProps({
     type: Object,
     default: null,
   },
-});
+})
 
 const centerLogoUrl = computed(() => {
   if (
@@ -83,11 +88,14 @@ const centerLogoUrl = computed(() => {
     props.results.center_id.logo
   ) {
     const baseUrl =
-      props.results.content_url || "https://api.myexperience.center/storage/";
-    return `${baseUrl}${props.results.center_id.logo}`;
+      props.results.content_url || "https://api.myexperience.center/storage/"
+
+    
+    return `${baseUrl}${props.results.center_id.logo}`
   }
-  return null;
-});
+  
+  return null
+})
 </script>
 
 <style scoped>

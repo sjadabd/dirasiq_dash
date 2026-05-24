@@ -26,6 +26,7 @@ const chatAxios = axios.create({
 chatAxios.interceptors.request.use(
   async config => {
     const token = localStorage.getItem("accessToken")
+
     config.headers = config.headers || {}
     if (token) config.headers.Authorization = `Bearer ${token}`
 

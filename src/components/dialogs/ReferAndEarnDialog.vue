@@ -32,10 +32,18 @@ const referAndEarnSteps = [
 </script>
 
 <template>
-  <VDialog :model-value="props.isDialogVisible" max-width="900" @update:model-value="dialogVisibleUpdate">
+  <VDialog
+    :model-value="props.isDialogVisible"
+    max-width="900"
+    @update:model-value="dialogVisibleUpdate"
+  >
     <VCard class="refer-and-earn-dialog pa-sm-11 pa-3">
       <!-- 👉 dialog close btn -->
-      <DialogCloseBtn variant="text" size="default" @click="emit('update:isDialogVisible', false)" />
+      <DialogCloseBtn
+        variant="text"
+        size="default"
+        @click="emit('update:isDialogVisible', false)"
+      />
 
       <VCardText class="pt-5">
         <div class="text-center pb-3">
@@ -49,10 +57,23 @@ const referAndEarnSteps = [
         </div>
 
         <VRow class="text-center my-6">
-          <VCol v-for="step in referAndEarnSteps" :key="step.title" cols="12" sm="4">
+          <VCol
+            v-for="step in referAndEarnSteps"
+            :key="step.title"
+            cols="12"
+            sm="4"
+          >
             <div>
-              <VAvatar variant="tonal" size="88" color="primary" class="mb-4">
-                <VIcon size="40" :icon="step.icon" />
+              <VAvatar
+                variant="tonal"
+                size="88"
+                color="primary"
+                class="mb-4"
+              >
+                <VIcon
+                  size="40"
+                  :icon="step.icon"
+                />
               </VAvatar>
 
               <div class="text-body-1 font-weight-medium mb-2 text-high-emphasis">
@@ -75,8 +96,14 @@ const referAndEarnSteps = [
         <p class="mb-2">
           Enter your friend's email address and invite them to join mulhim-iq 😍
         </p>
-        <VForm class="d-flex align-center gap-4 mb-6" @submit.prevent="() => { }">
-          <VTextField placeholder="johnDoe@gmail.com" density="compact" />
+        <VForm
+          class="d-flex align-center gap-4 mb-6"
+          @submit.prevent="() => { }"
+        >
+          <VTextField
+            placeholder="johnDoe@gmail.com"
+            density="compact"
+          />
 
           <VBtn type="submit">
             Submit
@@ -90,8 +117,15 @@ const referAndEarnSteps = [
         <p class="mb-2">
           You can also copy and send it or share it on your social media. 🚀
         </p>
-        <VForm class="d-flex align-center flex-wrap gap-4" @submit.prevent="() => { }">
-          <VTextField placeholder="http://referral.link" class="refer-link-input" density="compact">
+        <VForm
+          class="d-flex align-center flex-wrap gap-4"
+          @submit.prevent="() => { }"
+        >
+          <VTextField
+            placeholder="http://referral.link"
+            class="refer-link-input"
+            density="compact"
+          >
             <template #append-inner>
               <VBtn variant="text">
                 COPY LINK
@@ -100,16 +134,37 @@ const referAndEarnSteps = [
           </VTextField>
 
           <div class="d-flex gap-1">
-            <VBtn icon class="rounded" color="#3B5998">
-              <VIcon color="white" icon="ri-facebook-circle-line" />
+            <VBtn
+              icon
+              class="rounded"
+              color="#3B5998"
+            >
+              <VIcon
+                color="white"
+                icon="ri-facebook-circle-line"
+              />
             </VBtn>
 
-            <VBtn icon class="rounded" color="#55ACEE">
-              <VIcon color="white" icon="ri-twitter-line" />
+            <VBtn
+              icon
+              class="rounded"
+              color="#55ACEE"
+            >
+              <VIcon
+                color="white"
+                icon="ri-twitter-line"
+              />
             </VBtn>
 
-            <VBtn icon class="rounded" color="#007BB6">
-              <VIcon color="white" icon="ri-linkedin-line" />
+            <VBtn
+              icon
+              class="rounded"
+              color="#007BB6"
+            >
+              <VIcon
+                color="white"
+                icon="ri-linkedin-line"
+              />
             </VBtn>
           </div>
         </VForm>

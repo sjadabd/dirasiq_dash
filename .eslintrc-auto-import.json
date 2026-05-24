@@ -367,6 +367,11 @@
     "useChatRealtime": true,
     "API_BASE_URL": true,
     "CHAT_BASE_URL": true,
-    "USE_LOCAL": true
+    "USE_LOCAL": true,
+    "resolveContentUrl": true,
+    "useContentUrl": true,
+    "useGoogleIdentity": true,
+    "realtimeSocket": true,
+    "useRealtimeSocket": true
   }
 }

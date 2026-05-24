@@ -3,7 +3,13 @@ const buyNowUrl = typeof window !== 'undefined' && 'isMarketplace' in window && 
 </script>
 
 <template>
-  <a class="buy-now-button d-print-none" role="button" rel="noopener noreferrer" :href="buyNowUrl" target="_blank">
+  <a
+    class="buy-now-button d-print-none"
+    role="button"
+    rel="noopener noreferrer"
+    :href="buyNowUrl"
+    target="_blank"
+  >
     Buy Now
     <span class="button-inner" />
   </a>

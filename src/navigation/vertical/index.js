@@ -1,7 +1,7 @@
 export default [
   // super_admin
   {
-    heading: 'لوحة التحكم', type: 'super_admin'
+    heading: 'لوحة التحكم', type: 'super_admin',
   },
   {
     title: 'الصفحة الرئيسية',
@@ -57,6 +57,7 @@ export default [
     type: 'super_admin',
     icon: { icon: 'ri-settings-3-line' },
   },
+
   // Phase 8 — chat admin (super_admin view)
   { heading: 'المحادثات', type: 'super_admin' },
   {
@@ -71,6 +72,7 @@ export default [
     type: 'super_admin',
     icon: { icon: 'ri-shield-keyhole-line' },
   },
+
   // super_admin
 
   // teacher
@@ -160,6 +162,7 @@ export default [
     type: 'teacher',
     icon: { icon: 'ri-chat-3-line' },
   },
+
   // سجلات الإشراف admin-only — المعلم يعرف عمليات مجموعاته فعلياً لأنه هو من يقوم
   // بها؛ السجلات للمراجعة من قبل الـ super_admin.
   {
@@ -183,5 +186,6 @@ export default [
     type: 'teacher',
     icon: { icon: 'ri-file-list-3-line' },
   },
+
   // teacher
 ]

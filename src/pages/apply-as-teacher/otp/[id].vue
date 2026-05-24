@@ -25,6 +25,7 @@ const infoMsg = ref('')
 
 // Auto-focus on mount
 const codeInputRef = ref(null)
+
 onMounted(() => {
   // Tiny tick so the v-text-field has a DOM node.
   setTimeout(() => {
@@ -39,9 +40,11 @@ function onlyDigits (val) {
 async function verify () {
   errorMsg.value = ''
   infoMsg.value = ''
+
   const c = onlyDigits(code.value)
   if (c.length !== 6) {
     errorMsg.value = 'الرمز يجب أن يكون 6 أرقام'
+    
     return
   }
   verifying.value = true
@@ -86,9 +89,15 @@ async function resend () {
   <div class="otp-wrap">
     <div class="otp-card">
       <div class="otp-icon">
-        <VIcon icon="ri-mail-check-line" size="44" color="primary" />
+        <VIcon
+          icon="ri-mail-check-line"
+          size="44"
+          color="primary"
+        />
       </div>
-      <h1 class="otp-heading">أدخل رمز التحقق</h1>
+      <h1 class="otp-heading">
+        أدخل رمز التحقق
+      </h1>
       <p class="otp-sub">
         أرسلنا رمزاً مكوّناً من 6 أرقام إلى:<br>
         <strong>{{ email || 'بريدك الإلكتروني' }}</strong>
@@ -119,7 +128,10 @@ async function resend () {
         :disabled="onlyDigits(code).length !== 6"
         @click="verify"
       >
-        <VIcon start icon="ri-shield-check-line" />
+        <VIcon
+          start
+          icon="ri-shield-check-line"
+        />
         تأكيد
       </VBtn>
 
@@ -130,7 +142,10 @@ async function resend () {
         :loading="resending"
         @click="resend"
       >
-        <VIcon start icon="ri-refresh-line" />
+        <VIcon
+          start
+          icon="ri-refresh-line"
+        />
         إرسال رمز جديد
       </VBtn>
 

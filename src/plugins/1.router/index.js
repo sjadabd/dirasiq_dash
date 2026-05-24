@@ -32,6 +32,7 @@ const router = createRouter({
         const ref = to?.query?.ref
         const query = {}
         if (ref) query.ref = ref
+        
         return { path: '/login', query }
       },
     })
@@ -48,6 +49,7 @@ router.onError(err => {
     msg.includes('Loading chunk')
   ) {
     const current = router.currentRoute.value.fullPath
+
     window.location.assign(current)
   }
 })

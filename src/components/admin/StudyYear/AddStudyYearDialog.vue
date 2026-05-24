@@ -1,16 +1,29 @@
 <template>
-  <VDialog v-model="dialog" max-width="900px">
+  <VDialog
+    v-model="dialog"
+    max-width="900px"
+  >
     <VCard>
       <VCardTitle class="d-flex align-center py-4 px-6">
-        <VIcon icon="ri-add-line" color="primary" class="me-2" size="24" />
-        <h3 class="text-h5 font-weight-bold">إضافة</h3>
+        <VIcon
+          icon="ri-add-line"
+          color="primary"
+          class="me-2"
+          size="24"
+        />
+        <h3 class="text-h5 font-weight-bold">
+          إضافة
+        </h3>
       </VCardTitle>
       <VDivider />
       <VCardText>
         <VContainer>
           <VForm ref="noteForm">
             <VRow>
-              <VCol cols="12" md="12">
+              <VCol
+                cols="12"
+                md="12"
+              >
                 <VTextField
                   v-model="formData.year"
                   :rules="rules.required"
@@ -27,19 +40,23 @@
         <VBtn
           color="grey"
           variant="outlined"
-          @click="closeDialog"
           :disabled="loading"
+          @click="closeDialog"
         >
-          <VIcon start>ri-close-line</VIcon>
+          <VIcon start>
+            ri-close-line
+          </VIcon>
           الغاء
         </VBtn>
         <VBtn
           color="primary"
           :loading="loading"
-          @click="saveNote"
           variant="elevated"
+          @click="saveNote"
         >
-          <VIcon start>ri-save-line</VIcon>
+          <VIcon start>
+            ri-save-line
+          </VIcon>
           حفظ
         </VBtn>
       </VCardActions>
@@ -48,7 +65,7 @@
 </template>
 
 <script>
-import adminApi from "@/api/admin/admin_api";
+import adminApi from "@/api/admin/admin_api"
 
 export default {
   name: "AddStudyYearDialog",
@@ -66,27 +83,27 @@ export default {
       formData: {
         year: null,
       },
-    };
+    }
   },
   computed: {
     dialog: {
       get() {
-        return this.modelValue;
+        return this.modelValue
       },
       set(value) {
-        this.$emit("update:modelValue", value);
+        this.$emit("update:modelValue", value)
       },
     },
     rules() {
       return {
-        required: [(value) => !!value || "هذا الحقل مطلوب"],
-      };
+        required: [value => !!value || "هذا الحقل مطلوب"],
+      }
     },
   },
   watch: {
     modelValue(newVal) {
       if (newVal) {
-        this.resetForm();
+        this.resetForm()
       }
     },
   },
@@ -94,49 +111,49 @@ export default {
     resetForm() {
       this.formData = {
         year: null,
-      };
-      this.isDragOver = false;
+      }
+      this.isDragOver = false
     },
     closeDialog() {
-      this.resetForm();
-      this.$emit("close");
+      this.resetForm()
+      this.$emit("close")
     },
     async saveNote() {
-      const { valid } = await this.$refs.noteForm.validate();
-      if (!valid) return;
+      const { valid } = await this.$refs.noteForm.validate()
+      if (!valid) return
 
-      this.loading = true;
+      this.loading = true
 
       try {
         const bankData = {
           year: this.formData.year,
-        };
+        }
 
-        const response = await adminApi.createAcademicYear(bankData);
+        const response = await adminApi.createAcademicYear(bankData)
 
         this.$emit(
           "showAlert",
           "success",
-          response.data.message || "تم إضافة السنة بنجاح"
-        );
+          response.data.message || "تم إضافة السنة بنجاح",
+        )
 
-        this.$emit("dataAdded", response.data.message);
-        this.closeDialog();
+        this.$emit("dataAdded", response.data.message)
+        this.closeDialog()
       } catch (error) {
-        let errorMessage = "حدث خطأ أثناء إضافة السنة";
+        let errorMessage = "حدث خطأ أثناء إضافة السنة"
 
         if (error.response?.status === 401) {
-          errorMessage = "غير مصرح لك بالعملية";
+          errorMessage = "غير مصرح لك بالعملية"
         } else if (error.response?.data?.message) {
-          errorMessage = error.response.data.message;
+          errorMessage = error.response.data.message
         }
-        this.$emit("showAlert", "error", errorMessage);
+        this.$emit("showAlert", "error", errorMessage)
       } finally {
-        this.loading = false;
+        this.loading = false
       }
     },
   },
-};
+}
 </script>
 
 <style scoped>

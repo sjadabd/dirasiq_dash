@@ -20,22 +20,28 @@ function go (slot) {
 
 function statusBadge (status) {
   switch (status) {
-    case 'uploading': return { color: 'primary',   label: 'يرفع'   }
-    case 'syncing':   return { color: 'info',      label: 'مزامنة' }
-    case 'completed': return { color: 'success',   label: 'تم'     }
-    case 'failed':    return { color: 'error',     label: 'فشل'    }
-    case 'cancelled': return { color: 'secondary', label: 'مُلغى'  }
-    default:          return { color: 'default',   label: status   }
+  case 'uploading': return { color: 'primary',   label: 'يرفع'   }
+  case 'syncing':   return { color: 'info',      label: 'مزامنة' }
+  case 'completed': return { color: 'success',   label: 'تم'     }
+  case 'failed':    return { color: 'error',     label: 'فشل'    }
+  case 'cancelled': return { color: 'secondary', label: 'مُلغى'  }
+  default:          return { color: 'default',   label: status   }
   }
 }
 </script>
 
 <template>
   <Teleport to="body">
-    <transition name="uploads-fade">
-      <div v-if="visible" class="uploads-widget">
+    <Transition name="uploads-fade">
+      <div
+        v-if="visible"
+        class="uploads-widget"
+      >
         <!-- Header / collapsed chip -->
-        <div class="uploads-header" @click="store.toggleExpanded()">
+        <div
+          class="uploads-header"
+          @click="store.toggleExpanded()"
+        >
           <div class="header-left">
             <VIcon
               :icon="store.isBusy ? 'ri-loader-2-line' : 'ri-checkbox-circle-line'"
@@ -62,8 +68,11 @@ function statusBadge (status) {
         </div>
 
         <!-- Expanded body -->
-        <transition name="uploads-collapse">
-          <div v-if="store.expanded" class="uploads-body">
+        <Transition name="uploads-collapse">
+          <div
+            v-if="store.expanded"
+            class="uploads-body"
+          >
             <div
               v-for="slot in store.items"
               :key="slot.id"
@@ -87,8 +96,14 @@ function statusBadge (status) {
                   {{ statusBadge(slot.status).label }}
                 </VChip>
               </div>
-              <div v-if="slot.courseTitle" class="row-course">
-                <VIcon icon="ri-folder-video-line" size="11" />
+              <div
+                v-if="slot.courseTitle"
+                class="row-course"
+              >
+                <VIcon
+                  icon="ri-folder-video-line"
+                  size="11"
+                />
                 {{ slot.courseTitle }}
               </div>
               <VProgressLinear
@@ -100,20 +115,29 @@ function statusBadge (status) {
                 rounded
                 class="mt-1"
               />
-              <div v-if="slot.errorMessage" class="row-err">{{ slot.errorMessage }}</div>
+              <div
+                v-if="slot.errorMessage"
+                class="row-err"
+              >
+                {{ slot.errorMessage }}
+              </div>
               <div class="row-actions">
                 <button
                   v-if="slot.status === 'uploading' || slot.status === 'syncing'"
                   type="button"
                   class="row-action danger"
                   @click="store.cancel(slot.id)"
-                >إلغاء</button>
+                >
+                  إلغاء
+                </button>
                 <button
                   v-else
                   type="button"
                   class="row-action"
                   @click="store.evict(slot.id)"
-                >إخفاء</button>
+                >
+                  إخفاء
+                </button>
               </div>
             </div>
 
@@ -122,11 +146,13 @@ function statusBadge (status) {
               type="button"
               class="clear-btn"
               @click="store.clearFinished()"
-            >مسح المكتمل</button>
+            >
+              مسح المكتمل
+            </button>
           </div>
-        </transition>
+        </Transition>
       </div>
-    </transition>
+    </Transition>
   </Teleport>
 </template>
 

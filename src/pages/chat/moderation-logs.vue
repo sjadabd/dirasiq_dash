@@ -42,25 +42,25 @@ function actionLabel(v) {
 
 function actionColor(v) {
   switch (v) {
-    case "delete_message":
-    case "kick":
-    case "archive":
-      return "error"
-    case "mute":
-    case "set_mode":
-    case "unarchive":
-      return "warning"
-    case "pin":
-    case "unpin":
-    case "rename":
-    case "update_group":
-      return "primary"
-    case "create":
-    case "add_member":
-    case "promote":
-      return "success"
-    default:
-      return "default"
+  case "delete_message":
+  case "kick":
+  case "archive":
+    return "error"
+  case "mute":
+  case "set_mode":
+  case "unarchive":
+    return "warning"
+  case "pin":
+  case "unpin":
+  case "rename":
+  case "update_group":
+    return "primary"
+  case "create":
+  case "add_member":
+  case "promote":
+    return "success"
+  default:
+    return "default"
   }
 }
 
@@ -115,19 +115,37 @@ onMounted(() => fetchRows())
 
 <template>
   <div>
-    <VCard class="my-4" elevation="3" rounded="lg">
+    <VCard
+      class="my-4"
+      elevation="3"
+      rounded="lg"
+    >
       <VCardTitle class="d-flex align-center py-4 px-6">
-        <VIcon icon="ri-shield-keyhole-line" color="primary" class="me-2" size="24" />
-        <h3 class="text-h5 font-weight-bold">سجلات الإشراف</h3>
+        <VIcon
+          icon="ri-shield-keyhole-line"
+          color="primary"
+          class="me-2"
+          size="24"
+        />
+        <h3 class="text-h5 font-weight-bold">
+          سجلات الإشراف
+        </h3>
         <VSpacer />
-        <VChip color="primary" variant="elevated" class="font-weight-medium">
+        <VChip
+          color="primary"
+          variant="elevated"
+          class="font-weight-medium"
+        >
           {{ numberWithComma(total) }} سجل
         </VChip>
       </VCardTitle>
       <VDivider />
       <VCardItem>
         <VRow dense>
-          <VCol cols="12" md="3">
+          <VCol
+            cols="12"
+            md="3"
+          >
             <VSelect
               v-model="filters.action"
               :items="ACTION_OPTIONS"
@@ -137,7 +155,10 @@ onMounted(() => fetchRows())
               density="comfortable"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol
+            cols="12"
+            md="3"
+          >
             <VTextField
               v-model="filters.conversationId"
               label="معرّف المحادثة (اختياري)"
@@ -146,7 +167,10 @@ onMounted(() => fetchRows())
               @keyup.enter="fetchRows"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol
+            cols="12"
+            md="3"
+          >
             <VTextField
               v-model="filters.actorUserId"
               label="معرّف المنفّذ (اختياري)"
@@ -155,7 +179,12 @@ onMounted(() => fetchRows())
               @keyup.enter="fetchRows"
             />
           </VCol>
-          <VCol cols="12" md="3" class="d-flex align-center" style="gap: 8px;">
+          <VCol
+            cols="12"
+            md="3"
+            class="d-flex align-center"
+            style="gap: 8px;"
+          >
             <VBtn
               color="primary"
               variant="tonal"
@@ -189,22 +218,44 @@ onMounted(() => fetchRows())
         <VTable hover>
           <thead>
             <tr>
-              <th class="text-start">الوقت</th>
-              <th class="text-start">العملية</th>
-              <th class="text-start">المنفّذ</th>
-              <th class="text-start">المستهدَف</th>
-              <th class="text-start">المحادثة</th>
-              <th class="text-start">السبب</th>
+              <th class="text-start">
+                الوقت
+              </th>
+              <th class="text-start">
+                العملية
+              </th>
+              <th class="text-start">
+                المنفّذ
+              </th>
+              <th class="text-start">
+                المستهدَف
+              </th>
+              <th class="text-start">
+                المحادثة
+              </th>
+              <th class="text-start">
+                السبب
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="loading">
-              <td colspan="6" class="text-center py-6">
-                <VProgressCircular indeterminate color="primary" size="32" />
+              <td
+                colspan="6"
+                class="text-center py-6"
+              >
+                <VProgressCircular
+                  indeterminate
+                  color="primary"
+                  size="32"
+                />
               </td>
             </tr>
             <tr v-else-if="!items.length">
-              <td colspan="6" class="text-center text-medium-emphasis py-8">
+              <td
+                colspan="6"
+                class="text-center text-medium-emphasis py-8"
+              >
                 لا توجد عمليات تطابق التصفية.
               </td>
             </tr>

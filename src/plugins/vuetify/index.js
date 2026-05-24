@@ -1,16 +1,16 @@
-import { deepMerge } from "@antfu/utils";
-import '@mdi/font/css/materialdesignicons.css';
-import { themeConfig } from "@themeConfig";
-import { createVuetify } from "vuetify";
-import { VBtn } from "vuetify/components/VBtn";
-import { VDateInput } from "vuetify/labs/VDateInput";
-import defaults from "./defaults";
-import { icons } from "./icons";
-import { themes } from "./theme";
+import { deepMerge } from "@antfu/utils"
+import '@mdi/font/css/materialdesignicons.css'
+import { themeConfig } from "@themeConfig"
+import { createVuetify } from "vuetify"
+import { VBtn } from "vuetify/components/VBtn"
+import { VDateInput } from "vuetify/labs/VDateInput"
+import defaults from "./defaults"
+import { icons } from "./icons"
+import { themes } from "./theme"
 
 // Styles
-import "@core/scss/template/libs/vuetify/index.scss";
-import "vuetify/styles";
+import "@core/scss/template/libs/vuetify/index.scss"
+import "vuetify/styles"
 
 export default function (app) {
   const cookieThemeValues = {
@@ -19,9 +19,9 @@ export default function (app) {
       defaultTheme: "light",
       themes,
     },
-  };
+  }
 
-  const optionTheme = deepMerge({ themes }, cookieThemeValues);
+  const optionTheme = deepMerge({ themes }, cookieThemeValues)
 
   const vuetify = createVuetify({
     components: {
@@ -43,7 +43,7 @@ export default function (app) {
         xl: 1920,
       },
     },
-  });
+  })
 
-  app.use(vuetify);
+  app.use(vuetify)
 }

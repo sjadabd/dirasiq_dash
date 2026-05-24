@@ -1,4 +1,4 @@
-import axiosInstance from "@/utils/axios.js";
+import axiosInstance from "@/utils/axios.js"
 
 class Auth {
   async loginInGoogele(userData) {
@@ -7,22 +7,18 @@ class Auth {
       googleToken: userData.idToken,
       oneSignalPlayerId: userData.oneSignalPlayerId,
       userType: userData.userType || "teacher",
+
       // optional referral code for teacher invitations
       referralCode: userData.referralCode,
-    };
-    const response = await axiosInstance.post(`/auth/google-auth`, requestData);
+    }
 
-    return response;
+    return await axiosInstance.post(`/auth/google-auth`, requestData)
   }
   async login(userData) {
-    const response = await axiosInstance.post(`/auth/login`, userData);
-
-    return response;
+    return await axiosInstance.post(`/auth/login`, userData)
   }
   async logout() {
-    const response = await axiosInstance.post(`/auth/logout`);
-
-    return response;
+    return await axiosInstance.post(`/auth/logout`)
   }
 
   // Teacher registration & auth flows
@@ -51,4 +47,4 @@ class Auth {
     return await axiosInstance.post(`/auth/reset-password`, payload)
   }
 }
-export default new Auth();
+export default new Auth()

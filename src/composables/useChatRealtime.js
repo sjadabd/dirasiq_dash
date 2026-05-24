@@ -94,6 +94,7 @@ async function fetchConversations() {
   try {
     const res = await chatAxios.get("/chat/me/conversations?page=1&limit=50")
     const list = res.data?.data ?? []
+
     conversations.value = list
     recomputeUnread()
   } catch (e) {
@@ -114,8 +115,10 @@ function bumpConversationToTop(convId, lastMessage) {
   const idx = conversations.value.findIndex(c => c.id === convId)
   if (idx === -1) return false
   const conv = conversations.value[idx]
+
   conv.lastMessage = lastMessage
   conv.lastMessageAt = lastMessage?.createdAt ?? conv.lastMessageAt
+
   // bump unread only for messages from someone other than me, and only
   // when the conversation is NOT currently open
   if (
@@ -139,6 +142,8 @@ function bumpConversationToTop(convId, lastMessage) {
 async function openConversation(convId) {
   if (!convId) return
   currentId.value = convId
+
+
   // Optimistic zero — server-side broadcast confirms in ~100ms.
   const tile = conversations.value.find(c => c.id === convId)
   if (tile && tile.unreadCount > 0) {
@@ -155,9 +160,11 @@ async function fetchCurrentConversation() {
     const res = await chatAxios.get(`/chat/conversations/${currentId.value}`)
     const data = res.data?.data ?? {}
     const conv = data.conversation ?? data
+
     // Stitch `me.role` onto the conversation row — mirrors the Flutter fix.
     if (data?.me) {
       const role = data.me.role
+
       conv.myRole = role === "owner" || role === "admin" || role === "member" ? role : "member"
       if (data.me.notificationsMuted === true) conv.notificationsMuted = true
     }
@@ -175,6 +182,7 @@ async function fetchMessages({ reset = false } = {}) {
     let url = `/chat/conversations/${currentId.value}/messages?limit=30`
     if (!reset && messages.value.length) {
       const oldest = messages.value[messages.value.length - 1]
+
       url += `&before=${oldest.id}`
     }
     const res = await chatAxios.get(url)
@@ -205,6 +213,7 @@ async function markRead(lastReadMessageId) {
       `/chat/conversations/${currentId.value}/read`,
       lastReadMessageId ? { lastReadMessageId } : {},
     )
+
     const tile = conversations.value.find(c => c.id === currentId.value)
     if (tile && tile.unreadCount > 0) {
       tile.unreadCount = 0
@@ -227,6 +236,7 @@ async function sendMessage({ body, attachmentIds } = {}) {
   if (!trimmed && !(attachmentIds?.length)) return
 
   const clientId = newClientId()
+
   const optimistic = {
     id: clientId,
     clientMessageId: clientId,
@@ -238,6 +248,7 @@ async function sendMessage({ body, attachmentIds } = {}) {
     attachments: [],
     status: "sending",
   }
+
   messages.value = [optimistic, ...messages.value]
 
   sending.value = true
@@ -247,7 +258,9 @@ async function sendMessage({ body, attachmentIds } = {}) {
       ...(trimmed ? { body: trimmed } : {}),
       ...(attachmentIds?.length ? { attachmentIds } : {}),
     })
+
     const saved = res.data?.data ?? null
+
     _reconcileOptimistic(clientId, saved)
   } catch (_) {
     const idx = messages.value.findIndex(m => m.clientMessageId === clientId)
@@ -272,7 +285,9 @@ async function retrySend(failed) {
         ? { attachmentIds: failed.attachments.map(a => a.id) }
         : {}),
     })
+
     const saved = res.data?.data ?? null
+
     _reconcileOptimistic(failed.clientMessageId, saved)
   } catch (_) {
     messages.value[idx] = { ...failed, status: "failed" }
@@ -306,8 +321,10 @@ function _reconcileOptimistic(clientId, saved) {
 async function uploadAttachment(file) {
   if (!currentId.value || !file) return null
   const form = new FormData()
+
   form.append("conversationId", currentId.value)
   form.append("file", file)
+
   const res = await chatAxios.post("/chat/attachments", form, {
     headers: { "Content-Type": "multipart/form-data" },
   })
@@ -321,6 +338,7 @@ async function uploadAttachment(file) {
 
 async function deleteMessage(messageId) {
   await chatAdminApi.deleteMessage(messageId)
+
   const idx = messages.value.findIndex(m => m.id === messageId)
   if (idx !== -1) {
     messages.value[idx] = { ...messages.value[idx], deletedAt: new Date().toISOString() }
@@ -329,6 +347,7 @@ async function deleteMessage(messageId) {
 
 async function togglePin(message) {
   await chatAdminApi.togglePin(message.id, !message.isPinned)
+
   const idx = messages.value.findIndex(m => m.id === message.id)
   if (idx !== -1) {
     messages.value[idx] = { ...messages.value[idx], isPinned: !message.isPinned }
@@ -358,6 +377,7 @@ async function removeMember(memberUserId) {
 async function muteMember(memberUserId, hours) {
   if (!currentId.value) return
   const muteUntil = new Date(Date.now() + hours * 3600_000).toISOString()
+
   await chatAdminApi.updateMember(currentId.value, memberUserId, { muteUntil })
   await fetchCurrentConversation()
 }
@@ -414,6 +434,7 @@ function _onMessageNew(data) {
       && m.senderId === _myUserId
       && (m.body ?? "") === (data.body ?? ""),
     )
+
     if (optIdx !== -1) {
       messages.value[optIdx] = {
         ...data,
@@ -426,6 +447,7 @@ function _onMessageNew(data) {
   }
 
   messages.value = [{ ...data, status: "sent" }, ...messages.value]
+
   // Mark read since the user is looking at it.
   markRead(data.id).catch(() => undefined)
 }
@@ -453,6 +475,7 @@ function _onTyping(data) {
   if (!data || data.conversationId !== currentId.value) return
   if (data.userId === _myUserId) return
   const m = currentMembers.value.find(x => x.userId === data.userId)
+
   typingUserName.value = m?.profile?.name ?? "يكتب"
   if (_typingDismissTimer) clearTimeout(_typingDismissTimer)
   _typingDismissTimer = setTimeout(() => { typingUserName.value = null }, 4000)
@@ -461,6 +484,7 @@ function _onTyping(data) {
 function _onConversationRead(data) {
   if (!data) return
   const convId = data.conversationId
+
   // Only my-own read should zero the count.
   if (data.userId !== _myUserId) return
   const tile = conversations.value.find(c => c.id === convId)
@@ -480,6 +504,7 @@ function _onMembersChanged(data) {
   if (!data) return
   if (data.conversationId === currentId.value) {
     fetchCurrentConversation()
+
     // If I was the one removed, the next fetch will 403 → controller clears.
   }
   fetchConversations()

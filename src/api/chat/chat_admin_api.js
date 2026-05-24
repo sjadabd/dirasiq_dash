@@ -18,7 +18,7 @@ function buildQuery(opts = {}) {
 class ChatAdmin {
   // ---------------------------------------------------- conversations (read)
   async listConversations(opts = {}) {
-    const res = await chatAxios.get(
+    return await chatAxios.get(
       `/chat/admin/conversations${buildQuery({
         page: opts.page,
         limit: opts.limit,
@@ -28,29 +28,23 @@ class ChatAdmin {
         teacherId: opts.teacherId,
       })}`,
     )
-
-    return res
   }
 
   async getConversation(id) {
-    const res = await chatAxios.get(`/chat/admin/conversations/${id}`)
-
-    return res
+    return await chatAxios.get(`/chat/admin/conversations/${id}`)
   }
 
   async listMessages(id, opts = {}) {
-    const res = await chatAxios.get(
+    return await chatAxios.get(
       `/chat/admin/conversations/${id}/messages${buildQuery({
         before: opts.before,
         limit: opts.limit,
       })}`,
     )
-
-    return res
   }
 
   async listModerationLogs(opts = {}) {
-    const res = await chatAxios.get(
+    return await chatAxios.get(
       `/chat/admin/moderation-logs${buildQuery({
         page: opts.page,
         limit: opts.limit,
@@ -59,8 +53,6 @@ class ChatAdmin {
         action: opts.action,
       })}`,
     )
-
-    return res
   }
 
   // -------------------------------- conversation management (existing /chat)
@@ -70,48 +62,34 @@ class ChatAdmin {
   // until then the dashboard surfaces a 403 toast for those.
 
   async updateGroup(id, payload) {
-    const res = await chatAxios.put(`/chat/groups/${id}`, payload)
-
-    return res
+    return await chatAxios.put(`/chat/groups/${id}`, payload)
   }
 
   async archiveGroup(id) {
-    const res = await chatAxios.delete(`/chat/groups/${id}`)
-
-    return res
+    return await chatAxios.delete(`/chat/groups/${id}`)
   }
 
   async addMembers(id, userIds) {
-    const res = await chatAxios.post(`/chat/groups/${id}/members`, { userIds })
-
-    return res
+    return await chatAxios.post(`/chat/groups/${id}/members`, { userIds })
   }
 
   async removeMember(id, memberId) {
-    const res = await chatAxios.delete(`/chat/groups/${id}/members/${memberId}`)
-
-    return res
+    return await chatAxios.delete(`/chat/groups/${id}/members/${memberId}`)
   }
 
   async updateMember(id, memberId, payload) {
-    const res = await chatAxios.patch(
+    return await chatAxios.patch(
       `/chat/groups/${id}/members/${memberId}`,
       payload,
     )
-
-    return res
   }
 
   async deleteMessage(messageId) {
-    const res = await chatAxios.delete(`/chat/messages/${messageId}`)
-
-    return res
+    return await chatAxios.delete(`/chat/messages/${messageId}`)
   }
 
   async togglePin(messageId, pinned) {
-    const res = await chatAxios.post(`/chat/messages/${messageId}/pin`, { pinned })
-
-    return res
+    return await chatAxios.post(`/chat/messages/${messageId}/pin`, { pinned })
   }
 }
 

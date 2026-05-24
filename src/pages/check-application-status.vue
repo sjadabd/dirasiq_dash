@@ -34,6 +34,7 @@ function onlyDigits (v) {
 
 function emailValid (v) {
   const s = String(v || '').trim()
+  
   return s.length > 5 && s.includes('@') && s.includes('.')
 }
 
@@ -42,6 +43,7 @@ async function requestOtp () {
   infoMsg.value = ''
   if (!emailValid(email.value)) {
     errorMsg.value = 'صيغة البريد الإلكتروني غير صحيحة'
+    
     return
   }
   busy.value = true
@@ -63,14 +65,17 @@ async function requestOtp () {
 async function verifyOtp () {
   errorMsg.value = ''
   infoMsg.value = ''
+
   const c = onlyDigits(code.value)
   if (c.length !== 6) {
     errorMsg.value = 'الرمز يجب أن يكون 6 أرقام'
+    
     return
   }
   busy.value = true
   try {
     const res = await TeacherAppApi.verifyStatusOtp(email.value.trim(), c)
+
     result.value = res?.data?.data || null
     stage.value = STAGE.RESULT
   } catch (err) {
@@ -95,43 +100,43 @@ const statusConfig = computed(() => {
   if (!result.value) return null
   const s = result.value.status
   switch (s) {
-    case 'approved':
-      return {
-        icon: 'ri-checkbox-circle-line',
-        color: 'success',
-        title: 'تمّت الموافقة',
-        sub: 'تمت الموافقة على طلبك. يمكنك تسجيل الدخول الآن باستخدام بياناتك.',
-        showLogin: true,
-        showResubmit: false,
-      }
-    case 'rejected':
-      return {
-        icon: 'ri-close-circle-line',
-        color: 'error',
-        title: 'تم رفض الطلب',
-        sub: 'نأسف لإبلاغك بأنه لم تتم الموافقة على طلبك في هذه المرة.',
-        showLogin: false,
-        showResubmit: true,
-      }
-    case 'needs_more_info':
-      return {
-        icon: 'ri-question-line',
-        color: 'warning',
-        title: 'مطلوب معلومات إضافية',
-        sub: 'يحتاج فريق المراجعة إلى معلومات إضافية لإكمال دراسة طلبك.',
-        showLogin: false,
-        showResubmit: true,
-      }
-    case 'pending':
-    default:
-      return {
-        icon: 'ri-time-line',
-        color: 'primary',
-        title: 'الطلب قيد المراجعة',
-        sub: 'تم استلام طلبك وهو قيد المراجعة من قبل فريق الإدارة. سنتواصل معك قريباً.',
-        showLogin: false,
-        showResubmit: false,
-      }
+  case 'approved':
+    return {
+      icon: 'ri-checkbox-circle-line',
+      color: 'success',
+      title: 'تمّت الموافقة',
+      sub: 'تمت الموافقة على طلبك. يمكنك تسجيل الدخول الآن باستخدام بياناتك.',
+      showLogin: true,
+      showResubmit: false,
+    }
+  case 'rejected':
+    return {
+      icon: 'ri-close-circle-line',
+      color: 'error',
+      title: 'تم رفض الطلب',
+      sub: 'نأسف لإبلاغك بأنه لم تتم الموافقة على طلبك في هذه المرة.',
+      showLogin: false,
+      showResubmit: true,
+    }
+  case 'needs_more_info':
+    return {
+      icon: 'ri-question-line',
+      color: 'warning',
+      title: 'مطلوب معلومات إضافية',
+      sub: 'يحتاج فريق المراجعة إلى معلومات إضافية لإكمال دراسة طلبك.',
+      showLogin: false,
+      showResubmit: true,
+    }
+  case 'pending':
+  default:
+    return {
+      icon: 'ri-time-line',
+      color: 'primary',
+      title: 'الطلب قيد المراجعة',
+      sub: 'تم استلام طلبك وهو قيد المراجعة من قبل فريق الإدارة. سنتواصل معك قريباً.',
+      showLogin: false,
+      showResubmit: false,
+    }
   }
 })
 </script>
@@ -139,14 +144,29 @@ const statusConfig = computed(() => {
 <template>
   <div class="status-wrap">
     <div class="status-card">
-      <router-link to="/login" class="back-home" aria-label="رجوع">
-        <VIcon icon="ri-arrow-right-line" size="20" />
-      </router-link>
+      <RouterLink
+        to="/login"
+        class="back-home"
+        aria-label="رجوع"
+      >
+        <VIcon
+          icon="ri-arrow-right-line"
+          size="20"
+        />
+      </RouterLink>
 
       <!-- ============ Stage 1: email ============ -->
       <template v-if="stage === STAGE.EMAIL">
-        <div class="hero-icon"><VIcon icon="ri-search-line" size="44" color="primary" /></div>
-        <h1 class="heading">تحقّق من حالة طلبك</h1>
+        <div class="hero-icon">
+          <VIcon
+            icon="ri-search-line"
+            size="44"
+            color="primary"
+          />
+        </div>
+        <h1 class="heading">
+          تحقّق من حالة طلبك
+        </h1>
         <p class="sub">
           أدخل البريد الإلكتروني الذي استخدمته عند التقديم وسنرسل إليك رمزاً
           للاطّلاع على الحالة.
@@ -170,15 +190,26 @@ const statusConfig = computed(() => {
           :loading="busy"
           @click="requestOtp"
         >
-          <VIcon start icon="ri-send-plane-line" />
+          <VIcon
+            start
+            icon="ri-send-plane-line"
+          />
           إرسال الرمز
         </VBtn>
       </template>
 
       <!-- ============ Stage 2: code ============ -->
       <template v-else-if="stage === STAGE.CODE">
-        <div class="hero-icon"><VIcon icon="ri-mail-check-line" size="44" color="primary" /></div>
-        <h1 class="heading">أدخل الرمز</h1>
+        <div class="hero-icon">
+          <VIcon
+            icon="ri-mail-check-line"
+            size="44"
+            color="primary"
+          />
+        </div>
+        <h1 class="heading">
+          أدخل الرمز
+        </h1>
         <VAlert
           v-if="infoMsg"
           type="info"
@@ -210,7 +241,10 @@ const statusConfig = computed(() => {
           :disabled="onlyDigits(code).length !== 6"
           @click="verifyOtp"
         >
-          <VIcon start icon="ri-shield-check-line" />
+          <VIcon
+            start
+            icon="ri-shield-check-line"
+          />
           تأكيد
         </VBtn>
         <VBtn
@@ -230,10 +264,18 @@ const statusConfig = computed(() => {
           class="hero-icon"
           :style="{ background: `rgba(var(--v-theme-${statusConfig.color}), 0.12)` }"
         >
-          <VIcon :icon="statusConfig.icon" size="44" :color="statusConfig.color" />
+          <VIcon
+            :icon="statusConfig.icon"
+            size="44"
+            :color="statusConfig.color"
+          />
         </div>
-        <h1 class="heading">{{ statusConfig.title }}</h1>
-        <p class="sub">{{ statusConfig.sub }}</p>
+        <h1 class="heading">
+          {{ statusConfig.title }}
+        </h1>
+        <p class="sub">
+          {{ statusConfig.sub }}
+        </p>
 
         <div
           v-if="result.status === 'rejected' && result.rejectionReason"
@@ -241,10 +283,15 @@ const statusConfig = computed(() => {
           :style="{ borderColor: `rgba(var(--v-theme-${statusConfig.color}), 0.4)`,
                     background: `rgba(var(--v-theme-${statusConfig.color}), 0.05)` }"
         >
-          <div class="quote-title" :style="{ color: `rgb(var(--v-theme-${statusConfig.color}))` }">
+          <div
+            class="quote-title"
+            :style="{ color: `rgb(var(--v-theme-${statusConfig.color}))` }"
+          >
             سبب الرفض
           </div>
-          <div class="quote-body">{{ result.rejectionReason }}</div>
+          <div class="quote-body">
+            {{ result.rejectionReason }}
+          </div>
         </div>
 
         <div
@@ -253,10 +300,15 @@ const statusConfig = computed(() => {
           :style="{ borderColor: `rgba(var(--v-theme-${statusConfig.color}), 0.4)`,
                     background: `rgba(var(--v-theme-${statusConfig.color}), 0.05)` }"
         >
-          <div class="quote-title" :style="{ color: `rgb(var(--v-theme-${statusConfig.color}))` }">
+          <div
+            class="quote-title"
+            :style="{ color: `rgb(var(--v-theme-${statusConfig.color}))` }"
+          >
             ملاحظات الإدارة
           </div>
-          <div class="quote-body">{{ result.adminNotes }}</div>
+          <div class="quote-body">
+            {{ result.adminNotes }}
+          </div>
         </div>
 
         <VBtn
@@ -268,7 +320,10 @@ const statusConfig = computed(() => {
           class="mt-3"
           @click="router.push('/login')"
         >
-          <VIcon start icon="ri-login-box-line" />
+          <VIcon
+            start
+            icon="ri-login-box-line"
+          />
           تسجيل الدخول
         </VBtn>
         <VBtn
@@ -280,7 +335,10 @@ const statusConfig = computed(() => {
           class="mt-3"
           @click="router.push('/apply-as-teacher/form')"
         >
-          <VIcon start icon="ri-refresh-line" />
+          <VIcon
+            start
+            icon="ri-refresh-line"
+          />
           تقديم طلب جديد
         </VBtn>
         <VBtn
