@@ -39,7 +39,17 @@ class RealtimeSocketClient {
   /** Idempotent — multiple calls share the same socket instance. */
   connect() {
     if (this._socket && this._socket.connected) return
+    // Tear down a stale disconnected socket before creating a fresh one
+    // — otherwise the new connect() is a no-op and we silently stay
+    // offline forever after one bad disconnect.
+    if (this._socket) {
+      try { this._socket.removeAllListeners() } catch (_) { /* nop */ }
+      try { this._socket.disconnect() } catch (_) { /* nop */ }
+      this._socket = null
+    }
+
     const token = localStorage.getItem("accessToken")
+    console.info(`[realtime] connect() called — token present: ${!!token}`)
     if (!token) {
       // Without a token the handshake will be rejected — let the caller
       // (which knows the auth state) decide when to retry.
@@ -51,24 +61,42 @@ class RealtimeSocketClient {
       autoConnect: true,
       auth: { token },
       reconnection: true,
-      reconnectionAttempts: 60,
+      // Unbounded retry. The default 5 would silently park the socket
+      // after the first bad disconnect (e.g. during an API deploy);
+      // a finite number is the worst of both worlds because the user
+      // never knows realtime stopped working.
+      reconnectionAttempts: Infinity,
       reconnectionDelay: 2000,
+      reconnectionDelayMax: 30000,
     })
 
     socket.on("connect", () => {
+      console.info(`[realtime] ✅ socket connected to ${REALTIME_URL}`)
       for (const cb of this._connectedHandlers) {
         try { cb() } catch (_) { /* swallow */ }
       }
     })
 
+    socket.on("connect_error", err => {
+      console.warn(`[realtime] ❌ connect_error: ${err?.message || err}`)
+    })
+
+    socket.on("disconnect", reason => {
+      console.info(`[realtime] socket disconnected: ${reason}`)
+    })
+
     socket.onAny((event, data) => {
       const set = this._listeners.get(event)
+      const n = set?.size ?? 0
+      console.info(`[realtime] 📨 event="${event}" listeners=${n}`, data)
       if (!set) return
 
       // Iterate over a snapshot — a subscriber that unsubscribes from
       // inside its own callback would otherwise mutate the live Set.
       for (const cb of Array.from(set)) {
-        try { cb(data) } catch (_) { /* a bad listener shouldn't break others */ }
+        try { cb(data) } catch (e) {
+          console.warn(`[realtime] listener for "${event}" threw:`, e)
+        }
       }
     })
 
