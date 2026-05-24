@@ -519,21 +519,38 @@ onMounted(() => {
   loadCatalogs()
 })
 
-// Realtime: auto-refresh when ONE of THIS course's lessons changes Bunny
-// state (typically processing → ready), or when the admin moderates THIS
-// course while it's open. Filter every event by the open id.
+// Realtime: surgical in-place updates so a Bunny tick doesn't trigger a
+// page-wide reload (loading spinner blink) — only the affected row
+// changes. Fall back to fetchAll() when we receive a lesson id we don't
+// know about (race: lesson created on another device).
 useRealtimeSocket({
   'video-lesson:status_changed': data => {
-    if (data?.lesson?.courseId?.toString() !== id.value) return
-    fetchAll()
+    const ev = data?.lesson
+    if (!ev || ev.courseId?.toString() !== id.value) return
+    const lessonId = ev.id?.toString()
+    if (!lessonId) return
+    const idx = lessons.value.findIndex(l => l.id?.toString() === lessonId)
+    if (idx >= 0) {
+      // Spread merge so we preserve fields the payload doesn't ship
+      // (createdAt, displayOrder, etc.). Reassign the array so Vue
+      // sees the change at the index level.
+      const next = [...lessons.value]
+
+      next[idx] = { ...next[idx], ...ev }
+      lessons.value = next
+    } else {
+      fetchAll()
+    }
   },
   'video-course:approved': data => {
     if (data?.course?.id?.toString() !== id.value) return
-    fetchAll()
+    // Course-level changes (status, reviewNotes) — patch the open
+    // course object in place rather than a full fetch.
+    if (course.value) course.value = { ...course.value, ...data.course }
   },
   'video-course:rejected': data => {
     if (data?.course?.id?.toString() !== id.value) return
-    fetchAll()
+    if (course.value) course.value = { ...course.value, ...data.course }
   },
 })
 
