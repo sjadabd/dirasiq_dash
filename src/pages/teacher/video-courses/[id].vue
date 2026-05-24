@@ -24,6 +24,7 @@ import { useRoute, useRouter } from 'vue-router'
 import Teacher from '@/api/teacher/teacher_api.js'
 import { resolveContentUrl } from '@/utils/content-url.js'
 import { useUploadsStore } from '@/stores/uploads.js'
+import { useRealtimeSocket } from '@/composables/useRealtimeSocket'
 
 const route = useRoute()
 const router = useRouter()
@@ -46,19 +47,25 @@ async function loadCatalogs () {
       Teacher.getAllSubjects().catch(() => null),
       Teacher.getAllMyGrades().catch(() => null),
     ])
+
     const subjectsData = subjectsRes?.data?.data || subjectsRes?.data || []
     const subjects = Array.isArray(subjectsData) ? subjectsData : (subjectsData.items || [])
+
     subjectOptions.value = subjects
       .map(s => ({ title: s.name || s.title || s.subject || String(s.id || ''), value: s.name || s.title || s.subject }))
       .filter(s => s.title)
+
     const gradesData = gradesRes?.data?.data || gradesRes?.data || []
     const grades = Array.isArray(gradesData) ? gradesData : (gradesData.items || [])
+
+
     // /grades/my-grades returns { id: teacher_grades.id, gradeId: grades.id, ... }
     // — use `gradeId` so the FK to grades.id holds on POST/PATCH.
     stageOptions.value = grades
       .map(g => {
         const realGradeId = g.gradeId || g.id
         const displayName = g.gradeName || g.name || g.title || String(realGradeId || '')
+        
         return { title: displayName, value: realGradeId, name: displayName, id: realGradeId }
       })
       .filter(g => g.title && g.id)
@@ -73,9 +80,11 @@ const editError = ref('')
 
 function openEditDialog () {
   if (!course.value) return
+
   // Resolve the gradeId back from a teaching_stage NAME if the row only
   // carries a name (older rows pre-dropdown). Best-effort.
   const matchingStage = stageOptions.value.find(s => s.name === course.value.teachingStage)
+
   editDraft.value = {
     title: course.value.title,
     description: course.value.description || '',
@@ -94,15 +103,22 @@ function onEditStageChange (value) {
   if (!found) {
     editDraft.value.teachingStage = ''
     editDraft.value.gradeId = ''
+    
     return
   }
   editDraft.value.teachingStage = found.name
   editDraft.value.gradeId = found.id || ''
 }
 async function submitEdit () {
-  if (!editDraft.value.title.trim()) { editError.value = 'العنوان مطلوب'; return }
-  if (!editDraft.value.subject) { editError.value = 'يجب اختيار المادة'; return }
-  if (!editDraft.value.teachingStage) { editError.value = 'يجب اختيار المرحلة'; return }
+  if (!editDraft.value.title.trim()) { editError.value = 'العنوان مطلوب' 
+
+    return }
+  if (!editDraft.value.subject) { editError.value = 'يجب اختيار المادة' 
+
+    return }
+  if (!editDraft.value.teachingStage) { editError.value = 'يجب اختيار المرحلة' 
+
+    return }
   editSubmitting.value = true
   editError.value = ''
   try {
@@ -115,6 +131,7 @@ async function submitEdit () {
       price: editDraft.value.isFree ? 0 : Number(editDraft.value.price || 0),
       visibility: editDraft.value.visibility,
     }
+
     if (editDraft.value.gradeId) payload.gradeId = editDraft.value.gradeId
     await Teacher.updateVideoCourse(id.value, payload)
     editDialog.value = false
@@ -135,6 +152,7 @@ const coverError = ref('')
 function triggerCoverFilePicker () { coverFileInput.value?.click() }
 async function onCoverFileChosen (event) {
   const f = event.target.files?.[0]
+
   event.target.value = ''
   if (!f) return
   coverUploading.value = true
@@ -185,10 +203,12 @@ function openReplaceLessonDialog (lesson) {
 function pickLessonFile () { lessonFileInputRef.value?.click() }
 function onLessonFileChosen (event) {
   const f = event.target.files?.[0]
+
   event.target.value = ''
   if (!f) return
   if (!String(f.type || '').startsWith('video/')) {
     lessonError.value = 'الملف يجب أن يكون فيديو (MP4 يُفضّل)'
+    
     return
   }
   lessonFile.value = f
@@ -196,8 +216,12 @@ function onLessonFileChosen (event) {
 }
 
 async function submitLessonDialog () {
-  if (!lessonDraft.value.title.trim()) { lessonError.value = 'عنوان الدرس مطلوب'; return }
-  if (!lessonFile.value) { lessonError.value = 'يرجى اختيار ملف الفيديو'; return }
+  if (!lessonDraft.value.title.trim()) { lessonError.value = 'عنوان الدرس مطلوب' 
+
+    return }
+  if (!lessonFile.value) { lessonError.value = 'يرجى اختيار ملف الفيديو' 
+
+    return }
   lessonSubmitting.value = true
   lessonError.value = ''
   lessonProgress.value = 0
@@ -207,10 +231,12 @@ async function submitLessonDialog () {
       try { await Teacher.deleteVideoLesson(id.value, lessonReplacingId.value) }
       catch (_) { /* still attempt the create */ }
     }
+
     const res = await Teacher.createVideoLesson(id.value, {
       title: lessonDraft.value.title.trim(),
       description: lessonDraft.value.description.trim() || undefined,
     })
+
     const { lesson, upload } = res?.data?.data || {}
     if (!lesson || !upload) throw new Error('استجابة الخادم غير صالحة')
 
@@ -268,7 +294,9 @@ function openEditLessonDialog (lesson) {
   editLessonDialog.value = true
 }
 async function submitEditLesson () {
-  if (!editLessonDraft.value.title.trim()) { editLessonError.value = 'العنوان مطلوب'; return }
+  if (!editLessonDraft.value.title.trim()) { editLessonError.value = 'العنوان مطلوب' 
+
+    return }
   editLessonSubmitting.value = true
   editLessonError.value = ''
   try {
@@ -313,6 +341,7 @@ async function confirmDelete () {
       await Teacher.deleteVideoCourse(id.value)
       deleteDialog.value = false
       router.push('/teacher/video-courses')
+      
       return
     }
     if (deleteKind.value === 'lesson' && deleteLessonId.value) {
@@ -337,19 +366,24 @@ let _hlsInstance = null
 async function openPlayer (lesson) {
   if (lesson.bunnyStatus !== 'ready' || !lesson.bunnyPlaybackUrl) {
     showToast('الفيديو لم يكتمل المعالجة بعد. حاول بعد قليل.')
+    
     return
   }
   playerLesson.value = lesson
   playerDialog.value = true
   await nextTick()
+
   const url = resolveContentUrl(lesson.bunnyPlaybackUrl)
   const video = playerVideoEl.value
   if (!video) return
+
   // Native HLS (Safari/iOS) — just set src.
   if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = url
+    
     return
   }
+
   // Everywhere else: hls.js.
   try {
     const mod = await import('hls.js')
@@ -384,7 +418,9 @@ const reorderBusy = ref(false)
 function moveLesson (idx, dir) {
   const target = idx + dir
   if (target < 0 || target >= lessons.value.length) return
+
   const arr = [...lessons.value]
+
   ;[arr[idx], arr[target]] = [arr[target], arr[idx]]
   lessons.value = arr
 }
@@ -428,6 +464,7 @@ async function fetchAll () {
       Teacher.getMyVideoCourse(id.value),
       Teacher.getMyVideoCourseLessons(id.value),
     ])
+
     course.value = c?.data?.data?.course || null
     lessons.value = Array.isArray(l?.data?.data?.lessons) ? l.data.data.lessons : []
   } catch (err) {
@@ -448,22 +485,25 @@ function formatDuration (s) {
   if (!n) return '—'
   const m = Math.floor(n / 60)
   const sec = n % 60
+  
   return `${m}:${String(sec).padStart(2, '0')}`
 }
 
 const COURSE_STATUS_VISUALS = {
   pending_review: { label: 'بانتظار المراجعة', color: 'warning',   icon: 'ri-time-line' },
-  approved:       { label: 'مقبولة',          color: 'success',   icon: 'ri-check-double-line' },
-  hidden:         { label: 'مخفية',           color: 'secondary', icon: 'ri-eye-off-line' },
-  rejected:       { label: 'مرفوضة',          color: 'error',     icon: 'ri-close-circle-line' },
+  approved: { label: 'مقبولة',          color: 'success',   icon: 'ri-check-double-line' },
+  hidden: { label: 'مخفية',           color: 'secondary', icon: 'ri-eye-off-line' },
+  rejected: { label: 'مرفوضة',          color: 'error',     icon: 'ri-close-circle-line' },
 }
+
 const BUNNY_STATUS_VISUALS = {
-  pending:    { label: 'بانتظار الرفع',   color: 'secondary', icon: 'ri-time-line' },
-  uploaded:   { label: 'تم الرفع',        color: 'info',      icon: 'ri-upload-line' },
+  pending: { label: 'بانتظار الرفع',   color: 'secondary', icon: 'ri-time-line' },
+  uploaded: { label: 'تم الرفع',        color: 'info',      icon: 'ri-upload-line' },
   processing: { label: 'قيد المعالجة',    color: 'warning',   icon: 'ri-loader-2-line' },
-  ready:      { label: 'جاهز',            color: 'success',   icon: 'ri-checkbox-circle-line' },
-  failed:     { label: 'فشل',             color: 'error',     icon: 'ri-error-warning-line' },
+  ready: { label: 'جاهز',            color: 'success',   icon: 'ri-checkbox-circle-line' },
+  failed: { label: 'فشل',             color: 'error',     icon: 'ri-error-warning-line' },
 }
+
 const courseStatusChip = computed(() => course.value
   ? (COURSE_STATUS_VISUALS[course.value.status] || { label: course.value.status, color: 'default', icon: 'ri-question-line' })
   : null)
@@ -479,19 +519,52 @@ onMounted(() => {
   loadCatalogs()
 })
 
+// Realtime: auto-refresh when ONE of THIS course's lessons changes Bunny
+// state (typically processing → ready), or when the admin moderates THIS
+// course while it's open. Filter every event by the open id.
+useRealtimeSocket({
+  'video-lesson:status_changed': data => {
+    if (data?.lesson?.courseId?.toString() !== id.value) return
+    fetchAll()
+  },
+  'video-course:approved': data => {
+    if (data?.course?.id?.toString() !== id.value) return
+    fetchAll()
+  },
+  'video-course:rejected': data => {
+    if (data?.course?.id?.toString() !== id.value) return
+    fetchAll()
+  },
+})
+
 definePage({ meta: { layout: 'default' } })
 </script>
 
 <template>
   <div>
-    <VBreadcrumbs :items="breadcrumbItems" class="px-0 mb-3" />
+    <VBreadcrumbs
+      :items="breadcrumbItems"
+      class="px-0 mb-3"
+    />
 
-    <VAlert v-if="errorMessage" type="error" variant="tonal" density="compact" class="mb-3">
+    <VAlert
+      v-if="errorMessage"
+      type="error"
+      variant="tonal"
+      density="compact"
+      class="mb-3"
+    >
       {{ errorMessage }}
     </VAlert>
 
-    <div v-if="loading" class="text-center pa-6">
-      <VProgressCircular indeterminate color="primary" />
+    <div
+      v-if="loading"
+      class="text-center pa-6"
+    >
+      <VProgressCircular
+        indeterminate
+        color="primary"
+      />
     </div>
 
     <template v-else-if="course">
@@ -506,9 +579,18 @@ definePage({ meta: { layout: 'default' } })
               class="cover-img"
               @error="(e) => e.target.style.display = 'none'"
             >
-            <div v-else class="cover-empty">
-              <VIcon icon="ri-image-line" size="44" color="grey" />
-              <div class="text-caption mt-1 text-medium-emphasis">لا توجد صورة غلاف</div>
+            <div
+              v-else
+              class="cover-empty"
+            >
+              <VIcon
+                icon="ri-image-line"
+                size="44"
+                color="grey"
+              />
+              <div class="text-caption mt-1 text-medium-emphasis">
+                لا توجد صورة غلاف
+              </div>
             </div>
             <VBtn
               size="x-small"
@@ -517,7 +599,11 @@ definePage({ meta: { layout: 'default' } })
               :loading="coverUploading"
               @click="triggerCoverFilePicker"
             >
-              <VIcon start size="14" icon="ri-image-edit-line" /> غيّر الغلاف
+              <VIcon
+                start
+                size="14"
+                icon="ri-image-edit-line"
+              /> غيّر الغلاف
             </VBtn>
             <input
               ref="coverFileInput"
@@ -531,7 +617,9 @@ definePage({ meta: { layout: 'default' } })
           <div class="summary-body">
             <div class="summary-head">
               <div>
-                <h1 class="summary-title">{{ course.title }}</h1>
+                <h1 class="summary-title">
+                  {{ course.title }}
+                </h1>
                 <div class="summary-sub">
                   <VChip
                     v-if="courseStatusChip"
@@ -539,7 +627,11 @@ definePage({ meta: { layout: 'default' } })
                     variant="tonal"
                     :color="courseStatusChip.color"
                   >
-                    <VIcon start size="12" :icon="courseStatusChip.icon" />
+                    <VIcon
+                      start
+                      size="12"
+                      :icon="courseStatusChip.icon"
+                    />
                     {{ courseStatusChip.label }}
                   </VChip>
                   <VChip
@@ -559,16 +651,35 @@ definePage({ meta: { layout: 'default' } })
                 </div>
               </div>
               <div class="summary-actions">
-                <VBtn size="small" variant="tonal" color="primary" @click="openEditDialog">
-                  <VIcon start size="16" icon="ri-edit-2-line" /> تعديل
+                <VBtn
+                  size="small"
+                  variant="tonal"
+                  color="primary"
+                  @click="openEditDialog"
+                >
+                  <VIcon
+                    start
+                    size="16"
+                    icon="ri-edit-2-line"
+                  /> تعديل
                 </VBtn>
-                <VBtn size="small" variant="text" color="error" @click="askDeleteCourse">
+                <VBtn
+                  size="small"
+                  variant="text"
+                  color="error"
+                  @click="askDeleteCourse"
+                >
                   <VIcon icon="ri-delete-bin-line" />
                 </VBtn>
               </div>
             </div>
 
-            <p v-if="course.description" class="summary-desc">{{ course.description }}</p>
+            <p
+              v-if="course.description"
+              class="summary-desc"
+            >
+              {{ course.description }}
+            </p>
 
             <dl class="summary-meta">
               <div><dt>المادة</dt><dd>{{ course.subject || '—' }}</dd></div>
@@ -603,8 +714,16 @@ definePage({ meta: { layout: 'default' } })
       <VCard>
         <VCardText>
           <div class="d-flex align-center mb-3 ga-2">
-            <h3 class="text-subtitle-1 font-weight-bold ma-0">الدروس</h3>
-            <VChip size="x-small" variant="tonal" color="info">{{ lessons.length }}</VChip>
+            <h3 class="text-subtitle-1 font-weight-bold ma-0">
+              الدروس
+            </h3>
+            <VChip
+              size="x-small"
+              variant="tonal"
+              color="info"
+            >
+              {{ lessons.length }}
+            </VChip>
             <VSpacer />
             <template v-if="!reorderMode">
               <VBtn
@@ -613,33 +732,82 @@ definePage({ meta: { layout: 'default' } })
                 variant="tonal"
                 @click="reorderMode = true"
               >
-                <VIcon start size="14" icon="ri-arrow-up-down-line" /> ترتيب
+                <VIcon
+                  start
+                  size="14"
+                  icon="ri-arrow-up-down-line"
+                /> ترتيب
               </VBtn>
-              <VBtn color="primary" size="small" @click="openCreateLessonDialog">
-                <VIcon start size="14" icon="ri-add-line" /> درس جديد
+              <VBtn
+                color="primary"
+                size="small"
+                @click="openCreateLessonDialog"
+              >
+                <VIcon
+                  start
+                  size="14"
+                  icon="ri-add-line"
+                /> درس جديد
               </VBtn>
             </template>
             <template v-else>
-              <VBtn variant="text" size="small" @click="reorderMode = false; fetchAll()">إلغاء</VBtn>
-              <VBtn color="primary" size="small" :loading="reorderBusy" @click="saveReorder">احفظ الترتيب</VBtn>
+              <VBtn
+                variant="text"
+                size="small"
+                @click="reorderMode = false; fetchAll()"
+              >
+                إلغاء
+              </VBtn>
+              <VBtn
+                color="primary"
+                size="small"
+                :loading="reorderBusy"
+                @click="saveReorder"
+              >
+                احفظ الترتيب
+              </VBtn>
             </template>
           </div>
 
-          <div v-if="lessons.length === 0" class="empty-state">
-            <VIcon icon="ri-video-add-line" size="40" color="grey" />
-            <div class="text-medium-emphasis mt-2">لم تضف دروساً بعد.</div>
-            <VBtn class="mt-3" color="primary" variant="tonal" size="small" @click="openCreateLessonDialog">
+          <div
+            v-if="lessons.length === 0"
+            class="empty-state"
+          >
+            <VIcon
+              icon="ri-video-add-line"
+              size="40"
+              color="grey"
+            />
+            <div class="text-medium-emphasis mt-2">
+              لم تضف دروساً بعد.
+            </div>
+            <VBtn
+              class="mt-3"
+              color="primary"
+              variant="tonal"
+              size="small"
+              @click="openCreateLessonDialog"
+            >
               إضافة أول درس
             </VBtn>
           </div>
 
-          <VRow v-else dense>
+          <VRow
+            v-else
+            dense
+          >
             <VCol
               v-for="(lesson, idx) in lessons"
               :key="lesson.id"
-              cols="12" sm="6" md="4" lg="3"
+              cols="12"
+              sm="6"
+              md="4"
+              lg="3"
             >
-              <article class="lesson-card" :class="{ 'is-ready': lesson.bunnyStatus === 'ready' }">
+              <article
+                class="lesson-card"
+                :class="{ 'is-ready': lesson.bunnyStatus === 'ready' }"
+              >
                 <div class="lesson-thumb">
                   <img
                     v-if="lesson.bunnyThumbnailUrl"
@@ -647,8 +815,15 @@ definePage({ meta: { layout: 'default' } })
                     alt=""
                     @error="(e) => e.target.style.display = 'none'"
                   >
-                  <div v-else class="thumb-placeholder">
-                    <VIcon icon="ri-film-line" size="28" color="grey" />
+                  <div
+                    v-else
+                    class="thumb-placeholder"
+                  >
+                    <VIcon
+                      icon="ri-film-line"
+                      size="28"
+                      color="grey"
+                    />
                   </div>
                   <button
                     v-if="lesson.bunnyStatus === 'ready'"
@@ -656,20 +831,33 @@ definePage({ meta: { layout: 'default' } })
                     class="play-overlay"
                     @click="openPlayer(lesson)"
                   >
-                    <VIcon icon="ri-play-fill" size="34" color="white" />
+                    <VIcon
+                      icon="ri-play-fill"
+                      size="34"
+                      color="white"
+                    />
                   </button>
                   <span class="lesson-order">#{{ idx + 1 }}</span>
-                  <span class="lesson-duration" v-if="lesson.durationSeconds">{{ formatDuration(lesson.durationSeconds) }}</span>
+                  <span
+                    v-if="lesson.durationSeconds"
+                    class="lesson-duration"
+                  >{{ formatDuration(lesson.durationSeconds) }}</span>
                 </div>
                 <div class="lesson-body">
-                  <div class="lesson-title">{{ lesson.title }}</div>
+                  <div class="lesson-title">
+                    {{ lesson.title }}
+                  </div>
                   <div class="lesson-status">
                     <VChip
                       size="x-small"
                       variant="tonal"
                       :color="(BUNNY_STATUS_VISUALS[lesson.bunnyStatus] || {}).color || 'default'"
                     >
-                      <VIcon start size="11" :icon="(BUNNY_STATUS_VISUALS[lesson.bunnyStatus] || {}).icon || 'ri-question-line'" />
+                      <VIcon
+                        start
+                        size="11"
+                        :icon="(BUNNY_STATUS_VISUALS[lesson.bunnyStatus] || {}).icon || 'ri-question-line'"
+                      />
                       {{ (BUNNY_STATUS_VISUALS[lesson.bunnyStatus] || {}).label || lesson.bunnyStatus }}
                     </VChip>
                   </div>
@@ -678,32 +866,79 @@ definePage({ meta: { layout: 'default' } })
                   <template v-if="!reorderMode">
                     <VBtn
                       v-if="['uploaded','processing'].includes(lesson.bunnyStatus)"
-                      icon size="x-small" variant="text"
+                      icon
+                      size="x-small"
+                      variant="text"
                       title="تحديث الحالة من Bunny"
                       @click="syncLesson(lesson)"
-                    ><VIcon icon="ri-refresh-line" size="16" /></VBtn>
+                    >
+                      <VIcon
+                        icon="ri-refresh-line"
+                        size="16"
+                      />
+                    </VBtn>
                     <VBtn
-                      icon size="x-small" variant="text"
+                      icon
+                      size="x-small"
+                      variant="text"
                       title="تعديل البيانات"
                       @click="openEditLessonDialog(lesson)"
-                    ><VIcon icon="ri-pencil-line" size="16" /></VBtn>
+                    >
+                      <VIcon
+                        icon="ri-pencil-line"
+                        size="16"
+                      />
+                    </VBtn>
                     <VBtn
-                      icon size="x-small" variant="text"
+                      icon
+                      size="x-small"
+                      variant="text"
                       title="استبدال الفيديو"
                       @click="openReplaceLessonDialog(lesson)"
-                    ><VIcon icon="ri-upload-2-line" size="16" /></VBtn>
+                    >
+                      <VIcon
+                        icon="ri-upload-2-line"
+                        size="16"
+                      />
+                    </VBtn>
                     <VBtn
-                      icon size="x-small" variant="text" color="error"
+                      icon
+                      size="x-small"
+                      variant="text"
+                      color="error"
                       title="حذف"
                       @click="askDeleteLesson(lesson)"
-                    ><VIcon icon="ri-delete-bin-line" size="16" /></VBtn>
+                    >
+                      <VIcon
+                        icon="ri-delete-bin-line"
+                        size="16"
+                      />
+                    </VBtn>
                   </template>
                   <template v-else>
-                    <VBtn icon size="x-small" variant="text" :disabled="idx === 0" @click="moveLesson(idx, -1)">
-                      <VIcon icon="ri-arrow-up-line" size="16" />
+                    <VBtn
+                      icon
+                      size="x-small"
+                      variant="text"
+                      :disabled="idx === 0"
+                      @click="moveLesson(idx, -1)"
+                    >
+                      <VIcon
+                        icon="ri-arrow-up-line"
+                        size="16"
+                      />
                     </VBtn>
-                    <VBtn icon size="x-small" variant="text" :disabled="idx === lessons.length - 1" @click="moveLesson(idx, 1)">
-                      <VIcon icon="ri-arrow-down-line" size="16" />
+                    <VBtn
+                      icon
+                      size="x-small"
+                      variant="text"
+                      :disabled="idx === lessons.length - 1"
+                      @click="moveLesson(idx, 1)"
+                    >
+                      <VIcon
+                        icon="ri-arrow-down-line"
+                        size="16"
+                      />
                     </VBtn>
                   </template>
                 </div>
@@ -715,59 +950,124 @@ definePage({ meta: { layout: 'default' } })
     </template>
 
     <!-- =================== EDIT COURSE DIALOG =================== -->
-    <VDialog v-model="editDialog" max-width="540" persistent scrollable>
+    <VDialog
+      v-model="editDialog"
+      max-width="540"
+      persistent
+      scrollable
+    >
       <VCard v-if="editDraft">
-        <VCardTitle class="dlg-title">تعديل الدورة</VCardTitle>
+        <VCardTitle class="dlg-title">
+          تعديل الدورة
+        </VCardTitle>
         <VCardText>
-          <VTextField v-model="editDraft.title" label="العنوان *" density="comfortable" variant="outlined" class="mb-3" hide-details />
-          <VTextarea v-model="editDraft.description" label="الوصف" rows="2" density="comfortable" variant="outlined" class="mb-3" hide-details />
+          <VTextField
+            v-model="editDraft.title"
+            label="العنوان *"
+            density="comfortable"
+            variant="outlined"
+            class="mb-3"
+            hide-details
+          />
+          <VTextarea
+            v-model="editDraft.description"
+            label="الوصف"
+            rows="2"
+            density="comfortable"
+            variant="outlined"
+            class="mb-3"
+            hide-details
+          />
           <VSelect
             v-model="editDraft.subject"
             :items="subjectOptions"
             label="المادة *"
-            density="comfortable" variant="outlined" hide-details class="mb-3"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+            class="mb-3"
           />
           <VSelect
             :model-value="editDraft.gradeId || ''"
             :items="stageOptions"
             label="المرحلة *"
-            density="comfortable" variant="outlined" hide-details class="mb-3"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+            class="mb-3"
             @update:model-value="onEditStageChange"
           />
           <div class="d-flex align-center ga-3 mb-3">
-            <VSwitch v-model="editDraft.isFree" label="مجاني" color="success" density="compact" inset hide-details />
+            <VSwitch
+              v-model="editDraft.isFree"
+              label="مجاني"
+              color="success"
+              density="compact"
+              inset
+              hide-details
+            />
             <VTextField
               v-if="!editDraft.isFree"
               v-model.number="editDraft.price"
-              type="number" min="0"
+              type="number"
+              min="0"
               label="السعر (د.ع)"
-              density="comfortable" variant="outlined" hide-details
+              density="comfortable"
+              variant="outlined"
+              hide-details
             />
           </div>
           <VSelect
             v-model="editDraft.visibility"
             :items="[
               { title: 'خاصة', value: 'private' },
-              { title: 'عامة',  value: 'public' },
+              { title: 'عامة', value: 'public' },
             ]"
             label="الرؤية"
-            density="comfortable" variant="outlined" hide-details
+            density="comfortable"
+            variant="outlined"
+            hide-details
           />
-          <VAlert v-if="editError" type="error" variant="tonal" density="compact" class="mt-3">
+          <VAlert
+            v-if="editError"
+            type="error"
+            variant="tonal"
+            density="compact"
+            class="mt-3"
+          >
             {{ editError }}
           </VAlert>
-          <div class="hint-row">* أي تعديل يعيد الدورة إلى حالة "بانتظار المراجعة".</div>
+          <div class="hint-row">
+            * أي تعديل يعيد الدورة إلى حالة "بانتظار المراجعة".
+          </div>
         </VCardText>
         <VCardActions class="pa-4">
           <VSpacer />
-          <VBtn variant="text" :disabled="editSubmitting" @click="editDialog = false">إلغاء</VBtn>
-          <VBtn color="primary" :loading="editSubmitting" @click="submitEdit">حفظ</VBtn>
+          <VBtn
+            variant="text"
+            :disabled="editSubmitting"
+            @click="editDialog = false"
+          >
+            إلغاء
+          </VBtn>
+          <VBtn
+            color="primary"
+            :loading="editSubmitting"
+            @click="submitEdit"
+          >
+            حفظ
+          </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
 
     <!-- =================== LESSON CREATE/REPLACE DIALOG =================== -->
-    <VDialog v-model="lessonDialog" max-width="520" persistent scrollable>
+    <VDialog
+      v-model="lessonDialog"
+      max-width="520"
+      persistent
+      scrollable
+    >
       <VCard>
         <VCardTitle class="dlg-title">
           {{ lessonDialogMode === 'create' ? 'إضافة درس جديد' : 'استبدال فيديو الدرس' }}
@@ -776,19 +1076,27 @@ definePage({ meta: { layout: 'default' } })
           <VTextField
             v-model="lessonDraft.title"
             label="عنوان الدرس *"
-            density="comfortable" variant="outlined" class="mb-3" hide-details
+            density="comfortable"
+            variant="outlined"
+            class="mb-3"
+            hide-details
             :disabled="lessonSubmitting && lessonProgress > 0"
           />
           <VTextarea
             v-model="lessonDraft.description"
             label="الوصف (اختياري)"
             rows="2"
-            density="comfortable" variant="outlined" hide-details
+            density="comfortable"
+            variant="outlined"
+            hide-details
             :disabled="lessonSubmitting && lessonProgress > 0"
           />
 
           <!-- File picker -->
-          <div class="file-picker mt-3" :class="{ 'has-file': !!lessonFile }">
+          <div
+            class="file-picker mt-3"
+            :class="{ 'has-file': !!lessonFile }"
+          >
             <input
               ref="lessonFileInputRef"
               type="file"
@@ -797,27 +1105,48 @@ definePage({ meta: { layout: 'default' } })
               @change="onLessonFileChosen"
             >
             <template v-if="!lessonFile">
-              <VIcon icon="ri-upload-cloud-2-line" size="32" color="primary" />
-              <div class="file-hint">اختر ملف الفيديو (MP4 يُفضّل، حتى 1GB)</div>
+              <VIcon
+                icon="ri-upload-cloud-2-line"
+                size="32"
+                color="primary"
+              />
+              <div class="file-hint">
+                اختر ملف الفيديو (MP4 يُفضّل، حتى 1GB)
+              </div>
               <VBtn
                 size="small"
                 variant="tonal"
                 class="mt-2"
-                @click="pickLessonFile"
                 :disabled="lessonSubmitting"
-              >تصفّح…</VBtn>
+                @click="pickLessonFile"
+              >
+                تصفّح…
+              </VBtn>
             </template>
             <template v-else>
-              <VIcon icon="ri-film-line" size="28" color="primary" />
-              <div class="file-name" :title="lessonFile.name">{{ lessonFile.name }}</div>
-              <div class="file-size">{{ (lessonFile.size / (1024*1024)).toFixed(1) }} MB</div>
+              <VIcon
+                icon="ri-film-line"
+                size="28"
+                color="primary"
+              />
+              <div
+                class="file-name"
+                :title="lessonFile.name"
+              >
+                {{ lessonFile.name }}
+              </div>
+              <div class="file-size">
+                {{ (lessonFile.size / (1024*1024)).toFixed(1) }} MB
+              </div>
               <VBtn
                 v-if="!lessonSubmitting"
                 size="x-small"
                 variant="text"
                 color="error"
                 @click="lessonFile = null"
-              >إزالة</VBtn>
+              >
+                إزالة
+              </VBtn>
             </template>
           </div>
 
@@ -830,7 +1159,10 @@ definePage({ meta: { layout: 'default' } })
             rounded
             class="mt-3"
           />
-          <div v-if="lessonSubmitting && lessonProgress > 0 && !lessonSuccess" class="text-center text-caption mt-1">
+          <div
+            v-if="lessonSubmitting && lessonProgress > 0 && !lessonSuccess"
+            class="text-center text-caption mt-1"
+          >
             {{ lessonProgress }}%
           </div>
 
@@ -840,23 +1172,34 @@ definePage({ meta: { layout: 'default' } })
             variant="tonal"
             density="compact"
             class="mt-3"
-          >{{ lessonError }}</VAlert>
+          >
+            {{ lessonError }}
+          </VAlert>
           <VAlert
             v-if="lessonSuccess"
             type="success"
             variant="tonal"
             density="compact"
             class="mt-3"
-          >تم رفع الفيديو. سيتم معالجته على Bunny.</VAlert>
+          >
+            تم رفع الفيديو. سيتم معالجته على Bunny.
+          </VAlert>
 
           <div class="hint-row mt-2">
-            <VIcon size="13" icon="ri-information-line" />
+            <VIcon
+              size="13"
+              icon="ri-information-line"
+            />
             يمكنك إغلاق هذا الحوار — الرفع سيستمر في الخلفية.
           </div>
         </VCardText>
         <VCardActions class="pa-4">
           <VSpacer />
-          <VBtn variant="text" :disabled="lessonSubmitting && lessonProgress > 0 && !lessonSuccess" @click="lessonDialog = false">
+          <VBtn
+            variant="text"
+            :disabled="lessonSubmitting && lessonProgress > 0 && !lessonSuccess"
+            @click="lessonDialog = false"
+          >
             إغلاق
           </VBtn>
           <VBtn
@@ -865,7 +1208,10 @@ definePage({ meta: { layout: 'default' } })
             :disabled="lessonSuccess"
             @click="submitLessonDialog"
           >
-            <VIcon start icon="ri-upload-2-line" />
+            <VIcon
+              start
+              icon="ri-upload-2-line"
+            />
             {{ lessonSuccess ? 'تم' : 'رفع' }}
           </VBtn>
         </VCardActions>
@@ -873,56 +1219,132 @@ definePage({ meta: { layout: 'default' } })
     </VDialog>
 
     <!-- =================== EDIT LESSON META DIALOG =================== -->
-    <VDialog v-model="editLessonDialog" max-width="480" persistent>
+    <VDialog
+      v-model="editLessonDialog"
+      max-width="480"
+      persistent
+    >
       <VCard>
-        <VCardTitle class="dlg-title">تعديل بيانات الدرس</VCardTitle>
+        <VCardTitle class="dlg-title">
+          تعديل بيانات الدرس
+        </VCardTitle>
         <VCardText>
-          <VTextField v-model="editLessonDraft.title" label="عنوان الدرس *" density="comfortable" variant="outlined" class="mb-3" hide-details />
-          <VTextarea v-model="editLessonDraft.description" label="الوصف" rows="2" density="comfortable" variant="outlined" hide-details />
-          <VAlert v-if="editLessonError" type="error" variant="tonal" density="compact" class="mt-3">
+          <VTextField
+            v-model="editLessonDraft.title"
+            label="عنوان الدرس *"
+            density="comfortable"
+            variant="outlined"
+            class="mb-3"
+            hide-details
+          />
+          <VTextarea
+            v-model="editLessonDraft.description"
+            label="الوصف"
+            rows="2"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+          />
+          <VAlert
+            v-if="editLessonError"
+            type="error"
+            variant="tonal"
+            density="compact"
+            class="mt-3"
+          >
             {{ editLessonError }}
           </VAlert>
         </VCardText>
         <VCardActions class="pa-4">
           <VSpacer />
-          <VBtn variant="text" :disabled="editLessonSubmitting" @click="editLessonDialog = false">إلغاء</VBtn>
-          <VBtn color="primary" :loading="editLessonSubmitting" @click="submitEditLesson">حفظ</VBtn>
+          <VBtn
+            variant="text"
+            :disabled="editLessonSubmitting"
+            @click="editLessonDialog = false"
+          >
+            إلغاء
+          </VBtn>
+          <VBtn
+            color="primary"
+            :loading="editLessonSubmitting"
+            @click="submitEditLesson"
+          >
+            حفظ
+          </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
 
     <!-- =================== DELETE CONFIRM DIALOG =================== -->
-    <VDialog v-model="deleteDialog" max-width="420" persistent>
+    <VDialog
+      v-model="deleteDialog"
+      max-width="420"
+      persistent
+    >
       <VCard>
         <VCardTitle class="dlg-title">
           {{ deleteKind === 'course' ? 'حذف الدورة' : 'حذف الدرس' }}
         </VCardTitle>
         <VCardText>
-          <VAlert type="error" variant="tonal" density="compact">
+          <VAlert
+            type="error"
+            variant="tonal"
+            density="compact"
+          >
             {{ deleteKind === 'course'
               ? 'سيتم حذف الدورة وجميع دروسها. الإجراء غير قابل للاسترجاع من واجهة الأستاذ.'
               : 'سيتم حذف الدرس وحذف الفيديو من Bunny.' }}
           </VAlert>
-          <VAlert v-if="deleteError" type="error" variant="tonal" density="compact" class="mt-3">
+          <VAlert
+            v-if="deleteError"
+            type="error"
+            variant="tonal"
+            density="compact"
+            class="mt-3"
+          >
             {{ deleteError }}
           </VAlert>
         </VCardText>
         <VCardActions class="pa-4">
           <VSpacer />
-          <VBtn variant="text" :disabled="deleteSubmitting" @click="deleteDialog = false">إلغاء</VBtn>
-          <VBtn color="error" :loading="deleteSubmitting" @click="confirmDelete">حذف</VBtn>
+          <VBtn
+            variant="text"
+            :disabled="deleteSubmitting"
+            @click="deleteDialog = false"
+          >
+            إلغاء
+          </VBtn>
+          <VBtn
+            color="error"
+            :loading="deleteSubmitting"
+            @click="confirmDelete"
+          >
+            حذف
+          </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
 
     <!-- =================== HLS PLAYER DIALOG =================== -->
-    <VDialog v-model="playerDialog" max-width="900" @update:model-value="(v) => !v && closePlayer()">
+    <VDialog
+      v-model="playerDialog"
+      max-width="900"
+      @update:model-value="(v) => !v && closePlayer()"
+    >
       <VCard>
         <VCardTitle class="dlg-title player-title">
-          <VIcon start icon="ri-play-circle-line" />
+          <VIcon
+            start
+            icon="ri-play-circle-line"
+          />
           {{ playerLesson?.title }}
           <VSpacer />
-          <VBtn icon variant="text" size="small" @click="closePlayer">
+          <VBtn
+            icon
+            variant="text"
+            size="small"
+            @click="closePlayer"
+          >
             <VIcon icon="ri-close-line" />
           </VBtn>
         </VCardTitle>
@@ -939,7 +1361,12 @@ definePage({ meta: { layout: 'default' } })
     </VDialog>
 
     <!-- =================== TOAST =================== -->
-    <VSnackbar v-model="toast.open" :color="toast.color" location="bottom end" timeout="3000">
+    <VSnackbar
+      v-model="toast.open"
+      :color="toast.color"
+      location="bottom end"
+      timeout="3000"
+    >
       {{ toast.text }}
     </VSnackbar>
   </div>

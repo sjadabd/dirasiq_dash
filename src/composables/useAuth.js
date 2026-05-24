@@ -1,17 +1,19 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+import realtimeSocket from '@/utils/realtime-socket'
+
 // حالة المستخدم العامة
 const user = ref(null)
 const token = ref(null)
 const isAuthenticated = ref(false)
 function safeParse(jsonString, fallback = null) {
-  if (!jsonString) return fallback;
-  if (jsonString === "undefined" || jsonString === "null") return fallback;
+  if (!jsonString) return fallback
+  if (jsonString === "undefined" || jsonString === "null") return fallback
   try {
-    return JSON.parse(jsonString);
+    return JSON.parse(jsonString)
   } catch {
-    return fallback;
+    return fallback
   }
 }
 
@@ -20,37 +22,42 @@ export function useAuth() {
 
   // تحميل البيانات من localStorage عند بدء التطبيق
   const loadUserFromStorage = () => {
-    let storedUser = localStorage.getItem('user');
-    const accessToken = localStorage.getItem('accessToken');
+    let storedUser = localStorage.getItem('user')
+    const accessToken = localStorage.getItem('accessToken')
 
     // لا يوجد مستخدم أو توكن = خروج
-    if (!storedUser || !accessToken) return false;
+    if (!storedUser || !accessToken) return false
 
-    let parsedUser = null;
+    let parsedUser = null
 
     try {
       // 🧠 حاول أولاً تحويل النص إلى JSON
-      parsedUser = JSON.parse(storedUser);
+      parsedUser = JSON.parse(storedUser)
     } catch {
       // 🚨 لو فشل التحويل (يعني كانت [object Object])
       // نحاول تحويله إلى كائن باستخدام safeParse
-      parsedUser = safeParse(storedUser);
+      parsedUser = safeParse(storedUser)
 
       // ولو بقي غير صالح، نعمل محاولة إضافية:
-      if (typeof storedUser === 'object') parsedUser = storedUser;
+      if (typeof storedUser === 'object') parsedUser = storedUser
     }
 
     // ✅ تحقق أن النتيجة النهائية كائن صالح
     if (parsedUser && typeof parsedUser === 'object') {
-      user.value = parsedUser;
-      token.value = accessToken;
-      isAuthenticated.value = true;
-      return true;
+      user.value = parsedUser
+      token.value = accessToken
+      isAuthenticated.value = true
+
+      // Warm-start the realtime socket on page reload — the user is
+      // already authenticated but the singleton just got recreated.
+      try { realtimeSocket.connect() } catch (_) { /* nop */ }
+      
+      return true
     }
 
     // ❌ في حالة فشل التحميل
-    return false;
-  };
+    return false
+  }
 
 
   // تحميل البيانات تلقائياً عند استدعاء useAuth
@@ -69,7 +76,10 @@ export function useAuth() {
     localStorage.setItem('studyYear', JSON.stringify(userData.studyYear))
     localStorage.setItem('accessToken', accessToken)
 
-
+    // Open the realtime socket so admin moderation events + Bunny lesson
+    // ready events arrive without polling. Idempotent — safe if the
+    // singleton is already connected (warm Vite HMR reload).
+    try { realtimeSocket.connect() } catch (_) { /* nop */ }
   }
 
   // دالة تسجيل الخروج
@@ -83,12 +93,19 @@ export function useAuth() {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('results')
 
+    // Drop the socket + every registered listener so the next user
+    // doesn't inherit our room subscriptions.
+    try {
+      realtimeSocket.clearListeners()
+      realtimeSocket.disconnect()
+    } catch (_) { /* nop */ }
+
     // توجيه لصفحة تسجيل الدخول
     router.push('/login')
   }
 
   // دالة تحديث بيانات المستخدم
-  const updateUser = (userData) => {
+  const updateUser = userData => {
     user.value = { ...user.value, ...userData }
     localStorage.setItem('user', JSON.stringify(user.value))
   }
@@ -108,56 +125,57 @@ export function useAuth() {
   const redirectBasedOnUserStatus = () => {
     if (!isAuthenticated.value) {
       router.push('/login')
+      
       return
     }
 
     const userType = user.value?.userType
 
     switch (userType) {
-      case 'teacher':
-        if (requiresProfileCompletion.value) {
-          router.push('/teacher/profile-setup')
-        } else {
-          router.push('/teacher/dashboard')
-        }
-        break
+    case 'teacher':
+      if (requiresProfileCompletion.value) {
+        router.push('/teacher/profile-setup')
+      } else {
+        router.push('/teacher/dashboard')
+      }
+      break
 
-      case 'super_admin':
-      case 'admin':
-        router.push('/admin/dashboard')
-        break
+    case 'super_admin':
+    case 'admin':
+      router.push('/admin/dashboard')
+      break
 
-      case 'student':
-        if (requiresProfileCompletion.value) {
-          router.push('/student/profile-setup')
-        } else {
-          router.push('/student/dashboard')
-        }
-        break
+    case 'student':
+      if (requiresProfileCompletion.value) {
+        router.push('/student/profile-setup')
+      } else {
+        router.push('/student/dashboard')
+      }
+      break
 
-      default:
-        router.push('/dashboard')
+    default:
+      router.push('/dashboard')
     }
   }
 
   // دالة التحقق من صلاحية المستخدم
-  const hasPermission = (permission) => {
+  const hasPermission = permission => {
     if (!user.value) return false
 
     // يمكنك إضافة منطق الصلاحيات هنا
     switch (permission) {
-      case 'teacher':
-        return user.value.userType === 'teacher'
-      case 'student':
-        return user.value.userType === 'student'
-      case 'admin':
-        return user.value.userType === 'admin'
-      case 'super_admin':
-        return user.value.userType === 'super_admin'
-      case 'any_admin':
-        return user.value.userType === 'admin' || user.value.userType === 'super_admin'
-      default:
-        return false
+    case 'teacher':
+      return user.value.userType === 'teacher'
+    case 'student':
+      return user.value.userType === 'student'
+    case 'admin':
+      return user.value.userType === 'admin'
+    case 'super_admin':
+      return user.value.userType === 'super_admin'
+    case 'any_admin':
+      return user.value.userType === 'admin' || user.value.userType === 'super_admin'
+    default:
+      return false
     }
   }
 
@@ -180,6 +198,6 @@ export function useAuth() {
     updateUser,
     loadUserFromStorage,
     redirectBasedOnUserStatus,
-    hasPermission
+    hasPermission,
   }
 }

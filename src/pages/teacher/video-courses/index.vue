@@ -13,6 +13,7 @@
 import { useRouter, useRoute } from 'vue-router'
 import Teacher from '@/api/teacher/teacher_api.js'
 import { resolveContentUrl } from '@/utils/content-url.js'
+import { useRealtimeSocket } from '@/composables/useRealtimeSocket'
 
 const router = useRouter()
 const route = useRoute()
@@ -44,6 +45,7 @@ const catalogLoading = ref(false)
 const dialogOpen = ref(false)
 const creating = ref(false)
 const createError = ref('')
+
 const draft = ref({
   title: '',
   description: '',
@@ -67,26 +69,31 @@ async function loadCatalogs () {
       Teacher.getAllSubjects().catch(() => null),
       Teacher.getAllMyGrades().catch(() => null),
     ])
+
     const subjectsData = subjectsRes?.data?.data || subjectsRes?.data || []
     const subjects = Array.isArray(subjectsData) ? subjectsData : (subjectsData.items || subjectsData.subjects || [])
+
     subjectOptions.value = subjects
-      .map((s) => ({
+      .map(s => ({
         title: s.name || s.title || s.subject || String(s.id || ''),
         value: s.name || s.title || s.subject,
       }))
-      .filter((s) => s.title)
+      .filter(s => s.title)
 
     const gradesData = gradesRes?.data?.data || gradesRes?.data || []
     const grades = Array.isArray(gradesData) ? gradesData : (gradesData.items || gradesData.grades || [])
+
+
     // /grades/my-grades returns junction-table rows shaped as
     //   { id: <teacher_grades.id>, gradeId: <grades.id>, gradeName, ... }
     // We MUST use `gradeId` (the real grades.id) as the dropdown value +
     // the backend payload — sending the junction-row `id` instead triggers
     // a Postgres FK violation → HTTP 500 on POST /teacher/video-courses.
     stageOptions.value = grades
-      .map((g) => {
+      .map(g => {
         const realGradeId = g.gradeId || g.id
         const displayName = g.gradeName || g.name || g.title || String(realGradeId || '')
+        
         return {
           title: displayName,
           value: realGradeId,
@@ -94,7 +101,7 @@ async function loadCatalogs () {
           id: realGradeId,
         }
       })
-      .filter((g) => g.title && g.id)
+      .filter(g => g.title && g.id)
   } catch (_e) {
     // Non-fatal — dropdowns will be empty; the create dialog shows a hint.
   } finally {
@@ -111,7 +118,9 @@ async function fetchPage () {
       limit: limit.value,
       status: activeStatus.value === 'all' ? undefined : activeStatus.value,
     })
+
     const body = res?.data || {}
+
     items.value = Array.isArray(body.data) ? body.data : []
     total.value = Number(body.meta?.pagination?.total ?? 0)
   } catch (err) {
@@ -168,6 +177,7 @@ function onStageChange (selectedValue) {
   if (!found) {
     draft.value.teachingStage = ''
     draft.value.gradeId = ''
+    
     return
   }
   draft.value.teachingStage = found.name
@@ -177,14 +187,17 @@ function onStageChange (selectedValue) {
 async function submitCreate () {
   if (!draft.value.title.trim()) {
     createError.value = 'عنوان الدورة مطلوب'
+    
     return
   }
   if (!draft.value.subject) {
     createError.value = 'يجب اختيار المادة من قائمة موادك'
+    
     return
   }
   if (!draft.value.teachingStage) {
     createError.value = 'يجب اختيار المرحلة من قائمة مراحلك'
+    
     return
   }
   creating.value = true
@@ -199,9 +212,11 @@ async function submitCreate () {
       price: draft.value.isFree ? 0 : Number(draft.value.price || 0),
       visibility: draft.value.visibility,
     }
+
     if (draft.value.gradeId) payload.gradeId = draft.value.gradeId
     const res = await Teacher.createVideoCourse(payload)
     const id = res?.data?.data?.course?.id
+
     dialogOpen.value = false
     if (id) router.push(`/teacher/video-courses/${id}`)
     else await fetchPage()
@@ -235,6 +250,7 @@ const noTeachingDataHint = computed(() => {
   }
   if (subjectOptions.value.length === 0) return 'لم تضِف موادًا. أضِف مادة على الأقل من قسم "المواد".'
   if (stageOptions.value.length === 0) return 'لم تضِف مراحل. أضِف مرحلة على الأقل قبل إنشاء دورة مرئية.'
+  
   return ''
 })
 
@@ -243,21 +259,72 @@ onMounted(() => {
   loadCatalogs()
 })
 
+// Realtime: refresh the list + show a snackbar when the admin approves /
+// rejects ANY of this teacher's courses. Filtering by recipient happens
+// server-side (RealtimeService emits to `user:<teacherId>`), so any event
+// that reaches this client is for this teacher.
+function _showSnack (msg, color) {
+  // Lazy: leverage the existing global v-snackbar pattern via window
+  // dispatch — pages here already use raw alert() in some places, so a
+  // simple toast via console + DOM is the lightweight fallback. Replace
+  // with a real Vuetify snackbar if the team adopts one app-wide.
+  try {
+    const ev = new CustomEvent('app:toast', { detail: { msg, color } })
+
+    window.dispatchEvent(ev)
+  } catch (_) { /* nop */ }
+  console.info(`[realtime] ${msg}`)
+}
+
+useRealtimeSocket({
+  'video-course:approved': data => {
+    const title = data?.course?.title || ''
+
+    _showSnack(`تمت الموافقة على دورة "${title}"`, 'success')
+    fetchPage()
+  },
+  'video-course:rejected': data => {
+    const title = data?.course?.title || ''
+
+    _showSnack(`تم رفض دورة "${title}"`, 'error')
+    fetchPage()
+  },
+})
+
 definePage({ meta: { layout: 'default' } })
 </script>
 
 <template>
   <div>
-    <VBreadcrumbs :items="breadcrumbItems" class="px-0 mb-4" />
+    <VBreadcrumbs
+      :items="breadcrumbItems"
+      class="px-0 mb-4"
+    />
 
     <VCard>
       <VCardText>
         <div class="d-flex flex-wrap align-center mb-4 ga-2">
-          <h2 class="text-h6 ma-0">دوراتي المرئية</h2>
-          <VChip variant="tonal" color="info" size="x-small">{{ total }}</VChip>
+          <h2 class="text-h6 ma-0">
+            دوراتي المرئية
+          </h2>
+          <VChip
+            variant="tonal"
+            color="info"
+            size="x-small"
+          >
+            {{ total }}
+          </VChip>
           <VSpacer />
-          <VBtn color="primary" size="small" @click="openCreateDialog">
-            <VIcon start size="16" icon="ri-add-line" /> دورة جديدة
+          <VBtn
+            color="primary"
+            size="small"
+            @click="openCreateDialog"
+          >
+            <VIcon
+              start
+              size="16"
+              icon="ri-add-line"
+            /> دورة جديدة
           </VBtn>
         </div>
 
@@ -268,30 +335,77 @@ definePage({ meta: { layout: 'default' } })
           class="mb-4"
           @update:model-value="onTabChange"
         >
-          <VTab v-for="s in STATUSES" :key="s.value" :value="s.value" class="text-caption">
-            <VIcon :icon="s.icon" start size="14" />
+          <VTab
+            v-for="s in STATUSES"
+            :key="s.value"
+            :value="s.value"
+            class="text-caption"
+          >
+            <VIcon
+              :icon="s.icon"
+              start
+              size="14"
+            />
             {{ s.label }}
           </VTab>
         </VTabs>
 
-        <VAlert v-if="errorMessage" type="error" variant="tonal" density="compact" class="mb-3">
+        <VAlert
+          v-if="errorMessage"
+          type="error"
+          variant="tonal"
+          density="compact"
+          class="mb-3"
+        >
           {{ errorMessage }}
         </VAlert>
 
-        <div v-if="loading" class="text-center pa-6">
-          <VProgressCircular indeterminate color="primary" />
+        <div
+          v-if="loading"
+          class="text-center pa-6"
+        >
+          <VProgressCircular
+            indeterminate
+            color="primary"
+          />
         </div>
 
-        <div v-else-if="items.length === 0" class="empty-state">
-          <VIcon icon="ri-video-line" size="48" class="mb-2" color="grey" />
-          <div class="text-medium-emphasis">لا توجد دورات في هذه الحالة.</div>
-          <VBtn class="mt-3" color="primary" variant="tonal" size="small" @click="openCreateDialog">
+        <div
+          v-else-if="items.length === 0"
+          class="empty-state"
+        >
+          <VIcon
+            icon="ri-video-line"
+            size="48"
+            class="mb-2"
+            color="grey"
+          />
+          <div class="text-medium-emphasis">
+            لا توجد دورات في هذه الحالة.
+          </div>
+          <VBtn
+            class="mt-3"
+            color="primary"
+            variant="tonal"
+            size="small"
+            @click="openCreateDialog"
+          >
             إنشاء أول دورة
           </VBtn>
         </div>
 
-        <VRow v-else dense>
-          <VCol v-for="item in items" :key="item.id" cols="12" sm="6" md="4" lg="3">
+        <VRow
+          v-else
+          dense
+        >
+          <VCol
+            v-for="item in items"
+            :key="item.id"
+            cols="12"
+            sm="6"
+            md="4"
+            lg="3"
+          >
             <article
               class="course-card"
               role="button"
@@ -306,8 +420,15 @@ definePage({ meta: { layout: 'default' } })
                   alt=""
                   @error="(e) => e.target.style.display='none'"
                 >
-                <div v-else class="cover-placeholder">
-                  <VIcon icon="ri-video-line" size="28" color="grey" />
+                <div
+                  v-else
+                  class="cover-placeholder"
+                >
+                  <VIcon
+                    icon="ri-video-line"
+                    size="28"
+                    color="grey"
+                  />
                 </div>
                 <VChip
                   :color="statusVisuals(item.status).color"
@@ -315,19 +436,31 @@ definePage({ meta: { layout: 'default' } })
                   variant="elevated"
                   class="course-status-chip"
                 >
-                  <VIcon start size="11" :icon="statusVisuals(item.status).icon" />
+                  <VIcon
+                    start
+                    size="11"
+                    :icon="statusVisuals(item.status).icon"
+                  />
                   {{ statusVisuals(item.status).label }}
                 </VChip>
               </div>
               <div class="course-body">
-                <div class="course-title">{{ item.title }}</div>
+                <div class="course-title">
+                  {{ item.title }}
+                </div>
                 <div class="course-meta">
                   <span class="meta-piece">
-                    <VIcon icon="ri-book-2-line" size="12" />
+                    <VIcon
+                      icon="ri-book-2-line"
+                      size="12"
+                    />
                     {{ item.subject || '—' }}
                   </span>
                   <span class="meta-piece">
-                    <VIcon icon="ri-graduation-cap-line" size="12" />
+                    <VIcon
+                      icon="ri-graduation-cap-line"
+                      size="12"
+                    />
                     {{ item.teachingStage || '—' }}
                   </span>
                 </div>
@@ -361,9 +494,15 @@ definePage({ meta: { layout: 'default' } })
     </VCard>
 
     <!-- ============ Create-course dialog ============ -->
-    <VDialog v-model="dialogOpen" max-width="520" persistent>
+    <VDialog
+      v-model="dialogOpen"
+      max-width="520"
+      persistent
+    >
       <VCard>
-        <VCardTitle class="dialog-title">إنشاء دورة مرئية جديدة</VCardTitle>
+        <VCardTitle class="dialog-title">
+          إنشاء دورة مرئية جديدة
+        </VCardTitle>
         <VCardText>
           <VAlert
             v-if="noTeachingDataHint"
@@ -459,13 +598,21 @@ definePage({ meta: { layout: 'default' } })
         </VCardText>
         <VCardActions class="pa-4">
           <VSpacer />
-          <VBtn variant="text" :disabled="creating" @click="dialogOpen = false">إلغاء</VBtn>
+          <VBtn
+            variant="text"
+            :disabled="creating"
+            @click="dialogOpen = false"
+          >
+            إلغاء
+          </VBtn>
           <VBtn
             color="primary"
             :loading="creating"
             :disabled="subjectOptions.length === 0 || stageOptions.length === 0"
             @click="submitCreate"
-          >إنشاء</VBtn>
+          >
+            إنشاء
+          </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>

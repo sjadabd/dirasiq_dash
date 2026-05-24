@@ -9,6 +9,7 @@
 // page so this stays a focused triage view.
 
 import Admin from '@/api/admin/admin_api.js'
+import { useRealtimeSocket } from '@/composables/useRealtimeSocket'
 
 const router = useRouter()
 const route = useRoute()
@@ -60,7 +61,9 @@ async function fetchPage () {
       subject: subject.value || undefined,
       teachingStage: teachingStage.value || undefined,
     })
+
     const body = res?.data || {}
+
     items.value = Array.isArray(body.data) ? body.data : []
     total.value = Number(body.meta?.pagination?.total ?? 0)
   } catch (err) {
@@ -137,6 +140,18 @@ onMounted(() => {
   fetchPage()
 })
 
+// Realtime: a NEW pending course landed → silently refresh the list so
+// the moderation queue stays current without an F5. Only refetch when
+// we're actually on the pending_review tab (the new row's status is
+// always 'pending_review' on create).
+useRealtimeSocket({
+  'video-course:created': () => {
+    if (activeStatus.value === 'pending_review') {
+      fetchPage()
+    }
+  },
+})
+
 definePage({
   meta: { layout: 'default' },
 })
@@ -144,14 +159,23 @@ definePage({
 
 <template>
   <div>
-    <VBreadcrumbs :items="breadcrumbItems" class="px-0 mb-4" />
+    <VBreadcrumbs
+      :items="breadcrumbItems"
+      class="px-0 mb-4"
+    />
 
     <VCard>
       <VCardText>
         <div class="d-flex flex-wrap align-center mb-4 ga-2">
-          <h2 class="text-h5 ma-0">الدورات المرئية</h2>
+          <h2 class="text-h5 ma-0">
+            الدورات المرئية
+          </h2>
           <VSpacer />
-          <VChip variant="tonal" color="info" size="small">
+          <VChip
+            variant="tonal"
+            color="info"
+            size="small"
+          >
             {{ total }} دورة
           </VChip>
         </div>
@@ -163,15 +187,29 @@ definePage({
           class="mb-4"
           @update:model-value="onTabChange"
         >
-          <VTab v-for="s in STATUSES" :key="s.value" :value="s.value">
-            <VIcon :icon="s.icon" start size="18" />
+          <VTab
+            v-for="s in STATUSES"
+            :key="s.value"
+            :value="s.value"
+          >
+            <VIcon
+              :icon="s.icon"
+              start
+              size="18"
+            />
             {{ s.label }}
           </VTab>
         </VTabs>
 
         <!-- Filter row -->
-        <VRow dense class="mb-2">
-          <VCol cols="12" md="4">
+        <VRow
+          dense
+          class="mb-2"
+        >
+          <VCol
+            cols="12"
+            md="4"
+          >
             <VTextField
               v-model="search"
               density="comfortable"
@@ -184,7 +222,10 @@ definePage({
               @click:clear="clearSearch"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol
+            cols="12"
+            md="3"
+          >
             <VTextField
               v-model="subject"
               density="comfortable"
@@ -194,7 +235,10 @@ definePage({
               @keydown.enter="onSearchSubmit"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol
+            cols="12"
+            md="3"
+          >
             <VTextField
               v-model="teachingStage"
               density="comfortable"
@@ -204,13 +248,19 @@ definePage({
               @keydown.enter="onSearchSubmit"
             />
           </VCol>
-          <VCol cols="12" md="2">
+          <VCol
+            cols="12"
+            md="2"
+          >
             <VBtn
               block
               color="primary"
               @click="onSearchSubmit"
             >
-              <VIcon start icon="ri-filter-line" /> تطبيق
+              <VIcon
+                start
+                icon="ri-filter-line"
+              /> تطبيق
             </VBtn>
           </VCol>
         </VRow>
@@ -236,8 +286,14 @@ definePage({
           class="elevation-1"
         >
           <template #item.title="{ item }">
-            <div class="font-weight-medium">{{ item.title }}</div>
-            <div v-if="item.description" class="text-caption text-medium-emphasis text-truncate" style="max-width: 320px">
+            <div class="font-weight-medium">
+              {{ item.title }}
+            </div>
+            <div
+              v-if="item.description"
+              class="text-caption text-medium-emphasis text-truncate"
+              style="max-width: 320px"
+            >
               {{ item.description }}
             </div>
           </template>
@@ -251,7 +307,12 @@ definePage({
             >
               عامة
             </VChip>
-            <VChip v-else size="x-small" color="secondary" variant="tonal">
+            <VChip
+              v-else
+              size="x-small"
+              color="secondary"
+              variant="tonal"
+            >
               خاصة
             </VChip>
           </template>
@@ -265,7 +326,12 @@ definePage({
             >
               مجاني
             </VChip>
-            <VChip v-else size="x-small" color="warning" variant="tonal">
+            <VChip
+              v-else
+              size="x-small"
+              color="warning"
+              variant="tonal"
+            >
               مدفوع
             </VChip>
           </template>
@@ -276,7 +342,11 @@ definePage({
               size="small"
               variant="tonal"
             >
-              <VIcon start size="14" :icon="statusVisuals(item.status).icon" />
+              <VIcon
+                start
+                size="14"
+                :icon="statusVisuals(item.status).icon"
+              />
               {{ statusVisuals(item.status).label }}
             </VChip>
           </template>
@@ -292,7 +362,11 @@ definePage({
               color="primary"
               @click="goToDetail(item)"
             >
-              <VIcon start size="16" icon="ri-eye-line" />
+              <VIcon
+                start
+                size="16"
+                icon="ri-eye-line"
+              />
               عرض
             </VBtn>
           </template>
