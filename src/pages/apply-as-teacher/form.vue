@@ -44,8 +44,7 @@ const form = ref({
   area: '',
   subject: '',
   customSubject: '',
-  teachingStage: '',
-  customStage: '',
+  gradeIds: [], // multi-select of grade UUIDs (replaces the legacy teachingStage)
   yearsOfExperience: 0,
   currentWorkplace: '',
   hasPhysicalCourses: false,
@@ -84,9 +83,9 @@ watch([currentStep, () => form.value.authProvider], async () => {
   }, 50)
 }, { immediate: true })
 
-// ----- Public catalogs (subject + teaching stage) -----------------------
+// ----- Public catalogs (subject + grades) -------------------------------
 const subjectsCatalog = ref([])
-const stagesCatalog = ref([])
+const gradesCatalog = ref([]) // [{ id, name }]
 const catalogLoading = ref(true)
 const catalogError = ref('')
 
@@ -94,16 +93,21 @@ const OTHER_LABEL = 'أخرى'
 
 async function loadCatalogs () {
   try {
-    const [s, t] = await Promise.all([
+    const [s, g] = await Promise.all([
       TeacherAppApi.getSubjects(),
-      TeacherAppApi.getTeachingStages(),
+      TeacherAppApi.getActiveGrades(),
     ])
 
     subjectsCatalog.value = Array.isArray(s?.data?.data) ? s.data.data : []
-    stagesCatalog.value = Array.isArray(t?.data?.data) ? t.data.data : []
+    const rawGrades = g?.data?.data
+    gradesCatalog.value = Array.isArray(rawGrades)
+      ? rawGrades
+        .map(r => ({ id: r?.id ?? r?._id, name: r?.name ?? '' }))
+        .filter(r => r.id && r.name)
+      : []
   } catch (e) {
     catalogError.value =
-      'تعذر تحميل قوائم المواد والمراحل — يمكنك إدخالها يدوياً.'
+      'تعذر تحميل قوائم المواد والمراحل — أعد تحميل الصفحة لاحقاً.'
   } finally {
     catalogLoading.value = false
   }
@@ -115,10 +119,9 @@ const subjectOptions = computed(() => [
   { title: OTHER_LABEL, value: OTHER_LABEL },
 ])
 
-const stageOptions = computed(() => [
-  ...stagesCatalog.value.map(s => ({ title: s, value: s })),
-  { title: OTHER_LABEL, value: OTHER_LABEL },
-])
+const gradeOptions = computed(() =>
+  gradesCatalog.value.map(g => ({ title: g.name, value: g.id })),
+)
 
 // ----- File slots --------------------------------------------------------
 const FILE_KINDS = [
@@ -171,10 +174,9 @@ function validateStep (idx) {
     const f = form.value
     if (!isNonEmpty(f.subject)) return 'المادة مطلوبة'
     if (f.subject === OTHER_LABEL && !isNonEmpty(f.customSubject)) return 'يرجى تحديد المادة'
-    if (!isNonEmpty(f.teachingStage)) return 'المرحلة مطلوبة'
-    if (f.teachingStage === OTHER_LABEL && !isNonEmpty(f.customStage)) return 'يرجى تحديد المرحلة'
+    if (!Array.isArray(f.gradeIds) || f.gradeIds.length === 0) return 'يجب اختيار مرحلة دراسية واحدة على الأقل'
     if (Number(f.yearsOfExperience) < 0) return 'سنوات الخبرة غير صحيحة'
-    
+
     return null
   }
 
@@ -231,9 +233,8 @@ async function submit () {
   try {
     const f = form.value
 
-    // Resolve the OTHER fallbacks
+    // Resolve the OTHER fallback for subject. Grades are now ids only.
     const finalSubject = f.subject === OTHER_LABEL ? f.customSubject.trim() : String(f.subject || '').trim()
-    const finalStage = f.teachingStage === OTHER_LABEL ? f.customStage.trim() : String(f.teachingStage || '').trim()
 
     /** @type {Record<string, any>} */
     const payload = {
@@ -246,7 +247,7 @@ async function submit () {
       city: f.city.trim(),
       area: f.area.trim(),
       subject: finalSubject,
-      teachingStage: finalStage,
+      gradeIds: [...f.gradeIds],
       yearsOfExperience: Number(f.yearsOfExperience || 0),
       hasPhysicalCourses: !!f.hasPhysicalCourses,
       estimatedStudentCount: Number(f.estimatedStudentCount || 0),
@@ -267,9 +268,6 @@ async function submit () {
     for (const [k, v] of Object.entries(optionalMap)) {
       const s = String(v || '').trim()
       if (s) payload[k] = s
-    }
-    if (f.teachingStage === OTHER_LABEL && f.customStage.trim()) {
-      payload.customTeachingStage = f.customStage.trim()
     }
     if (f.authProvider === 'email') {
       payload.email = f.email.trim()
@@ -610,24 +608,18 @@ onMounted(() => {
 
           <VCol cols="12">
             <VSelect
-              v-model="form.teachingStage"
-              :items="stageOptions"
+              v-model="form.gradeIds"
+              :items="gradeOptions"
               :loading="catalogLoading"
-              label="المرحلة الدراسية *"
+              label="المراحل الدراسية التي تُدرّسها *"
+              hint="يمكنك اختيار أكثر من مرحلة"
+              persistent-hint
+              multiple
+              chips
+              closable-chips
               variant="outlined"
               density="comfortable"
               prepend-inner-icon="ri-graduation-cap-line"
-            />
-          </VCol>
-          <VCol
-            v-if="form.teachingStage === OTHER_LABEL"
-            cols="12"
-          >
-            <VTextField
-              v-model="form.customStage"
-              label="حدّد المرحلة *"
-              variant="outlined"
-              density="comfortable"
             />
           </VCol>
 

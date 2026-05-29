@@ -85,6 +85,13 @@ class TeacherApplicationApi {
     return axiosInstance.get('/public/teaching-stages')
   }
 
+  // Public — full active-grade list. Same payload as the student-registration
+  // screen consumes; the teacher-application form picks one or more of these
+  // ids and submits them as `gradeIds`.
+  async getActiveGrades() {
+    return axiosInstance.get('/grades/all-student')
+  }
+
   // -------------------------------------------------------------------------
   // Phase 3 — file upload (multipart, gated by X-Upload-Token)
   // -------------------------------------------------------------------------
