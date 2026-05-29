@@ -14,6 +14,7 @@ import { useRouter, useRoute } from 'vue-router'
 import Teacher from '@/api/teacher/teacher_api.js'
 import { resolveContentUrl } from '@/utils/content-url.js'
 import { useRealtimeSocket } from '@/composables/useRealtimeSocket'
+import VideoCourseWizard from '@/components/teacher/VideoCourseWizard.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -41,21 +42,11 @@ const subjectOptions = ref([]) // { title, value }
 const stageOptions = ref([])   // { title, value: gradeId, name }
 const catalogLoading = ref(false)
 
-// New-course dialog state
+// New-course dialog state — Phase 5 delegates the draft to the wizard
+// component, so we only track the dialog open/loading/error here.
 const dialogOpen = ref(false)
 const creating = ref(false)
 const createError = ref('')
-
-const draft = ref({
-  title: '',
-  description: '',
-  subject: '',
-  teachingStage: '',
-  gradeId: '',
-  isFree: true,
-  price: 0,
-  visibility: 'private',
-})
 
 const breadcrumbItems = [
   { title: 'الرئيسية', to: '/teacher/dashboard', disabled: false },
@@ -156,67 +147,23 @@ function onPageChange (newPage) {
 }
 
 function openCreateDialog () {
-  draft.value = {
-    title: '',
-    description: '',
-    subject: '',
-    teachingStage: '',
-    gradeId: '',
-    isFree: true,
-    price: 0,
-    visibility: 'private',
-  }
+  // Phase 5 — the wizard owns the draft now. We just open the dialog;
+  // the wizard component resets its own state on every fresh mount via
+  // the `:key` re-mount trick below.
   createError.value = ''
   dialogOpen.value = true
 }
 
-// When the stage dropdown changes, capture the chosen grade's NAME for the
-// `teachingStage` string the backend expects + the UUID for grade_id.
-function onStageChange (selectedValue) {
-  const found = stageOptions.value.find(s => s.value === selectedValue)
-  if (!found) {
-    draft.value.teachingStage = ''
-    draft.value.gradeId = ''
-    
-    return
-  }
-  draft.value.teachingStage = found.name
-  draft.value.gradeId = found.id || ''
-}
-
-async function submitCreate () {
-  if (!draft.value.title.trim()) {
-    createError.value = 'عنوان الدورة مطلوب'
-    
-    return
-  }
-  if (!draft.value.subject) {
-    createError.value = 'يجب اختيار المادة من قائمة موادك'
-    
-    return
-  }
-  if (!draft.value.teachingStage) {
-    createError.value = 'يجب اختيار المرحلة من قائمة مراحلك'
-    
-    return
-  }
+// Phase 5 wizard submit handler — the wizard emits the canonical
+// Phase-3 payload (accessType + grade/target/free pivots + priceIqd +
+// freeForEnrolledStudents). We pass it straight through to the
+// existing createVideoCourse API.
+async function onWizardSubmit (payload) {
   creating.value = true
   createError.value = ''
   try {
-    const payload = {
-      title: draft.value.title.trim(),
-      description: draft.value.description.trim() || undefined,
-      subject: draft.value.subject,
-      teachingStage: draft.value.teachingStage,
-      isFree: draft.value.isFree,
-      price: draft.value.isFree ? 0 : Number(draft.value.price || 0),
-      visibility: draft.value.visibility,
-    }
-
-    if (draft.value.gradeId) payload.gradeId = draft.value.gradeId
     const res = await Teacher.createVideoCourse(payload)
     const id = res?.data?.data?.course?.id
-
     dialogOpen.value = false
     if (id) router.push(`/teacher/video-courses/${id}`)
     else await fetchPage()
@@ -226,6 +173,11 @@ async function submitCreate () {
   } finally {
     creating.value = false
   }
+}
+
+function onWizardCancel () {
+  if (creating.value) return
+  dialogOpen.value = false
 }
 
 function statusVisuals (s) {
@@ -493,17 +445,29 @@ definePage({ meta: { layout: 'default' } })
       </VCardText>
     </VCard>
 
-    <!-- ============ Create-course dialog ============ -->
+    <!-- ============ Create-course dialog (Phase 5 wizard) ============ -->
+    <!--
+      Phase 5: the simple form is replaced by the 5-step wizard. The
+      same trigger button + dialog shell stay; only the inner content
+      swaps. We use `:key="dialogOpen"` so the wizard's internal state
+      resets on every fresh open without us tracking a draft here.
+    -->
     <VDialog
       v-model="dialogOpen"
-      max-width="520"
+      max-width="780"
       persistent
+      scrollable
     >
       <VCard>
-        <VCardTitle class="dialog-title">
+        <VCardTitle class="dialog-title d-flex align-center ga-2">
+          <VIcon
+            icon="ri-video-add-line"
+            color="primary"
+            start
+          />
           إنشاء دورة مرئية جديدة
         </VCardTitle>
-        <VCardText>
+        <VCardText class="pa-4">
           <VAlert
             v-if="noTeachingDataHint"
             type="warning"
@@ -514,106 +478,15 @@ definePage({ meta: { layout: 'default' } })
             {{ noTeachingDataHint }}
           </VAlert>
 
-          <VTextField
-            v-model="draft.title"
-            label="عنوان الدورة *"
-            density="comfortable"
-            variant="outlined"
-            class="mb-3"
-            hide-details
+          <VideoCourseWizard
+            v-if="dialogOpen"
+            :key="dialogOpen ? 'open' : 'closed'"
+            :submitting="creating"
+            :external-error="createError"
+            @submit="onWizardSubmit"
+            @cancel="onWizardCancel"
           />
-          <VTextarea
-            v-model="draft.description"
-            label="الوصف"
-            rows="2"
-            density="comfortable"
-            variant="outlined"
-            class="mb-3"
-            hide-details
-          />
-          <VSelect
-            v-model="draft.subject"
-            :items="subjectOptions"
-            :loading="catalogLoading"
-            :disabled="subjectOptions.length === 0"
-            label="المادة * (من موادك)"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-            class="mb-3"
-          />
-          <VSelect
-            :model-value="draft.gradeId || ''"
-            :items="stageOptions"
-            :loading="catalogLoading"
-            :disabled="stageOptions.length === 0"
-            label="المرحلة * (من مراحلك)"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-            class="mb-3"
-            @update:model-value="onStageChange"
-          />
-
-          <div class="d-flex align-center ga-3 mb-3">
-            <VSwitch
-              v-model="draft.isFree"
-              label="مجاني"
-              color="success"
-              density="compact"
-              inset
-              hide-details
-            />
-            <VTextField
-              v-if="!draft.isFree"
-              v-model.number="draft.price"
-              type="number"
-              min="0"
-              label="السعر (د.ع)"
-              density="comfortable"
-              variant="outlined"
-              hide-details
-            />
-          </div>
-          <VSelect
-            v-model="draft.visibility"
-            :items="[
-              { title: 'خاصة (مخفية حتى النشر)', value: 'private' },
-              { title: 'عامة (تظهر بعد موافقة الإدارة)', value: 'public' },
-            ]"
-            label="الرؤية"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-          />
-          <VAlert
-            v-if="createError"
-            type="error"
-            variant="tonal"
-            density="compact"
-            class="mt-3"
-          >
-            {{ createError }}
-          </VAlert>
         </VCardText>
-        <VCardActions class="pa-4">
-          <VSpacer />
-          <VBtn
-            variant="text"
-            :disabled="creating"
-            @click="dialogOpen = false"
-          >
-            إلغاء
-          </VBtn>
-          <VBtn
-            color="primary"
-            :loading="creating"
-            :disabled="subjectOptions.length === 0 || stageOptions.length === 0"
-            @click="submitCreate"
-          >
-            إنشاء
-          </VBtn>
-        </VCardActions>
       </VCard>
     </VDialog>
   </div>

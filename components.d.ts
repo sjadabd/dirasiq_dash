@@ -74,6 +74,7 @@ declare module 'vue' {
     UploadsWidget: typeof import('./src/components/UploadsWidget.vue')['default']
     UserInfoEditDialog: typeof import('./src/components/dialogs/UserInfoEditDialog.vue')['default']
     UserUpgradePlanDialog: typeof import('./src/components/dialogs/UserUpgradePlanDialog.vue')['default']
+    VideoCourseWizard: typeof import('./src/components/teacher/VideoCourseWizard.vue')['default']
     VideoUploadEditor: typeof import('./src/components/teacher/VideoUploadEditor.vue')['default']
   }
 }

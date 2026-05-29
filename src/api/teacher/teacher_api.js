@@ -559,6 +559,19 @@ class TeacherApi {
     return axiosInstance.post(`/teacher/video-courses`, payload)
   }
 
+  // Phase 5 — live commission preview (Phase 3 backend).
+  // Returns the same breakdown the engine emits for a real sale:
+  //   { grossSalePriceIqd, commissionPercent, commissionAmountIqd,
+  //     netToTeacherIqd, gatewayFeeIqd, platformRevenueIqd,
+  //     source, appliedTierId, appliedTierName }
+  // teacherId is taken from the JWT server-side; a teacher with a
+  // per-account override sees their ACTUAL rate, not the generic tier.
+  async getCommissionPreview(priceIqd) {
+    return axiosInstance.get(`/teacher/commission-preview`, {
+      params: { priceIqd },
+    })
+  }
+
   async updateVideoCourse(id, payload) {
     return axiosInstance.patch(`/teacher/video-courses/${id}`, payload)
   }
