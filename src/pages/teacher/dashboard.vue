@@ -925,10 +925,10 @@ onMounted(async () => {
               variant="tonal"
               rounded="lg"
               class="mt-3"
-              prepend-icon="ri-vip-crown-line"
-              to="/teacher/billing/pricing"
+              prepend-icon="ri-wallet-3-line"
+              to="/teacher/wallet"
             >
-              ترقية الباقة
+              شحن المحفظة
             </VBtn>
           </VCardItem>
         </VCard>

@@ -30,7 +30,9 @@ const handleNavItemClick = item => {
   else if (item.value === "settings") {
     router.push("/teacher/settings")
   } else if (item.value === "billing") {
-    router.push("/teacher/billing")
+    // Phase 7+: subscription billing is gone; the equivalent flow is the
+    // wallet top-up page (Wayl-powered). Old "Billing" menu items land here.
+    router.push("/teacher/wallet")
   } else if (item.value === "help") {
     router.push("/help")
   }

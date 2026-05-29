@@ -88,10 +88,16 @@ export default [
   // ── الحسابات والفوترة ────────────────────────────────────
   { heading: 'الحسابات والفوترة', type: 'teacher' },
   {
+    title: 'المحفظة',
+    to: { name: 'teacher-wallet' },
+    type: 'teacher',
+    icon: { icon: 'ri-wallet-3-line' },
+  },
+  {
     title: 'فواتير العربون',
     to: { name: 'teacher-payments-reservations-show-reservation-payments' },
     type: 'teacher',
-    icon: { icon: 'ri-wallet-3-line' }, // محفظة/عربون
+    icon: { icon: 'ri-coin-line' }, // عربون
   },
   {
     title: 'فواتير الطلاب',

@@ -56,9 +56,18 @@ class TeacherApi {
     })
   }
 
-  // (Phase 7) Wayl topup + subscription link + package activation removed.
-  // Wallet credits will be generated automatically from course purchases
-  // in a later phase; manual top-ups are no longer in scope.
+  // (Phase 7) Subscription / package-activation links removed. Wallet
+  // top-up via Wayl was restored separately — see createWaylTopupLink
+  // below. Future enrollment-based credits will flow through the same
+  // wallet_ledger but server-side, not via this client method.
+
+  // Create a Wayl payment link the teacher will redirect to. Server returns
+  // { url, referenceId, amount }; the wayl webhook credits the wallet when
+  // the user completes payment. The dashboard then polls /teacher/wallet
+  // (with ?poll=1 on the return URL) until the balance updates.
+  async createWaylTopupLink(amount) {
+    return await axiosInstance.post(`/teacher/wallet/topup`, { amount })
+  }
   // profile
 
   // expenses
