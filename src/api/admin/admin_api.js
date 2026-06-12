@@ -285,5 +285,19 @@ class Admin {
   async deleteVideoCourse(id) {
     return await axiosInstance.delete(`/super-admin/video-courses/${id}`)
   }
+
+  // teacher withdrawals (payouts)
+  async listWithdrawals({ page = 1, limit = 20, status } = {}) {
+    return await axiosInstance.get(`/super-admin/withdrawals${buildQuery({ page, limit, status })}`)
+  }
+  async approveWithdrawal(id, adminNotes) {
+    return await axiosInstance.patch(`/super-admin/withdrawals/${id}/approve`, { adminNotes })
+  }
+  async rejectWithdrawal(id, reason) {
+    return await axiosInstance.patch(`/super-admin/withdrawals/${id}/reject`, { reason })
+  }
+  async markWithdrawalPaid(id, payload) {
+    return await axiosInstance.patch(`/super-admin/withdrawals/${id}/mark-paid`, payload)
+  }
 }
 export default new Admin()

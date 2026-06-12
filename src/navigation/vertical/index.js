@@ -52,6 +52,12 @@ export default [
     icon: { icon: 'ri-notification-3-line' },
   },
   {
+    title: 'طلبات السحب',
+    to: { name: 'admin-withdrawals' },
+    type: 'super_admin',
+    icon: { icon: 'ri-bank-line' },
+  },
+  {
     title: 'الإعدادات',
     to: { name: 'admin-settings' },
     type: 'super_admin',
