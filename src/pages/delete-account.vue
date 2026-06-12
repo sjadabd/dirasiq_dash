@@ -75,7 +75,8 @@ async function submitRequest () {
       <template v-else>
         <p class="mb-4">
           لطلب حذف حسابك وبياناتك في تطبيق <strong>MulhimIQ</strong> ("ملهم")، يرجى تعبئة النموذج
-          التالي. ستتم مراجعة الطلب من فريقنا ثم حذف الحساب.
+          التالي. سيتم مراجعة الطلب وحذف الحساب والبيانات المرتبطة به خلال مدة لا تتجاوز
+          <strong>30 يوماً</strong>.
         </p>
 
         <VAlert
@@ -142,13 +143,28 @@ async function submitRequest () {
           <li>بيانات الاستخدام: الحجوزات، الواجبات، الاختبارات، التقييمات، الرسائل.</li>
           <li>معرّفات الإشعارات المرتبطة بجهازك.</li>
         </ul>
+        <h3 class="text-subtitle-1 font-weight-bold mt-4 mb-2">
+          ما الذي لا يُحذف مباشرة؟
+        </h3>
+        <p class="text-body-2">
+          قد نحتفظ ببعض السجلات المالية والفواتير وسجلات المعاملات للمدة التي تفرضها القوانين
+          والالتزامات المحاسبية، وبعدها يتم حذفها أو إخفاء هويتها (إزالة ارتباطها بك).
+        </p>
         <p class="text-body-2 mt-3">
-          قد نحتفظ ببعض السجلات المالية (الفواتير والمدفوعات) للمدة التي تفرضها القوانين المعمول بها،
-          ثم تُحذف أو تُجهَّل. للاستفسار: <strong>mulhim@lamassu-iq.com</strong>
+          للاستفسار: <strong>mulhim@lamassu-iq.com</strong>
         </p>
       </template>
 
       <VDivider class="my-6" />
+      <p class="text-center text-body-2 mb-2">
+        للمزيد من المعلومات يرجى مراجعة سياسة الخصوصية:
+        <br>
+        <a
+          href="https://mulhimiq.com/privacy-policy"
+          target="_blank"
+          rel="noopener noreferrer"
+        >https://mulhimiq.com/privacy-policy</a>
+      </p>
       <p class="text-center text-caption">
         © 2026 MulhimIQ. جميع الحقوق محفوظة.
       </p>
