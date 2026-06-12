@@ -1,11 +1,4 @@
 <script setup>
-
-// Teacher withdrawals (payouts) — super-admin review.
-//
-// Tabs are status filters. Pending requests can be approved or rejected;
-// approved requests are marked paid (which requires uploading the transfer
-// receipt image). The receipt is shown to the teacher in their wallet.
-
 import Admin from '@/api/admin/admin_api.js'
 
 const router = useRouter()
@@ -56,8 +49,9 @@ const receiptName = ref('')
 // receipt viewer
 const viewerDialog = ref(false)
 const viewerUrl = ref('')
+const viewerLoading = ref(false)
 
-const SERVER_BASE = 'https://api.mulhimiq.com'
+const MAX_RECEIPT_BYTES = 5 * 1024 * 1024 // 5 MB
 
 function fmtMoney (v) {
   const n = Number(v || 0)
@@ -179,6 +173,13 @@ function onReceiptPicked (event) {
 
     return
   }
+  if (file.size > MAX_RECEIPT_BYTES) {
+    errorMessage.value = 'حجم صورة الوصل كبير جداً (الحد الأقصى 5 ميغابايت)'
+    receiptBase64.value = ''
+    receiptName.value = ''
+
+    return
+  }
   receiptName.value = file.name
 
   const reader = new FileReader()
@@ -210,9 +211,22 @@ async function submitPaid () {
   }
 }
 
-function viewReceipt (url) {
-  viewerUrl.value = url.startsWith('http') ? url : `${SERVER_BASE}${url}`
+async function viewReceipt (id) {
+  if (!id) return
+
+  // Revoke any previously-created object URL to avoid leaking blobs.
+  if (viewerUrl.value) URL.revokeObjectURL(viewerUrl.value)
+  viewerUrl.value = ''
   viewerDialog.value = true
+  viewerLoading.value = true
+  try {
+    viewerUrl.value = await Admin.getWithdrawalReceiptObjectUrl(id)
+  } catch {
+    errorMessage.value = 'تعذر تحميل صورة الوصل'
+    viewerDialog.value = false
+  } finally {
+    viewerLoading.value = false
+  }
 }
 
 onMounted(() => {
@@ -357,7 +371,7 @@ onMounted(() => {
               :key="row.id"
             >
               <td>{{ row.teacher_name }}</td>
-              <td dir="ltr">
+              <td class="text-lowercase">
                 {{ row.teacher_email }}
               </td>
               <td class="text-center font-weight-bold">
@@ -414,12 +428,12 @@ onMounted(() => {
                   </template>
                   <template v-else-if="row.status === 'paid'">
                     <VBtn
-                      v-if="row.payout_receipt_url"
+                      v-if="row.payout_receipt_url && row.id"
                       size="small"
                       color="info"
                       variant="tonal"
                       prepend-icon="ri-image-line"
-                      @click="viewReceipt(row.payout_receipt_url)"
+                      @click="viewReceipt(row.id)"
                     >
                       الوصل
                     </VBtn>
@@ -580,7 +594,17 @@ onMounted(() => {
           />
         </VCardTitle>
         <VCardText>
+          <div
+            v-if="viewerLoading"
+            class="d-flex justify-center py-12"
+          >
+            <VProgressCircular
+              indeterminate
+              color="primary"
+            />
+          </div>
           <VImg
+            v-else
             :src="viewerUrl"
             max-height="600"
             contain

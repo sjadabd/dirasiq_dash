@@ -299,5 +299,16 @@ class Admin {
   async markWithdrawalPaid(id, payload) {
     return await axiosInstance.patch(`/super-admin/withdrawals/${id}/mark-paid`, payload)
   }
+
+  // The receipt is private on the server. Stream it through the auth-gated
+  // endpoint as a blob and hand back an object URL — an <img>/VImg tag can't
+  // attach the JWT header itself.
+  async getWithdrawalReceiptObjectUrl(id) {
+    const res = await axiosInstance.get(`/super-admin/withdrawals/${id}/receipt`, {
+      responseType: "blob",
+    })
+
+    return URL.createObjectURL(res.data)
+  }
 }
 export default new Admin()
