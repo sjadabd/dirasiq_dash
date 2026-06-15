@@ -40,6 +40,16 @@ onMounted(() => {
               رسوم تأكيد طلب الطالب
             </VBtn>
           </RouterLink>
+          <RouterLink to="/admin/settings/payment-features">
+            <VBtn
+              block
+              color="primary"
+              variant="tonal"
+              prepend-icon="mdi-credit-card-settings-outline"
+            >
+              التحكم بميزات الشراء والشحن
+            </VBtn>
+          </RouterLink>
         </div>
       </VCardText>
     </VCard>

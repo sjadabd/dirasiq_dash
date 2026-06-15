@@ -26,6 +26,7 @@ declare module 'vue-router/auto-routes' {
     'admin-notifications-show-notifications': RouteRecordInfo<'admin-notifications-show-notifications', '/admin/notifications/show-notifications', Record<never, never>, Record<never, never>>,
     'admin-settings': RouteRecordInfo<'admin-settings', '/admin/settings', Record<never, never>, Record<never, never>>,
     'admin-settings-booking-confirm-fee': RouteRecordInfo<'admin-settings-booking-confirm-fee', '/admin/settings/booking-confirm-fee', Record<never, never>, Record<never, never>>,
+    'admin-settings-payment-features': RouteRecordInfo<'admin-settings-payment-features', '/admin/settings/payment-features', Record<never, never>, Record<never, never>>,
     'admin-study-years-show-study-years': RouteRecordInfo<'admin-study-years-show-study-years', '/admin/study-years/show-study-years', Record<never, never>, Record<never, never>>,
     'admin-teacher-applications': RouteRecordInfo<'admin-teacher-applications', '/admin/teacher-applications', Record<never, never>, Record<never, never>>,
     'admin-teacher-applications-id': RouteRecordInfo<'admin-teacher-applications-id', '/admin/teacher-applications/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,

@@ -103,6 +103,14 @@ class Admin {
     return await axiosInstance.put(`/super-admin/settings/booking-confirm-fee`, { feeIqd })
   }
 
+  async getPaymentFeatures() {
+    return await axiosInstance.get(`/super-admin/settings/payment-features`)
+  }
+
+  async setPaymentFeatures(payload) {
+    return await axiosInstance.put(`/super-admin/settings/payment-features`, payload)
+  }
+
   // super-admin settings
 
   // dashboard
