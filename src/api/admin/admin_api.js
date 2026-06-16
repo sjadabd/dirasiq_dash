@@ -318,5 +318,12 @@ class Admin {
 
     return URL.createObjectURL(res.data)
   }
+
+  // Account deletion requests (super-admin) — read-only inbox for now.
+  async listAccountDeletionRequests({ page = 1, limit = 20, status } = {}) {
+    return await axiosInstance.get(
+      `/super-admin/account-deletion-requests${buildQuery({ page, limit, status })}`,
+    )
+  }
 }
 export default new Admin()

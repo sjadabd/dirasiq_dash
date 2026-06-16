@@ -58,6 +58,12 @@ export default [
     icon: { icon: 'ri-bank-line' },
   },
   {
+    title: 'طلبات حذف الحساب',
+    to: { name: 'admin-account-deletions' },
+    type: 'super_admin',
+    icon: { icon: 'ri-user-unfollow-line' },
+  },
+  {
     title: 'الإعدادات',
     to: { name: 'admin-settings' },
     type: 'super_admin',
