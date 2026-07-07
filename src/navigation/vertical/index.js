@@ -64,6 +64,18 @@ export default [
     icon: { icon: 'ri-user-unfollow-line' },
   },
   {
+    title: 'طلبات الإعلانات',
+    to: { name: 'admin-advertisements' },
+    type: 'super_admin',
+    icon: { icon: 'ri-megaphone-line' },
+  },
+  {
+    title: 'إعدادات الإعلانات',
+    to: { name: 'admin-advertisements-settings' },
+    type: 'super_admin',
+    icon: { icon: 'ri-settings-3-line' },
+  },
+  {
     title: 'الإعدادات',
     to: { name: 'admin-settings' },
     type: 'super_admin',

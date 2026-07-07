@@ -31,6 +31,7 @@ const stats = ref({
 
 const activeYear = ref(null)
 const notifStats = ref({ total: 0, sent: 0, pending: 0, failed: 0 })
+const adRevenue = ref({ today: 0, month: 0, total: 0 })
 const apiHealthy = ref(null)
 const apiEnv = ref("")
 
@@ -121,6 +122,13 @@ const quickActions = [
     to: "/admin/notifications/show-notifications",
   },
   {
+    title: "طلبات الإعلانات",
+    sub: "مراجعة إعلانات المعلمين والموافقة",
+    icon: "ri-megaphone-line",
+    color: "secondary",
+    to: "/admin/advertisements",
+  },
+  {
     title: "إعدادات النظام",
     sub: "رسوم الحجز وإعدادات عامة",
     icon: "ri-settings-3-line",
@@ -133,7 +141,7 @@ const quickActions = [
 const fetchAll = async () => {
   isLoading.value = true
   statsError.value = ""
-  await Promise.all([loadStats(), loadActiveYear(), loadNotifStats(), loadHealth()])
+  await Promise.all([loadStats(), loadActiveYear(), loadNotifStats(), loadAdRevenue(), loadHealth()])
   isLoading.value = false
 }
 
@@ -176,6 +184,20 @@ const loadNotifStats = async () => {
     }
   } catch {
     /* silent — notifications stats are nice-to-have */
+  }
+}
+
+const loadAdRevenue = async () => {
+  try {
+    const res = await adminApi.getAdvertisementRevenueStats()
+    const d = res?.data?.data || {}
+    adRevenue.value = {
+      today: Number(d.revenueToday ?? d.revenue_today) || 0,
+      month: Number(d.revenueMonth ?? d.revenue_month) || 0,
+      total: Number(d.revenueTotal ?? d.revenue_total) || 0,
+    }
+  } catch {
+    adRevenue.value = { today: 0, month: 0, total: 0 }
   }
 }
 
@@ -351,6 +373,43 @@ onMounted(() => {
             <div class="stat-hint">
               {{ card.hint }}
             </div>
+          </VCardItem>
+        </VCard>
+      </VCol>
+    </VRow>
+
+    <!-- Advertisement revenue -->
+    <VRow class="mb-2" dense>
+      <VCol cols="12">
+        <VCard elevation="0" rounded="lg" border>
+          <VCardTitle class="d-flex align-center py-3 px-4">
+            <VIcon color="secondary" class="me-2">ri-megaphone-line</VIcon>
+            <span class="text-subtitle-1 font-weight-bold">إيرادات الإعلانات</span>
+            <VSpacer />
+            <VBtn variant="text" size="small" to="/admin/advertisements">طلبات الإعلانات</VBtn>
+          </VCardTitle>
+          <VDivider />
+          <VCardItem>
+            <VRow dense>
+              <VCol cols="12" md="4">
+                <div class="notif-pill notif-pill-warning">
+                  <div class="notif-pill-value">{{ Number(adRevenue.today).toLocaleString('ar-IQ') }}</div>
+                  <div class="notif-pill-label">اليوم (د.ع)</div>
+                </div>
+              </VCol>
+              <VCol cols="12" md="4">
+                <div class="notif-pill notif-pill-primary">
+                  <div class="notif-pill-value">{{ Number(adRevenue.month).toLocaleString('ar-IQ') }}</div>
+                  <div class="notif-pill-label">هذا الشهر (د.ع)</div>
+                </div>
+              </VCol>
+              <VCol cols="12" md="4">
+                <div class="notif-pill notif-pill-success">
+                  <div class="notif-pill-value">{{ Number(adRevenue.total).toLocaleString('ar-IQ') }}</div>
+                  <div class="notif-pill-label">الإجمالي (د.ع)</div>
+                </div>
+              </VCol>
+            </VRow>
           </VCardItem>
         </VCard>
       </VCol>

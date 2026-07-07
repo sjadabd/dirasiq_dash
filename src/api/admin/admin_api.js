@@ -325,5 +325,40 @@ class Admin {
       `/super-admin/account-deletion-requests${buildQuery({ page, limit, status })}`,
     )
   }
+
+  // Teacher advertisements (super-admin)
+  async listAdvertisements({ page = 1, limit = 20, status, teacherId } = {}) {
+    return await axiosInstance.get(
+      `/super-admin/advertisements${buildQuery({ page, limit, status, teacherId })}`,
+    )
+  }
+
+  async getAdvertisement(id) {
+    return await axiosInstance.get(`/super-admin/advertisements/${id}`)
+  }
+
+  async approveAdvertisement(id, body = {}) {
+    return await axiosInstance.patch(`/super-admin/advertisements/${id}/approve`, body)
+  }
+
+  async rejectAdvertisement(id, reason) {
+    return await axiosInstance.patch(`/super-admin/advertisements/${id}/reject`, { reason })
+  }
+
+  async deleteAdvertisement(id) {
+    return await axiosInstance.delete(`/super-admin/advertisements/${id}`)
+  }
+
+  async getAdvertisementSettings() {
+    return await axiosInstance.get('/super-admin/advertisements/settings')
+  }
+
+  async updateAdvertisementSettings(body) {
+    return await axiosInstance.patch('/super-admin/advertisements/settings', body)
+  }
+
+  async getAdvertisementRevenueStats() {
+    return await axiosInstance.get('/super-admin/advertisements/statistics/revenue')
+  }
 }
 export default new Admin()
