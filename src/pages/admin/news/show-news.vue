@@ -445,18 +445,21 @@ export default {
       contentUrl: "",
       filters: { page: 1, limit: 12, search: "", newsType: null, isActive: null },
 
-      // Channel-targeting options. These map 1:1 to the backend NewsType enum
-      // and decide WHERE the news is visible (web app, mobile app, or both).
+      // Channel-targeting options — map 1:1 to backend NewsType enum.
       channelOptions: [
         { title: "كل القنوات", value: null, icon: "ri-broadcast-line", color: "grey", hint: "عرض الكل" },
-        { title: "ويب وهاتف", value: "web_and_mobile", icon: "ri-global-line",
-          color: "success", hint: "يظهر في الموقع وتطبيق الطلاب معاً" },
+        { title: "ويب + هاتف الطالب", value: "web_and_mobile", icon: "ri-smartphone-line",
+          color: "success", hint: "الموقع وتطبيق الطلاب" },
+        { title: "ويب + هاتف الأستاذ", value: "web_and_teacher_mobile", icon: "ri-presentation-line",
+          color: "info", hint: "الموقع وتطبيق الأستاذ" },
+        { title: "ويب + الجميع", value: "all_platforms", icon: "ri-global-line",
+          color: "deep-purple", hint: "الموقع + تطبيق الطالب + تطبيق الأستاذ" },
         { title: "الموقع فقط", value: "web", icon: "ri-computer-line",
           color: "primary", hint: "يظهر في الموقع الإلكتروني فقط" },
-        { title: "الهاتف فقط", value: "mobile", icon: "ri-smartphone-line",
-          color: "warning", hint: "يظهر في تطبيق الطلاب على الهاتف فقط" },
-        { title: "تطبيق الأستاذ", value: "teacher_mobile", icon: "ri-presentation-line",
-          color: "info", hint: "يظهر في الصفحة الرئيسية لتطبيق الأستاذ" },
+        { title: "هاتف الطالب فقط", value: "mobile", icon: "ri-cellphone-line",
+          color: "warning", hint: "تطبيق الطلاب على الهاتف فقط" },
+        { title: "هاتف الأستاذ فقط", value: "teacher_mobile", icon: "ri-user-star-line",
+          color: "cyan", hint: "تطبيق الأستاذ على الهاتف فقط" },
       ],
       isActiveOptions: [
         { title: "الكل", value: null },
@@ -551,20 +554,24 @@ export default {
     // Channel helpers (web / mobile / web_and_mobile)
     channelLabel(t) {
       const map = {
-        web: "الموقع",
-        mobile: "تطبيق الهاتف",
-        web_and_mobile: "الموقع + الهاتف",
-        teacher_mobile: "تطبيق الأستاذ",
+        web: "الموقع فقط",
+        mobile: "هاتف الطالب",
+        web_and_mobile: "ويب + هاتف الطالب",
+        teacher_mobile: "هاتف الأستاذ",
+        web_and_teacher_mobile: "ويب + هاتف الأستاذ",
+        all_platforms: "ويب + الجميع",
       }
       
-      return map[t] || "الموقع + الهاتف"
+      return map[t] || "ويب + هاتف الطالب"
     },
     channelIcon(t) {
       const map = {
         web: "ri-computer-line",
-        mobile: "ri-smartphone-line",
-        web_and_mobile: "ri-global-line",
-        teacher_mobile: "ri-presentation-line",
+        mobile: "ri-cellphone-line",
+        web_and_mobile: "ri-smartphone-line",
+        teacher_mobile: "ri-user-star-line",
+        web_and_teacher_mobile: "ri-presentation-line",
+        all_platforms: "ri-global-line",
       }
       
       return map[t] || "ri-global-line"
@@ -574,7 +581,9 @@ export default {
         web: "primary",
         mobile: "warning",
         web_and_mobile: "success",
-        teacher_mobile: "info",
+        teacher_mobile: "cyan",
+        web_and_teacher_mobile: "info",
+        all_platforms: "deep-purple",
       }
       
       return map[t] || "success"
