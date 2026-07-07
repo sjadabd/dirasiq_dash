@@ -455,6 +455,8 @@ export default {
           color: "primary", hint: "يظهر في الموقع الإلكتروني فقط" },
         { title: "الهاتف فقط", value: "mobile", icon: "ri-smartphone-line",
           color: "warning", hint: "يظهر في تطبيق الطلاب على الهاتف فقط" },
+        { title: "تطبيق الأستاذ", value: "teacher_mobile", icon: "ri-presentation-line",
+          color: "info", hint: "يظهر في الصفحة الرئيسية لتطبيق الأستاذ" },
       ],
       isActiveOptions: [
         { title: "الكل", value: null },
@@ -548,17 +550,32 @@ export default {
 
     // Channel helpers (web / mobile / web_and_mobile)
     channelLabel(t) {
-      const map = { web: "الموقع", mobile: "تطبيق الهاتف", web_and_mobile: "الموقع + الهاتف" }
+      const map = {
+        web: "الموقع",
+        mobile: "تطبيق الهاتف",
+        web_and_mobile: "الموقع + الهاتف",
+        teacher_mobile: "تطبيق الأستاذ",
+      }
       
       return map[t] || "الموقع + الهاتف"
     },
     channelIcon(t) {
-      const map = { web: "ri-computer-line", mobile: "ri-smartphone-line", web_and_mobile: "ri-global-line" }
+      const map = {
+        web: "ri-computer-line",
+        mobile: "ri-smartphone-line",
+        web_and_mobile: "ri-global-line",
+        teacher_mobile: "ri-presentation-line",
+      }
       
       return map[t] || "ri-global-line"
     },
     channelColor(t) {
-      const map = { web: "primary", mobile: "warning", web_and_mobile: "success" }
+      const map = {
+        web: "primary",
+        mobile: "warning",
+        web_and_mobile: "success",
+        teacher_mobile: "info",
+      }
       
       return map[t] || "success"
     },
