@@ -31,6 +31,7 @@ const errorMessage = ref('')
 const previewOpen = ref(false)
 const previewItem = ref(null)
 const previewVideoRef = ref(null)
+const previewError = ref('')
 let hlsInstance = null
 
 const rejectOpen = ref(false)
@@ -139,31 +140,52 @@ async function destroyHls() {
 async function openPreview(item) {
   previewItem.value = item
   previewOpen.value = true
+  previewError.value = ''
   await nextTick()
   await destroyHls()
   const url = item?.manifestUrl
   const video = previewVideoRef.value
-  if (!url || !video) return
+  if (!url || !video) {
+    previewError.value = 'لا يوجد رابط تشغيل لهذا الفيديو'
+    return
+  }
 
   const isM3u8 = String(url).includes('.m3u8')
   if (!isM3u8) {
     video.src = url
+    try { await video.play() } catch { /* autoplay may be blocked */ }
     return
   }
   if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = url
+    try { await video.play() } catch { /* autoplay may be blocked */ }
     return
   }
   try {
     const mod = await import('hls.js')
     const Hls = mod.default || mod
     if (Hls && Hls.isSupported()) {
-      hlsInstance = new Hls()
+      hlsInstance = new Hls({
+        enableWorker: true,
+        xhrSetup: xhr => {
+          // Proxy URLs are on our API — cookies not required (ticket in query).
+          xhr.withCredentials = false
+        },
+      })
+      hlsInstance.on(Hls.Events.ERROR, (_event, data) => {
+        if (data?.fatal) {
+          previewError.value =
+            'تعذر تشغيل HLS. تأكد أن السيرفر يعيد رابط proxy (/api/intro-videos/.../manifest.m3u8).'
+        }
+      })
       hlsInstance.loadSource(url)
       hlsInstance.attachMedia(video)
+    } else {
+      video.src = url
     }
   } catch (err) {
     console.error('[intro-videos] HLS preview error', err)
+    previewError.value = 'تعذر تهيئة مشغّل الفيديو'
   }
 }
 
@@ -464,6 +486,14 @@ definePage({
           </VBtn>
         </VCardTitle>
         <VCardText>
+          <VAlert
+            v-if="previewError"
+            type="error"
+            variant="tonal"
+            class="mb-3"
+          >
+            {{ previewError }}
+          </VAlert>
           <video
             ref="previewVideoRef"
             controls
