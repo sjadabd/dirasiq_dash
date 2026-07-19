@@ -387,5 +387,9 @@ class Admin {
       { notes: notes || reviewNotes },
     )
   }
+
+  async syncIntroVideo(teacherId) {
+    return await axiosInstance.post(`/super-admin/intro-videos/${teacherId}/sync`)
+  }
 }
 export default new Admin()

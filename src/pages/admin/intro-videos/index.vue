@@ -185,6 +185,24 @@ async function approve(item) {
   }
 }
 
+async function syncFromBunny(item) {
+  actionLoading.value = true
+  actionError.value = ''
+  try {
+    const res = await Admin.syncIntroVideo(item.teacherId)
+    const status = res?.data?.data?.introVideo?.status || res?.data?.data?.bunnyStatus
+    if (status && !['awaiting_review', 'ready'].includes(status)) {
+      actionError.value = `تمت المزامنة — الحالة الحالية: ${status}. إن كان الفيديو جاهزاً على Bunny وما زال معلقاً، تأكد من تشغيل migration 061.`
+    }
+    await fetchPage()
+  } catch (err) {
+    actionError.value =
+      err?.response?.data?.message || err?.message || 'تعذرت المزامنة من Bunny'
+  } finally {
+    actionLoading.value = false
+  }
+}
+
 function openReject(item) {
   rejectTarget.value = item
   rejectNotes.value = ''
@@ -350,6 +368,21 @@ definePage({
 
           <template #item.actions="{ item }">
             <div class="d-flex ga-1 justify-center">
+              <VBtn
+                icon
+                size="small"
+                variant="text"
+                :disabled="actionLoading"
+                @click="syncFromBunny(item)"
+              >
+                <VIcon icon="ri-refresh-line" />
+                <VTooltip
+                  activator="parent"
+                  location="top"
+                >
+                  مزامنة من Bunny
+                </VTooltip>
+              </VBtn>
               <VBtn
                 icon
                 size="small"
