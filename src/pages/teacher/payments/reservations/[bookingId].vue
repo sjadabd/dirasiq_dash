@@ -103,6 +103,7 @@
 <script>
 import TeacherApi from '@/api/teacher/teacher_api'
 import numberWithComma from '@/constant/number'
+import { formatLocaleDateTime12 } from '@/utils/time-format'
 
 export default {
   data() {
@@ -132,8 +133,7 @@ export default {
   methods: {
     numberWithComma,
     formatDate(val) {
-      if (!val) return '-'
-      try { return new Date(val).toLocaleString() } catch { return '-' }
+      return formatLocaleDateTime12(val)
     },
     async getDataAxios() {
       const bookingId = this.$route.params.bookingId

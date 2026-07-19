@@ -8,6 +8,7 @@ const errorMessage = ref('')
 const successMessage = ref('')
 
 const form = ref({
+  freeClicksEnabled: false,
   costPerClick: 100,
   minBudget: 5000,
   maxBudget: 500000,
@@ -35,6 +36,7 @@ async function load() {
     const res = await Admin.getAdvertisementSettings()
     const data = res?.data?.data || res?.data || {}
     form.value = {
+      freeClicksEnabled: Boolean(data.freeClicksEnabled ?? data.free_clicks_enabled ?? false),
       costPerClick: Number(data.costPerClick ?? data.cost_per_click ?? 100),
       minBudget: Number(data.minBudget ?? data.min_budget ?? 5000),
       maxBudget: Number(data.maxBudget ?? data.max_budget ?? 500000),
@@ -98,14 +100,30 @@ onMounted(() => {
         <VSkeletonLoader v-if="loading" type="article" />
 
         <VForm v-else @submit.prevent="save">
+          <VAlert
+            :type="form.freeClicksEnabled ? 'success' : 'info'"
+            variant="tonal"
+            class="mb-4"
+          >
+            {{ form.freeClicksEnabled
+              ? 'الإعلانات الجديدة مجانية: لا تُطلب ميزانية من الأستاذ ولا يُخصم مقابل النقرات.'
+              : 'الإعلانات مدفوعة حسب سعر النقرة والميزانية المحددين أدناه.' }}
+          </VAlert>
           <VRow>
-            <VCol cols="12" md="4">
+            <VCol cols="12">
+              <VSwitch
+                v-model="form.freeClicksEnabled"
+                label="جعل نقرات الإعلانات الجديدة مجانية"
+                color="success"
+              />
+            </VCol>
+            <VCol v-if="!form.freeClicksEnabled" cols="12" md="4">
               <VTextField v-model.number="form.costPerClick" label="سعر النقرة (د.ع)" type="number" />
             </VCol>
-            <VCol cols="12" md="4">
+            <VCol v-if="!form.freeClicksEnabled" cols="12" md="4">
               <VTextField v-model.number="form.minBudget" label="الحد الأدنى للميزانية" type="number" />
             </VCol>
-            <VCol cols="12" md="4">
+            <VCol v-if="!form.freeClicksEnabled" cols="12" md="4">
               <VTextField v-model.number="form.maxBudget" label="الحد الأقصى للميزانية" type="number" />
             </VCol>
             <VCol cols="12" md="4">
@@ -135,7 +153,7 @@ onMounted(() => {
             <VCol cols="12" md="3">
               <VSwitch v-model="form.requireApproval" label="يتطلب موافقة الأدمن" />
             </VCol>
-            <VCol cols="12" md="3">
+            <VCol v-if="!form.freeClicksEnabled" cols="12" md="3">
               <VSwitch v-model="form.refundUnusedBudget" label="استرداد الميزانية غير المستخدمة" />
             </VCol>
           </VRow>

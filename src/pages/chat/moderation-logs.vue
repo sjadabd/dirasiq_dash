@@ -1,6 +1,7 @@
 <script setup>
 import chatAdminApi from "@/api/chat/chat_admin_api"
 import numberWithComma from "@/constant/number"
+import { formatLocaleDateTime12 } from "@/utils/time-format"
 
 const filters = reactive({
   page: 1,
@@ -97,12 +98,7 @@ function clearFilters() {
 }
 
 function fmtDate(iso) {
-  if (!iso) return "—"
-
-  return new Date(iso).toLocaleString("ar", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  })
+  return formatLocaleDateTime12(iso)
 }
 
 watch(

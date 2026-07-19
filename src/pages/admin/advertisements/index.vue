@@ -1,5 +1,6 @@
 <script setup>
 import Admin from '@/api/admin/admin_api.js'
+import { formatLocaleDateTime12 } from '@/utils/time-format'
 
 const router = useRouter()
 const route = useRoute()
@@ -34,12 +35,7 @@ const breadcrumbItems = [
 ]
 
 function fmtDate(iso) {
-  if (!iso) return '—'
-  try {
-    return new Date(iso).toLocaleString('ar-IQ', { dateStyle: 'medium', timeStyle: 'short' })
-  } catch {
-    return iso
-  }
+  return formatLocaleDateTime12(iso)
 }
 
 function statusMeta(value) {

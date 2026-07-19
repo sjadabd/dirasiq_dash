@@ -14,6 +14,7 @@
 
 import teacher_api from "@/api/teacher/teacher_api"
 import axiosInstance from "@/utils/axios"
+import { formatTimeRange12 } from "@/utils/time-format"
 import { computed, onMounted, ref } from "vue"
 import { useRouter } from "vue-router"
 
@@ -187,9 +188,7 @@ function stateColor(s) {
   return ({ confirmed: "success", pending: "warning", cancelled: "grey", rejected: "error" })[s] || "primary"
 }
 function formatTimeRange(start, end) {
-  if (!start) return ""
-  
-  return end ? `${start} – ${end}` : start
+  return formatTimeRange12(start, end)
 }
 function copyToClipboard(text) {
   const val = String(text || "")

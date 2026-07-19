@@ -1,6 +1,7 @@
 <script setup>
 import { useChatRealtime } from "@/composables/useChatRealtime"
 import { CHAT_BASE_URL as chatBase } from "@/utils/api-mode"
+import { formatLocaleDateTime12 } from "@/utils/time-format"
 
 const chat = useChatRealtime()
 
@@ -89,7 +90,7 @@ function relativeTime(iso) {
   if (min < 1) return "الآن"
   if (min < 60) return `${min} د`
   const hr = Math.floor(min / 60)
-  if (hr < 24) return d.toLocaleTimeString("ar", { hour: "2-digit", minute: "2-digit" })
+  if (hr < 24) return d.toLocaleTimeString("ar-IQ", { hour: "numeric", minute: "2-digit", hour12: true })
   const day = Math.floor(hr / 24)
   if (day < 7) return d.toLocaleDateString("ar", { weekday: "short" })
 
@@ -99,7 +100,7 @@ function relativeTime(iso) {
 function bubbleTime(iso) {
   if (!iso) return ""
 
-  return new Date(iso).toLocaleTimeString("ar", { hour: "2-digit", minute: "2-digit" })
+  return new Date(iso).toLocaleTimeString("ar-IQ", { hour: "numeric", minute: "2-digit", hour12: true })
 }
 
 function readMyId() {
@@ -135,7 +136,7 @@ const composerDisabledReason = computed(() => {
   }
   const me = currentMembers.value.find(m => m.userId === readMyId())
   if (me?.isMutedByAdminUntil && new Date(me.isMutedByAdminUntil) > new Date()) {
-    const fmt = new Date(me.isMutedByAdminUntil).toLocaleString("ar")
+    const fmt = formatLocaleDateTime12(me.isMutedByAdminUntil)
 
     return `أنت مكتوم في هذه المجموعة حتى ${fmt}.`
   }

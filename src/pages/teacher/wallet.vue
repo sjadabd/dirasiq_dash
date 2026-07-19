@@ -1,6 +1,7 @@
 <script setup>
 import teacher_api from "@/api/teacher/teacher_api"
 import numberWithComma from "@/constant/number"
+import { formatLocaleDateTime12 } from "@/utils/time-format"
 import { onBeforeUnmount, onMounted, ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 
@@ -153,12 +154,7 @@ async function createTopupLink() {
 }
 
 function formatDate(val) {
-  if (!val) return "-"
-  try {
-    return new Date(val).toLocaleString("en-IQ")
-  } catch {
-    return "-"
-  }
+  return formatLocaleDateTime12(val)
 }
 
 onMounted(async () => {

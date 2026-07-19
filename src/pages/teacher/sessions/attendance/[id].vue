@@ -18,6 +18,7 @@
 // =====================================================
 
 import TeacherApi from "@/api/teacher/teacher_api"
+import { formatTime12 } from "@/utils/time-format"
 
 const STATUSES = [
   { value: "present", label: "حاضر", color: "success", icon: "ri-check-line",      bg: "rgba(16, 185, 129, 0.08)" },
@@ -108,8 +109,7 @@ export default {
     showAlert(type, message) { Object.assign(this.alert, { open: true, type, message }) },
 
     formatTime(t) {
-      // Backend may already return Arabic 12h ("6:23 مساءً"). Keep as-is.
-      return t || "—"
+      return formatTime12(t) || "—"
     },
     formatDate(d) {
       if (!d) return "—"

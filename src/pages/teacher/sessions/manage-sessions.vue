@@ -23,6 +23,7 @@
 
 import TeacherApi from "@/api/teacher/teacher_api"
 import ConfirmDangerDialog from "@/components/ConfirmDangerDialog.vue"
+import { formatTime12 } from "@/utils/time-format"
 import numberWithComma from "@/constant/number"
 
 const COURSE_PALETTE = [
@@ -134,9 +135,7 @@ export default {
         const end   = item.end_time_24h   || item.end_time   || ""
         const slotKey = `${start}-${end}`
 
-        const label = item.start_time && item.end_time
-          ? `${item.start_time}\n${item.end_time}`
-          : `${start} - ${end}`
+        const label = `${formatTime12(start)}\n${formatTime12(end)}`
 
         const day = Number(item.weekday)
         if (!Number.isInteger(day) || day < 0 || day > 6) continue
@@ -205,6 +204,9 @@ export default {
   },
 
   methods: {
+    displayTime(value) {
+      return formatTime12(value) || "—"
+    },
     numberWithComma,
     showAlert(type, message) { Object.assign(this.alert, { open: true, type, message }) },
 
@@ -1030,10 +1032,10 @@ export default {
                       </div>
                       <div class="text-end">
                         <div class="text-caption font-weight-bold">
-                          {{ s.start_time }}
+                          {{ displayTime(s.start_time_24h || s.start_time) }}
                         </div>
                         <div class="text-caption text-medium-emphasis">
-                          {{ s.end_time }}
+                          {{ displayTime(s.end_time_24h || s.end_time) }}
                         </div>
                       </div>
                     </div>

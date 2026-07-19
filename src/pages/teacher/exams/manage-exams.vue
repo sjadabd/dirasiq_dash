@@ -277,6 +277,7 @@
 
 <script>
 import TeacherApi from '@/api/teacher/teacher_api'
+import { formatLocaleDateTime12, formatTimeRange12 } from '@/utils/time-format'
 
 // <CHANGE> Added cache configuration constants
 const CACHE_KEY = 'teacher_exams_cache'
@@ -300,7 +301,7 @@ export default {
           { title: '#', type: 'strong', sortable: false, key: 'num' },
           { title: 'العنوان/الوصف', type: 'link', sortable: false, key: 'title' },
           { title: 'النوع', type: 'strong', sortable: true, key: 'exam_type_label' },
-          { title: 'التاريخ', type: 'strong', sortable: true, key: 'exam_date' },
+          { title: 'التاريخ', type: 'strong', sortable: true, key: 'exam_date_display' },
           { title: 'الدرجة القصوى', type: 'strong', sortable: false, key: 'max_score' },
           { title: 'الجلسات', type: 'strong', sortable: false, key: 'sessions_label' },
           { title: 'إجراءات', type: 'strong', sortable: false, key: 'actions' },
@@ -472,8 +473,9 @@ export default {
           num: (this.table.options.page - 1) * this.table.options.limit + (idx + 1),
           title: x.description || `امتحان ${this.examTypeLabel(x.exam_type)}`,
           exam_type_label: this.examTypeLabel(x.exam_type),
+          exam_date_display: formatLocaleDateTime12(x.exam_date),
           sessions_label: Array.isArray(x.sessions) && x.sessions.length
-            ? x.sessions.map(s => `${s.title || ''}${s.start_time && s.end_time ? ` (${s.start_time} - ${s.end_time})` : ''}`).join('، ')
+            ? x.sessions.map(s => `${s.title || ''}${s.start_time && s.end_time ? ` (${formatTimeRange12(s.start_time, s.end_time)})` : ''}`).join('، ')
             : '—',
         }))
 

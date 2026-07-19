@@ -23,6 +23,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Teacher from '@/api/teacher/teacher_api.js'
 import { resolveContentUrl } from '@/utils/content-url.js'
+import { formatLocaleDateTime12 } from '@/utils/time-format'
 import { useUploadsStore } from '@/stores/uploads.js'
 import { useRealtimeSocket } from '@/composables/useRealtimeSocket'
 
@@ -476,9 +477,7 @@ async function fetchAll () {
 
 // ----- Format helpers ---------------------------------------------------
 function formatDate (iso) {
-  if (!iso) return '—'
-  try { return new Date(iso).toLocaleString('ar-EG', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }
-  catch { return iso }
+  return formatLocaleDateTime12(iso)
 }
 function formatDuration (s) {
   const n = Number(s || 0)

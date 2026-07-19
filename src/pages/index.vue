@@ -1533,7 +1533,7 @@ export default {
         { id: 2, icon: 'mdi-account-plus', color: 'primary', title: 'انضمام أحمد إلى كورس الفيزياء', time: 'منذ 12 دقيقة', tag: 'انضمام' },
         { id: 3, icon: 'mdi-clipboard-check-outline', color: 'secondary', title: 'تم تسليم واجب الرياضيات لـ 22 طالب', time: 'منذ ساعة', tag: 'واجب' },
         { id: 4, icon: 'mdi-bell-ring', color: 'warning', title: 'تذكير قبل الحصة (28 طالب)', time: 'قبل 3 ساعات', tag: 'تنبيه' },
-        { id: 5, icon: 'mdi-chart-line', color: 'accent', title: 'تحديث تقرير الأداء الأسبوعي', time: 'اليوم 09:15', tag: 'تقرير' },
+        { id: 5, icon: 'mdi-chart-line', color: 'accent', title: 'تحديث تقرير الأداء الأسبوعي', time: 'اليوم 9:15 ص', tag: 'تقرير' },
       ],
       previewInsights: [
         { id: 1, icon: 'mdi-trending-up', tone: 'success', title: '+12% نمو في الحجوزات', sub: 'مقارنة بالأسبوع الماضي.' },

@@ -372,6 +372,9 @@
     "useContentUrl": true,
     "useGoogleIdentity": true,
     "realtimeSocket": true,
-    "useRealtimeSocket": true
+    "useRealtimeSocket": true,
+    "formatDateTime12": true,
+    "formatTime12": true,
+    "formatTimeRange12": true
   }
 }
