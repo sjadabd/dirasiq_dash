@@ -19,10 +19,12 @@
             <div class="d-flex align-center gap-2">
               <!-- Phase 10.1.B.2 widened the status enum to include the full
                    Bunny lifecycle: pending → uploaded → processing → ready | failed -->
-              <v-chip size="small" color="success" v-if="introStatus === 'ready'">جاهز</v-chip>
+              <v-chip size="small" color="success" v-if="introStatus === 'approved'">معتمد</v-chip>
+              <v-chip size="small" color="warning" v-else-if="introStatus === 'awaiting_review' || introStatus === 'ready'">بانتظار المراجعة</v-chip>
               <v-chip size="small" color="warning" v-else-if="introStatus === 'processing'">قيد المعالجة</v-chip>
               <v-chip size="small" color="info" v-else-if="introStatus === 'uploaded'">تم الرفع</v-chip>
               <v-chip size="small" color="secondary" v-else-if="introStatus === 'pending'">بانتظار الرفع</v-chip>
+              <v-chip size="small" color="error" v-else-if="introStatus === 'rejected'">مرفوض</v-chip>
               <v-chip size="small" color="error" v-else-if="introStatus === 'failed'">فشل المعالجة</v-chip>
               <v-chip size="small" color="default" v-else-if="introStatus === 'none' || !introStatus">لا يوجد</v-chip>
               <v-chip size="small" color="info" v-else>{{ introStatus }}</v-chip>
@@ -339,7 +341,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  maxDuration: 120,
+  maxDuration: 60,
   minDuration: 1,
   numberOfFrames: 10,
 })
@@ -368,7 +370,7 @@ const isProcessing = ref(false)
 const processingStatus = ref('')
 const showPreviewDialog = ref(false)
 // no client trimming in simple mode
-const MAX_UPLOAD_BYTES = 128 * 1024 * 1024
+const MAX_UPLOAD_BYTES = 50 * 1024 * 1024
 
 // Timeline state
 const videoFrames = ref<string[]>([])

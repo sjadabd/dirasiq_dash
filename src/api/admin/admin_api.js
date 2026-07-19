@@ -360,5 +360,32 @@ class Admin {
   async getAdvertisementRevenueStats() {
     return await axiosInstance.get('/super-admin/advertisements/statistics/revenue')
   }
+
+  // -------------------------------------------------------------------------
+  // Teacher intro-video moderation
+  // -------------------------------------------------------------------------
+  async listIntroVideos({ page = 1, limit = 20, status, search } = {}) {
+    const qs = buildQuery({ page, limit, status, search })
+
+    return await axiosInstance.get(`/super-admin/intro-videos${qs}`)
+  }
+
+  async getIntroVideo(teacherId) {
+    return await axiosInstance.get(`/super-admin/intro-videos/${teacherId}`)
+  }
+
+  async approveIntroVideo(teacherId, { notes, reviewNotes } = {}) {
+    return await axiosInstance.post(
+      `/super-admin/intro-videos/${teacherId}/approve`,
+      { notes: notes || reviewNotes || undefined },
+    )
+  }
+
+  async rejectIntroVideo(teacherId, { notes, reviewNotes } = {}) {
+    return await axiosInstance.post(
+      `/super-admin/intro-videos/${teacherId}/reject`,
+      { notes: notes || reviewNotes },
+    )
+  }
 }
 export default new Admin()

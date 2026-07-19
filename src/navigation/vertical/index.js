@@ -40,6 +40,12 @@ export default [
     icon: { icon: 'ri-video-line' },
   },
   {
+    title: 'الفيديوهات التعريفية',
+    to: { name: 'admin-intro-videos' },
+    type: 'super_admin',
+    icon: { icon: 'ri-user-voice-line' },
+  },
+  {
     title: 'الأخبار',
     to: { name: 'admin-news-show-news' },
     type: 'super_admin',
