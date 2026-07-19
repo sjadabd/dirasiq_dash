@@ -166,6 +166,9 @@ export default {
       
       return new Date(item.end_date).getTime() < Date.now()
     },
+    isRegistrationOpen(item) {
+      return item?.registration_open !== false
+    },
     statusOf(item) {
       if (this.isDeleted(item)) return { label: "محذوف", color: "error",   icon: "ri-delete-bin-line" }
       if (this.isExpired(item)) return { label: "منتهي", color: "grey",    icon: "ri-time-line" }
@@ -350,6 +353,28 @@ export default {
         path: "/teacher/course/students",
         query: { courseId: item.id, courseName: item.course_name },
       })
+    },
+
+    async toggleRegistration(item) {
+      if (!item?.id || this.isDeleted(item)) return
+      const nextOpen = !this.isRegistrationOpen(item)
+      const confirmMsg = nextOpen
+        ? "سيتمكن الطلاب من إرسال طلبات حجز جديدة لهذا الكورس. هل تريد فتح باب التسجيل؟"
+        : "لن يتمكن الطلاب من إرسال أو إعادة تفعيل طلبات الحجز لهذا الكورس. الحجوزات الحالية لن تتأثر. هل تريد غلق باب التسجيل؟"
+      if (!window.confirm(confirmMsg)) return
+      try {
+        const res = await TeacherApi.setCourseRegistration(item.id, nextOpen)
+        item.registration_open = nextOpen
+        this.showAlert(
+          "success",
+          res?.data?.message || (nextOpen ? "تم فتح باب التسجيل" : "تم غلق باب التسجيل"),
+        )
+      } catch (error) {
+        this.showAlert(
+          "error",
+          error?.response?.data?.message || "تعذّر تحديث حالة التسجيل",
+        )
+      }
     },
   },
 }
@@ -780,6 +805,16 @@ export default {
               >
                 {{ formatIQDShort(item.reservation_amount) }}
               </VChip>
+              <VChip
+                v-if="!isDeleted(item) && !isRegistrationOpen(item)"
+                color="warning"
+                size="small"
+                variant="flat"
+                prepend-icon="ri-lock-line"
+                class="registration-chip"
+              >
+                التسجيل مغلق
+              </VChip>
             </div>
 
             <VCardText class="flex-grow-1">
@@ -837,7 +872,7 @@ export default {
             </VCardText>
 
             <VDivider />
-            <VCardActions class="pa-2">
+            <VCardActions class="pa-2 flex-wrap ga-1">
               <VBtn
                 v-if="!isDeleted(item)"
                 color="primary"
@@ -847,6 +882,16 @@ export default {
                 @click="handleShowCourseStudents(item)"
               >
                 الطلاب
+              </VBtn>
+              <VBtn
+                v-if="!isDeleted(item)"
+                :color="isRegistrationOpen(item) ? 'warning' : 'success'"
+                variant="tonal"
+                size="small"
+                :prepend-icon="isRegistrationOpen(item) ? 'ri-lock-line' : 'ri-lock-unlock-line'"
+                @click="toggleRegistration(item)"
+              >
+                {{ isRegistrationOpen(item) ? 'غلق التسجيل' : 'فتح التسجيل' }}
               </VBtn>
               <VSpacer />
               <VBtn
@@ -1028,6 +1073,12 @@ export default {
 .reservation-chip {
   position: absolute;
   inset-block-start: 12px;
+  inset-inline-end: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.registration-chip {
+  position: absolute;
+  inset-block-end: 12px;
   inset-inline-end: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }

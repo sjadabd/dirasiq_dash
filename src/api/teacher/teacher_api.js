@@ -202,6 +202,12 @@ class TeacherApi {
   async restoreCourse(id) {
     return await axiosInstance.patch(`/teacher/courses/${encodeURIComponent(id)}/restore`)
   }
+  async setCourseRegistration(id, registrationOpen) {
+    return await axiosInstance.patch(
+      `/teacher/courses/${encodeURIComponent(id)}/registration`,
+      { registration_open: !!registrationOpen },
+    )
+  }
 
   // course
 
