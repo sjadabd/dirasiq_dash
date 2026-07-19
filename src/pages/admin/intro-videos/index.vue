@@ -10,14 +10,15 @@ const router = useRouter()
 const route = useRoute()
 
 const STATUSES = [
-  { value: 'awaiting_review', label: 'بانتظار المراجعة', color: 'warning', icon: 'ri-time-line' },
+  { value: 'queue', label: 'صندوق الانتظار', color: 'primary', icon: 'ri-inbox-line' },
+  { value: 'awaiting_review', label: 'جاهز للمراجعة', color: 'warning', icon: 'ri-time-line' },
+  { value: 'in_progress', label: 'قيد المعالجة', color: 'info', icon: 'ri-loader-2-line' },
   { value: 'approved', label: 'معتمد', color: 'success', icon: 'ri-check-double-line' },
   { value: 'rejected', label: 'مرفوض', color: 'error', icon: 'ri-close-circle-line' },
   { value: 'failed', label: 'فشل', color: 'secondary', icon: 'ri-error-warning-line' },
-  { value: 'processing', label: 'قيد المعالجة', color: 'info', icon: 'ri-loader-2-line' },
 ]
 
-const activeStatus = ref(route.query.status || 'awaiting_review')
+const activeStatus = ref(route.query.status || 'queue')
 const search = ref(route.query.search || '')
 const page = ref(Number(route.query.page) || 1)
 const limit = ref(20)
@@ -53,11 +54,15 @@ const headers = [
 ]
 
 function statusMeta(value) {
-  return STATUSES.find(s => s.value === value) || {
-    label: value || '—',
-    color: 'default',
-    icon: 'ri-question-line',
+  const extras = {
+    pending: { label: 'بانتظار الرفع', color: 'secondary', icon: 'ri-time-line' },
+    uploaded: { label: 'تم الرفع', color: 'info', icon: 'ri-upload-line' },
+    processing: { label: 'قيد المعالجة', color: 'info', icon: 'ri-loader-2-line' },
+    ready: { label: 'جاهز (قديم)', color: 'warning', icon: 'ri-checkbox-circle-line' },
   }
+  return STATUSES.find(s => s.value === value)
+    || extras[value]
+    || { label: value || '—', color: 'default', icon: 'ri-question-line' }
 }
 
 function fmtDate(iso) {
@@ -365,7 +370,7 @@ definePage({
                 size="small"
                 variant="text"
                 color="success"
-                :disabled="item.status === 'approved' || actionLoading"
+                :disabled="!['awaiting_review','ready'].includes(item.status) || actionLoading"
                 @click="approve(item)"
               >
                 <VIcon icon="ri-check-line" />
@@ -381,7 +386,7 @@ definePage({
                 size="small"
                 variant="text"
                 color="error"
-                :disabled="item.status === 'rejected' || actionLoading"
+                :disabled="!['awaiting_review','ready'].includes(item.status) || actionLoading"
                 @click="openReject(item)"
               >
                 <VIcon icon="ri-close-line" />
