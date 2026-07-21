@@ -375,6 +375,7 @@
     "useRealtimeSocket": true,
     "formatDateTime12": true,
     "formatTime12": true,
-    "formatTimeRange12": true
+    "formatTimeRange12": true,
+    "formatLocaleDateTime12": true
   }
 }

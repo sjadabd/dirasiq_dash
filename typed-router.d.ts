@@ -25,6 +25,7 @@ declare module 'vue-router/auto-routes' {
     'admin-advertisements-settings': RouteRecordInfo<'admin-advertisements-settings', '/admin/advertisements/settings', Record<never, never>, Record<never, never>>,
     'admin-dashboard': RouteRecordInfo<'admin-dashboard', '/admin/dashboard', Record<never, never>, Record<never, never>>,
     'admin-grades-show-grades': RouteRecordInfo<'admin-grades-show-grades', '/admin/grades/show-grades', Record<never, never>, Record<never, never>>,
+    'admin-intro-videos': RouteRecordInfo<'admin-intro-videos', '/admin/intro-videos', Record<never, never>, Record<never, never>>,
     'admin-news-show-news': RouteRecordInfo<'admin-news-show-news', '/admin/news/show-news', Record<never, never>, Record<never, never>>,
     'admin-notifications-show-notifications': RouteRecordInfo<'admin-notifications-show-notifications', '/admin/notifications/show-notifications', Record<never, never>, Record<never, never>>,
     'admin-settings': RouteRecordInfo<'admin-settings', '/admin/settings', Record<never, never>, Record<never, never>>,

@@ -57,6 +57,7 @@ declare global {
   const formatDate: typeof import('./src/@core/utils/formatters.js')['formatDate']
   const formatDateTime12: typeof import('./src/utils/time-format.js')['formatDateTime12']
   const formatDateToMonthShort: typeof import('./src/@core/utils/formatters.js')['formatDateToMonthShort']
+  const formatLocaleDateTime12: typeof import('./src/utils/time-format.js')['formatLocaleDateTime12']
   const formatTime12: typeof import('./src/utils/time-format.js')['formatTime12']
   const formatTimeRange12: typeof import('./src/utils/time-format.js')['formatTimeRange12']
   const getActivePinia: typeof import('pinia')['getActivePinia']
@@ -431,6 +432,7 @@ declare module 'vue' {
     readonly formatDate: UnwrapRef<typeof import('./src/@core/utils/formatters.js')['formatDate']>
     readonly formatDateTime12: UnwrapRef<typeof import('./src/utils/time-format.js')['formatDateTime12']>
     readonly formatDateToMonthShort: UnwrapRef<typeof import('./src/@core/utils/formatters.js')['formatDateToMonthShort']>
+    readonly formatLocaleDateTime12: UnwrapRef<typeof import('./src/utils/time-format.js')['formatLocaleDateTime12']>
     readonly formatTime12: UnwrapRef<typeof import('./src/utils/time-format.js')['formatTime12']>
     readonly formatTimeRange12: UnwrapRef<typeof import('./src/utils/time-format.js')['formatTimeRange12']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
