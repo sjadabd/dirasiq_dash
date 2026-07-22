@@ -301,10 +301,17 @@ export default {
     },
 
     deleteItem(item) {
+      if (this.isExpired(item)) {
+        this.showAlert(
+          "warning",
+          "الكورس المنتهي يبقى في الأرشيف ولا يُحذف"
+        )
+        return
+      }
       this.deleteDialog.data = item
       this.deleteDialog.messages = [
-        "سيتم حذف الكورس حذفاً منطقياً.",
-        "يمكن استرجاعه لاحقاً من فلتر «المحذوفة».",
+        "يُحذف الكورس فقط إن لم يُسجَّل فيه طلاب ولم توجد بيانات مرتبطة.",
+        "يمكن استرجاعه من فلتر «المحذوفة» ما دام تاريخه لم ينتهِ.",
       ]
       this.deleteDialog.title = "تأكيد الحذف"
       this.deleteDialog.confirmButtonText = "حذف الكورس"
@@ -324,6 +331,13 @@ export default {
     },
 
     enableItem(item) {
+      if (this.isExpired(item)) {
+        this.showAlert(
+          "warning",
+          "لا يمكن استرجاع كورس منتهٍ — يبقى في الأرشيف ضمن المنتهية"
+        )
+        return
+      }
       this.enableDialog.data = item
       this.enableDialog.messages = [
         "سيتم استرجاع الكورس وإعادة تفعيله.",
@@ -903,7 +917,7 @@ export default {
                 @click="editItem(item)"
               />
               <VBtn
-                v-if="!isDeleted(item)"
+                v-if="!isDeleted(item) && !isExpired(item)"
                 icon="ri-delete-bin-line"
                 size="small"
                 variant="text"
@@ -911,7 +925,7 @@ export default {
                 @click="deleteItem(item)"
               />
               <VBtn
-                v-else
+                v-else-if="isDeleted(item) && !isExpired(item)"
                 color="success"
                 variant="tonal"
                 size="small"
