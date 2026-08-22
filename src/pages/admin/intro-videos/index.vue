@@ -212,9 +212,22 @@ async function syncFromBunny(item) {
   actionError.value = ''
   try {
     const res = await Admin.syncIntroVideo(item.teacherId)
-    const status = res?.data?.data?.introVideo?.status || res?.data?.data?.bunnyStatus
-    if (status && !['awaiting_review', 'ready'].includes(status)) {
-      actionError.value = `تمت المزامنة — الحالة الحالية: ${status}. إن كان الفيديو جاهزاً على Bunny وما زال معلقاً، تأكد من تشغيل migration 061.`
+    const payload = res?.data?.data || {}
+    const bunnyStatus = payload.bunnyStatus
+    const dbStatus = payload.dbStatus || payload.introVideo?.status
+    const duration = payload.durationSeconds
+
+    if (bunnyStatus === 'processing' || bunnyStatus === 'uploaded' || bunnyStatus === 'pending') {
+      actionError.value =
+        `Bunny ما زال يعالج الفيديو (الحالة: ${bunnyStatus}` +
+        `${duration != null ? `، المدة: ${duration}ث` : ''}). انتظر دقيقة ثم أعد المزامنة.`
+    } else if (bunnyStatus === 'failed') {
+      actionError.value = 'Bunny أفاد بفشل ترميز الفيديو. اطلب من الأستاذ إعادة الرفع.'
+    } else if (bunnyStatus === 'ready' && dbStatus === 'ready') {
+      actionError.value =
+        'الفيديو جاهز على Bunny لكن الحالة في القاعدة ما زالت ready. شغّل migration 061 ثم أعد المزامنة للانتقال إلى awaiting_review.'
+    } else if (dbStatus && !['awaiting_review', 'approved', 'ready'].includes(dbStatus)) {
+      actionError.value = `تمت المزامنة — حالة قاعدة البيانات: ${dbStatus} (Bunny: ${bunnyStatus || '—'})`
     }
     await fetchPage()
   } catch (err) {

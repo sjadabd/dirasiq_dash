@@ -125,11 +125,11 @@ const gradeOptions = computed(() =>
 
 // ----- File slots --------------------------------------------------------
 const FILE_KINDS = [
-  { kind: 'profile_image',     label: 'الصورة الشخصية',    accept: 'image/jpeg,image/png,image/webp', hint: 'JPG / PNG / WEBP — حتى 5MB' },
-  { kind: 'certificate_image', label: 'شهادة التدريس',     accept: 'image/jpeg,image/png,image/webp,application/pdf', hint: 'JPG / PNG / WEBP / PDF — حتى 10MB' },
-  { kind: 'national_id_image', label: 'الهوية الوطنية',    accept: 'image/jpeg,image/png,image/webp', hint: 'JPG / PNG / WEBP — حتى 5MB' },
+  { kind: 'profile_image',     label: 'الصورة الشخصية (اختياري)', accept: 'image/jpeg,image/png,image/webp', hint: 'JPG / PNG / WEBP — حتى 5MB' },
+  { kind: 'certificate_image', label: 'شهادة التدريس *',     accept: 'image/jpeg,image/png,image/webp,application/pdf', hint: 'JPG / PNG / WEBP / PDF — حتى 10MB' },
+  { kind: 'national_id_image', label: 'الهوية الوطنية *',    accept: 'image/jpeg,image/png,image/webp', hint: 'JPG / PNG / WEBP — حتى 5MB' },
   { kind: 'optional_attachment', label: 'مرفق إضافي (اختياري)', accept: 'image/jpeg,image/png,image/webp,application/pdf', hint: 'JPG / PNG / WEBP / PDF — حتى 10MB' },
-  { kind: 'intro_video',       label: 'فيديو تعريفي',      accept: 'video/mp4', hint: 'MP4 — حتى 50MB' },
+  { kind: 'intro_video',       label: 'فيديو تعريفي (اختياري)',      accept: 'video/mp4', hint: 'MP4 — حتى 50MB' },
 ]
 
 const pickedFiles = ref({}) // { [kind]: File }
@@ -180,7 +180,7 @@ function validateStep (idx) {
     return null
   }
 
-  // Steps 2 + 3 have no hard requirements
+  // Steps 2 has no hard requirements; step 3 (uploads) checked on submit
   return null
 }
 
@@ -233,6 +233,12 @@ async function submit () {
   try {
     const f = form.value
 
+    if (!pickedFiles.value.certificate_image || !pickedFiles.value.national_id_image) {
+      submitError.value = 'يرجى إرفاق شهادة التدريس والهوية الوطنية قبل الإرسال'
+      currentStep.value = 3
+      return
+    }
+
     // Resolve the OTHER fallback for subject. Grades are now ids only.
     const finalSubject = f.subject === OTHER_LABEL ? f.customSubject.trim() : String(f.subject || '').trim()
 
@@ -284,9 +290,8 @@ async function submit () {
 
     if (!applicationId) throw new Error('استجابة الخادم غير صالحة (لا يوجد applicationId)')
 
-    // Upload files sequentially with progress. Failures are NON-FATAL —
-    // the application row is already created, the user can re-upload
-    // later via support.
+    fileError.value = {}
+    let requiredUploadFailed = false
     for (const slot of FILE_KINDS) {
       const file = pickedFiles.value[slot.kind]
       if (!file) continue
@@ -309,9 +314,18 @@ async function submit () {
             || uerr?.message
             || 'فشل رفع الملف',
         }
-
-        // Continue with the next file
+        if (slot.kind === 'certificate_image' || slot.kind === 'national_id_image') {
+          requiredUploadFailed = true
+        }
       }
+    }
+
+    if (requiredUploadFailed
+      || fileProgress.value.certificate_image !== 100
+      || fileProgress.value.national_id_image !== 100) {
+      submitError.value =
+        'تم حفظ الطلب لكن فشل رفع المرفقات المطلوبة. أعد اختيار الملفات واضغط إرسال مجدداً.'
+      return
     }
 
     // Branch: email path → OTP; google path → success.
@@ -755,8 +769,8 @@ onMounted(() => {
         class="step-section"
       >
         <p class="upload-note">
-          كل المرفقات اختيارية لكنّها تُسرّع المراجعة. الصور تُتحقّق على
-          الخادم بنمط magic-byte. حد الفيديو 50 ميجابايت (MP4).
+          شهادة التدريس والهوية الوطنية إلزاميتان للموافقة. باقي المرفقات
+          اختيارية. الصور تُتحقّق على الخادم بنمط magic-byte. حد الفيديو 50 ميجابايت (MP4).
         </p>
         <div class="upload-grid">
           <div

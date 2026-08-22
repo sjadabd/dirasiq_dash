@@ -36,7 +36,7 @@
       font-src 'self' data: https://fonts.gstatic.com;
       connect-src 'self' https://api.mulhimiq.com wss://api.mulhimiq.com https://chat.mulhimiq.com wss://chat.mulhimiq.com https://onesignal.com https://*.onesignal.com https://accounts.google.com wss://*.onesignal.com https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org https://video.bunnycdn.com https://*.b-cdn.net https://*.mediadelivery.net https://connect.facebook.net https://www.facebook.com https://*.facebook.com %VITE_CSP_DEV_CONNECT%;
       media-src 'self' blob: https://api.mulhimiq.com https://*.b-cdn.net https://*.mediadelivery.net;
-      frame-src https://onesignal.com https://*.onesignal.com https://accounts.google.com https://www.facebook.com https://*.facebook.com;
+      frame-src 'self' blob: https://onesignal.com https://*.onesignal.com https://accounts.google.com https://www.facebook.com https://*.facebook.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';

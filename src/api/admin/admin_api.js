@@ -227,6 +227,29 @@ class Admin {
     return await axiosInstance.get(`/super-admin/teacher-applications/${id}/files`)
   }
 
+  /**
+   * Attach a file on behalf of the applicant (WhatsApp / email docs).
+   * Multipart: fields `kind` + `file`.
+   */
+  async uploadTeacherApplicationFile(id, { kind, file, onProgress } = {}) {
+    const fd = new FormData()
+
+    fd.append('kind', kind)
+    fd.append('file', file)
+
+    return await axiosInstance.post(
+      `/super-admin/teacher-applications/${id}/files`,
+      fd,
+      {
+        onUploadProgress: e => {
+          if (e.total && typeof onProgress === 'function') {
+            onProgress(Math.round((e.loaded * 100) / e.total))
+          }
+        },
+      },
+    )
+  }
+
   // Returns the raw streaming endpoint URL — used in <img src=…> / <iframe src=…>.
   // The axios instance attaches Authorization on real fetches, but <img> tags
   // can't send a header. We use a fetch-based blob loader on the page side

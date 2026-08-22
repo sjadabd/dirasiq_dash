@@ -46,6 +46,50 @@ const FILE_KIND_LABEL = {
   intro_video: 'فيديو تعريفي',
 }
 
+const ADMIN_UPLOAD_SLOTS = [
+  { kind: 'certificate_image', label: 'شهادة التدريس', accept: 'image/jpeg,image/png,image/webp,application/pdf' },
+  { kind: 'national_id_image', label: 'الهوية الوطنية', accept: 'image/jpeg,image/png,image/webp' },
+  { kind: 'profile_image', label: 'الصورة الشخصية', accept: 'image/jpeg,image/png,image/webp' },
+  { kind: 'optional_attachment', label: 'مرفق إضافي', accept: 'image/jpeg,image/png,image/webp,application/pdf' },
+]
+
+const uploadState = reactive({
+  kind: 'certificate_image',
+  submitting: false,
+  progress: 0,
+  error: '',
+})
+const adminFileInput = ref(null)
+
+function triggerAdminFilePick () {
+  adminFileInput.value?.click()
+}
+
+async function onAdminFilePicked (event) {
+  const file = event?.target?.files?.[0]
+  if (event?.target) event.target.value = ''
+  if (!file || !isActionable.value) return
+
+  uploadState.submitting = true
+  uploadState.progress = 0
+  uploadState.error = ''
+  try {
+    await Admin.uploadTeacherApplicationFile(id.value, {
+      kind: uploadState.kind,
+      file,
+      onProgress: p => { uploadState.progress = p },
+    })
+    showAlert('success', `تم رفع «${FILE_KIND_LABEL[uploadState.kind] || uploadState.kind}» بنجاح`)
+    await loadAll()
+  } catch (err) {
+    uploadState.error =
+      err?.response?.data?.message || err?.message || 'تعذر رفع الملف'
+  } finally {
+    uploadState.submitting = false
+    uploadState.progress = 0
+  }
+}
+
 async function loadAll () {
   loading.value = true
   errorMessage.value = ''
@@ -558,6 +602,64 @@ onMounted(loadAll)
         <VDivider />
         <VCardItem>
           <div
+            v-if="isActionable"
+            class="mb-4 pa-3 rounded border"
+          >
+            <div class="text-subtitle-2 mb-2">
+              رفع مرفق نيابةً عن المتقدّمة
+            </div>
+            <div class="text-caption text-medium-emphasis mb-3">
+              استخدم هذا عند وصول الملفات عبر واتساب/بريد ولم تظهر في الطلب.
+            </div>
+            <div class="d-flex flex-wrap align-center ga-2">
+              <VSelect
+                v-model="uploadState.kind"
+                :items="ADMIN_UPLOAD_SLOTS"
+                item-title="label"
+                item-value="kind"
+                density="compact"
+                hide-details
+                style="max-width: 240px"
+                :disabled="uploadState.submitting"
+              />
+              <VBtn
+                color="primary"
+                variant="tonal"
+                prepend-icon="ri-upload-2-line"
+                :loading="uploadState.submitting"
+                :disabled="uploadState.submitting"
+                @click="triggerAdminFilePick"
+              >
+                اختيار ملف ورفعه
+              </VBtn>
+              <input
+                ref="adminFileInput"
+                type="file"
+                class="d-none"
+                :accept="ADMIN_UPLOAD_SLOTS.find(s => s.kind === uploadState.kind)?.accept"
+                @change="onAdminFilePicked"
+              >
+            </div>
+            <VProgressLinear
+              v-if="uploadState.submitting"
+              class="mt-3"
+              :model-value="uploadState.progress"
+              color="primary"
+              height="6"
+              rounded
+            />
+            <VAlert
+              v-if="uploadState.error"
+              class="mt-3"
+              type="error"
+              variant="tonal"
+              density="compact"
+            >
+              {{ uploadState.error }}
+            </VAlert>
+          </div>
+
+          <div
             v-if="!files.length"
             class="text-medium-emphasis text-center py-6"
           >
@@ -656,12 +758,28 @@ onMounted(loadAll)
               alt="preview"
               style="max-width: 100%; max-height: 75vh; object-fit: contain"
             >
-            <iframe
+            <div
               v-else-if="previewState.mimeType === 'application/pdf'"
-              :src="previewState.objectUrl"
-              style="width: 100%; height: 70vh; border: none"
-              title="PDF preview"
-            />
+              class="w-100"
+            >
+              <iframe
+                :src="previewState.objectUrl"
+                style="width: 100%; height: 70vh; border: none"
+                title="PDF preview"
+              />
+              <div class="mt-2">
+                <VBtn
+                  :href="previewState.objectUrl"
+                  :download="previewState.filename"
+                  color="primary"
+                  variant="text"
+                  size="small"
+                  prepend-icon="ri-download-line"
+                >
+                  تحميل PDF
+                </VBtn>
+              </div>
+            </div>
             <video
               v-else-if="previewState.mimeType.startsWith('video/')"
               :src="previewState.objectUrl"
